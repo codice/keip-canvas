@@ -4,18 +4,29 @@ import ReactFlow, {
   ControlButton,
   Controls,
   ReactFlowInstance,
-  useReactFlow
+  useReactFlow,
 } from "reactflow"
 
-import { useAppActions, useFlowStore, getGraphConstraintOrientation, getLayoutOrientation} from "../../singletons/store"
+import {
+  useAppActions,
+  useFlowStore,
+  getGraphConstraintOrientation,
+  getLayoutOrientation,
+} from "../../singletons/store"
 import "reactflow/dist/base.css"
-import { TrashCan, ArrowsHorizontal, ArrowsVertical, Minimize, Maximize} from "@carbon/icons-react"
+import {
+  TrashCan,
+  ArrowsHorizontal,
+  ArrowsVertical,
+  Minimize,
+  Maximize,
+} from "@carbon/icons-react"
 import { ErrorBoundary } from "@carbon/react"
 import { DropTargetMonitor, useDrop } from "react-dnd"
 import { NativeTypes } from "react-dnd-html5-backend"
 import { EipId } from "../../api/id"
 import { DragTypes } from "../draggable-panel/dragTypes"
-import {EipNode} from "./EipNode"
+import { EipNode } from "./EipNode"
 import { useEffect } from "react"
 
 const FLOW_ERROR_MESSAGE =
@@ -67,12 +78,12 @@ const FlowCanvas = () => {
     clearSelectedChildNode,
     clearFlow,
     importFlowFromJson,
-    updateLayoutOrientation
+    updateLayoutOrientation,
   } = useAppActions()
 
   useEffect(() => {
     reactFlowInstance.fitView()
-  });
+  })
 
   const [, drop] = useDrop(
     () => ({
@@ -124,25 +135,56 @@ const FlowCanvas = () => {
           onPaneClick={() => clearSelectedChildNode()}
           fitView
         >
-          <Controls style={{ bottom: '50px' }}>
-              <ControlButton  title="horizontal layout" onClick={() => updateLayoutOrientation('horizontal', getGraphConstraintOrientation())}>
-                <ArrowsHorizontal/>
-              </ControlButton>
-              <ControlButton title="vertical layout" onClick={() => updateLayoutOrientation('vertical', getGraphConstraintOrientation())}>
-                <ArrowsVertical/>
-              </ControlButton>
-              <ControlButton  title="narrow" onClick={() => updateLayoutOrientation(getLayoutOrientation(), "narrow")}>
-                <Minimize/>
-              </ControlButton>
-              <ControlButton title="wide" onClick={() => updateLayoutOrientation(getLayoutOrientation(), "wide")}>
-                <Maximize/>
-              </ControlButton>
+          <Controls style={{ bottom: "50px" }}>
+            <ControlButton
+              title="horizontal layout"
+              onClick={() =>
+                updateLayoutOrientation(
+                  "horizontal",
+                  getGraphConstraintOrientation()
+                )
+              }
+            >
+              <ArrowsHorizontal />
+            </ControlButton>
+            <ControlButton
+              title="vertical layout"
+              onClick={() =>
+                updateLayoutOrientation(
+                  "vertical",
+                  getGraphConstraintOrientation()
+                )
+              }
+            >
+              <ArrowsVertical />
+            </ControlButton>
+            <ControlButton
+              title="narrow"
+              onClick={() =>
+                updateLayoutOrientation(getLayoutOrientation(), "narrow")
+              }
+            >
+              <Minimize />
+            </ControlButton>
+            <ControlButton
+              title="wide"
+              onClick={() =>
+                updateLayoutOrientation(getLayoutOrientation(), "wide")
+              }
+            >
+              <Maximize />
+            </ControlButton>
           </Controls>
 
-          <Controls position="bottom-left" showFitView={false} showInteractive={false} showZoom={false}> 
-              <ControlButton title="clear" onClick={clearFlow}>
-                <TrashCan />
-              </ControlButton>
+          <Controls
+            position="bottom-left"
+            showFitView={false}
+            showInteractive={false}
+            showZoom={false}
+          >
+            <ControlButton title="clear" onClick={clearFlow}>
+              <TrashCan />
+            </ControlButton>
           </Controls>
 
           {/* <MiniMap /> */}

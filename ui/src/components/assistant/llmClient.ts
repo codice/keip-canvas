@@ -1,7 +1,12 @@
 import { Ollama } from "@langchain/community/llms/ollama"
 import { Edge } from "reactflow"
 import { EipFlowNode } from "../../api/flow"
-import { getEdgesView, getGraphConstraintOrientation, getLayoutOrientation, getNodesView} from "../../singletons/store"
+import {
+  getEdgesView,
+  getGraphConstraintOrientation,
+  getLayoutOrientation,
+  getNodesView,
+} from "../../singletons/store"
 import { fuzzyMatchNodeEipIds } from "./fuzzyEipIdMatch"
 import { newFlowLayout } from "../layout/layouting"
 import { flowCreatePrompt, flowUpdatePrompt } from "./prompt"
@@ -124,7 +129,12 @@ class LlmClient {
 
     fuzzyMatchNodeEipIds(response.nodes)
 
-    response.nodes = newFlowLayout(response.nodes, response.edges, getLayoutOrientation(), getGraphConstraintOrientation())
+    response.nodes = newFlowLayout(
+      response.nodes,
+      response.edges,
+      getLayoutOrientation(),
+      getGraphConstraintOrientation()
+    )
 
     return JSON.stringify(response)
   }

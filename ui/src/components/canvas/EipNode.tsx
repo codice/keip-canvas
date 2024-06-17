@@ -20,47 +20,45 @@ interface ChildrenIconsProps {
   childrenNames: string[]
   parentNodeId: string
   parentEipId: EipId
-} 
+}
 
 const defaultNamespace = "integration"
 
 // TODO: Limit handles to the appropriate number of connections
-const renderHandles = (flowType: FlowType, layoutType : LayoutOrientation) => {
-
-    if (layoutType === "horizontal") {
-      switch (flowType) {
-        case "source":
-          return <Handle type="source" position={Position.Right}></Handle>
-        case "sink":
-          return <Handle type="target" position={Position.Left}></Handle>
-        case "passthru":
-          return (
-            <>
-              <Handle type="source" position={Position.Right}></Handle>
-              <Handle type="target" position={Position.Left}></Handle>
-            </>
-          )
-        default:
-          console.error("unhandled FlowType")
-      }
-    }
-    else {
-      switch (flowType) {
-        case "source":
-          return <Handle type="source" position={Position.Bottom}></Handle>
-        case "sink":
-          return <Handle type="target" position={Position.Top}></Handle>
-        case "passthru":
-          return (
-            <>
-              <Handle type="source" position={Position.Bottom}></Handle>
-              <Handle type="target" position={Position.Top}></Handle>
-            </>
-          )
+const renderHandles = (flowType: FlowType, layoutType: LayoutOrientation) => {
+  if (layoutType === "horizontal") {
+    switch (flowType) {
+      case "source":
+        return <Handle type="source" position={Position.Right}></Handle>
+      case "sink":
+        return <Handle type="target" position={Position.Left}></Handle>
+      case "passthru":
+        return (
+          <>
+            <Handle type="source" position={Position.Right}></Handle>
+            <Handle type="target" position={Position.Left}></Handle>
+          </>
+        )
       default:
-          console.error("unhandled FlowType")
-      }
+        console.error("unhandled FlowType")
     }
+  } else {
+    switch (flowType) {
+      case "source":
+        return <Handle type="source" position={Position.Bottom}></Handle>
+      case "sink":
+        return <Handle type="target" position={Position.Top}></Handle>
+      case "passthru":
+        return (
+          <>
+            <Handle type="source" position={Position.Bottom}></Handle>
+            <Handle type="target" position={Position.Top}></Handle>
+          </>
+        )
+      default:
+        console.error("unhandled FlowType")
+    }
+  }
 }
 
 const getNamespacedTitle = (eipId: EipId) => {
@@ -125,8 +123,6 @@ export const EipNode = (props: NodeProps<EipNodeData>) => {
   const LayoutOrientation = useGetLayoutOrientation()
   const handles = renderHandles(componentDefinition.flowType, LayoutOrientation)
 
-
-
   return (
     <Tile
       className={getClassNames(props, componentDefinition.role)}
@@ -148,6 +144,3 @@ export const EipNode = (props: NodeProps<EipNodeData>) => {
     </Tile>
   )
 }
-
-
-

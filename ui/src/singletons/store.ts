@@ -14,13 +14,13 @@ import {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
-  Position
+  Position,
 } from "reactflow"
 import { useShallow } from "zustand/react/shallow"
 import { AttributeTypes } from "../api/eipSchema"
 import { EIP_NODE_KEY, EipFlowNode } from "../api/flow"
 import { ChildNodeId, EipId, areChildIdsEqual } from "../api/id"
-import { LayoutOrientation, GraphConstraint} from "../api/flow"
+import { LayoutOrientation, GraphConstraint } from "../api/flow"
 import { newFlowLayout } from "../components/layout/layouting"
 
 export const ROOT_PARENT = "root"
@@ -67,7 +67,10 @@ interface AppActions {
 
   importFlowFromJson: (json: string) => void
 
-  updateLayoutOrientation: (layout: LayoutOrientation, constraint: GraphConstraint) => void
+  updateLayoutOrientation: (
+    layout: LayoutOrientation,
+    constraint: GraphConstraint
+  ) => void
 }
 
 interface AppStore {
@@ -75,7 +78,7 @@ interface AppStore {
   edges: Edge[]
   eipNodeConfigs: Record<string, EipNodeConfig>
   selectedChildNode: ChildNodeId | null
-  layout : LayoutOrientation
+  layout: LayoutOrientation
   constraint: GraphConstraint
 
   reactFlowActions: ReactFlowActions
@@ -90,8 +93,8 @@ const useStore = create<AppStore>()(
       edges: [],
       eipNodeConfigs: {},
       selectedChildNode: null,
-      layout : "horizontal",
-      constraint : "wide",
+      layout: "horizontal",
+      constraint: "wide",
 
       reactFlowActions: {
         onNodesChange: (changes: NodeChange[]) =>
@@ -204,15 +207,23 @@ const useStore = create<AppStore>()(
             return {}
           }),
 
-          updateLayoutOrientation: (layout: LayoutOrientation, constraint: GraphConstraint) =>
-            set((state) => {
-              const nodes = newFlowLayout(state.nodes, state.edges, layout, constraint)
-              return {
-                nodes: nodes,
-                layout: layout,
-                constraint: constraint
-              }
-            }), 
+        updateLayoutOrientation: (
+          layout: LayoutOrientation,
+          constraint: GraphConstraint
+        ) =>
+          set((state) => {
+            const nodes = newFlowLayout(
+              state.nodes,
+              state.edges,
+              layout,
+              constraint
+            )
+            return {
+              nodes: nodes,
+              layout: layout,
+              constraint: constraint,
+            }
+          }),
       },
     }),
     {
@@ -227,23 +238,26 @@ const useStore = create<AppStore>()(
   )
 )
 
-const newNode = (eipId: EipId, position: XYPosition, layout: LayoutOrientation) => {
+const newNode = (
+  eipId: EipId,
+  position: XYPosition,
+  layout: LayoutOrientation
+) => {
   const id = nanoid(10)
   const node: EipFlowNode = {
     id: id,
     type: EIP_NODE_KEY,
     position: position,
-    data: { 
+    data: {
       eipId: eipId,
       label: "New Node",
     },
   }
   const isHorizontal = layout === "horizontal"
-  node.targetPosition = isHorizontal ? Position.Left : Position.Top,
-  node.sourcePosition = isHorizontal ? Position.Right : Position.Bottom
+  ;(node.targetPosition = isHorizontal ? Position.Left : Position.Top),
+    (node.sourcePosition = isHorizontal ? Position.Right : Position.Bottom)
   return node
 }
-
 
 const removeDeletedNodeConfigs = (state: AppStore, changes: NodeChange[]) => {
   const deletes: NodeRemoveChange[] = changes.filter(
@@ -340,5 +354,5 @@ export const getEdgesView: () => Readonly<Edge[]> = () =>
   useStore.getState().edges
 export const getLayoutOrientation: () => Readonly<LayoutOrientation> = () =>
   useStore.getState().layout
-export const getGraphConstraintOrientation: () => Readonly<GraphConstraint> = () =>
-  useStore.getState().constraint
+export const getGraphConstraintOrientation: () => Readonly<GraphConstraint> =
+  () => useStore.getState().constraint
