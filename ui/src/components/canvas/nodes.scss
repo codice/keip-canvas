@@ -61,16 +61,30 @@ $icon-button-focus-shadow:
   height: 3rem;
 }
 
-.react-flow .react-flow__handle {
+.react-flow .react-flow__handle-right {
   background-color: themes.$icon-interactive;
   height: 25px;
   width: 6px;
-}
-
-.react-flow .react-flow__handle-right {
   right: -5px;
 }
 
 .react-flow .react-flow__handle-left {
+  background-color: themes.$icon-interactive;
+  height: 25px;
+  width: 6px;
   left: -5px;
+}
+
+.react-flow .react-flow__handle-top {
+  background-color: themes.$icon-interactive;
+  height: 6px;
+  width: 25px;
+  top: -5px
+}
+
+.react-flow .react-flow__handle-bottom {
+  background-color: themes.$icon-interactive;
+  height: 6px;
+  width: 25px;
+  bottom: -5px
 }
