@@ -1,5 +1,6 @@
-import { Edge, Position } from "reactflow"
-import { EipFlowNode, LayoutOrientation, GraphConstraint } from "../../api/flow"
+import { Edge, Position, StraightEdge } from "reactflow"
+import { EipFlowNode} from "../../api/flow"
+import { Layout } from "../../api/flow"
 import dagre from "@dagrejs/dagre"
 
 const NODE_WIDTH = 128
@@ -11,27 +12,29 @@ graph.setDefaultEdgeLabel(() => ({}))
 export const newFlowLayout = (
   nodes: EipFlowNode[],
   edges: Edge[],
-  layout: LayoutOrientation,
-  constraint: GraphConstraint
+  orientation: Layout["orientation"],
+  density: Layout["density"]
 ) => {
-  const direction = layout === "horizontal" ? "LR" : "TB"
+  const direction = orientation === "horizontal" ? "LR" : "TB"
 
-  const isHorizontal = layout === "horizontal"
+  const isHorizontal = orientation === "horizontal"
 
-  const newConstraint = constraint === "narrow" ? "narrow" : "wide"
+  let edgeSeperation
+  let nodeSeperation = 50
 
-  let seperation
-
-  if (newConstraint === "narrow") {
-    seperation = 50
-  } else {
-    seperation = 150
+  if (density === "compact") {
+    edgeSeperation = 50  
+  } else if (density === "cozy") {
+    edgeSeperation = 150
+  } else if (density === "comfortable") {
+    edgeSeperation = 250
   }
 
   graph.setGraph({
     rankdir: direction,
-    edgesep: seperation,
-    ranksep: seperation,
+    edgesep: edgeSeperation,
+    ranksep: edgeSeperation,
+    nodesep: nodeSeperation
   })
 
   nodes.forEach((node) => {
@@ -39,6 +42,7 @@ export const newFlowLayout = (
   })
 
   edges.forEach((edge) => {
+    edge.type = "simplebezier"
     graph.setEdge(edge.source, edge.target)
   })
 
@@ -59,3 +63,4 @@ export const newFlowLayout = (
 
   return newNodes
 }
+

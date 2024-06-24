@@ -3,7 +3,7 @@ import { Edge } from "reactflow"
 import { EipFlowNode } from "../../api/flow"
 import {
   getEdgesView,
-  getGraphConstraintOrientation,
+  getLayoutDensity,
   getLayoutOrientation,
   getNodesView,
 } from "../../singletons/store"
@@ -133,7 +133,7 @@ class LlmClient {
       response.nodes,
       response.edges,
       getLayoutOrientation(),
-      getGraphConstraintOrientation()
+      getLayoutDensity()
     )
 
     return JSON.stringify(response)

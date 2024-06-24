@@ -10,15 +10,12 @@ import ReactFlow, {
 import {
   useAppActions,
   useFlowStore,
-  getGraphConstraintOrientation,
-  getLayoutOrientation,
 } from "../../singletons/store"
 import "reactflow/dist/base.css"
 import {
   TrashCan,
   ArrowsHorizontal,
   ArrowsVertical,
-  Minimize,
   Maximize,
 } from "@carbon/icons-react"
 import { ErrorBoundary } from "@carbon/react"
@@ -79,11 +76,20 @@ const FlowCanvas = () => {
     clearFlow,
     importFlowFromJson,
     updateLayoutOrientation,
+    updateLayoutDensity
   } = useAppActions()
 
   useEffect(() => {
+
     reactFlowInstance.fitView()
-  })
+  
+  },[flowStore.orientation])
+
+  useEffect(() => {
+
+    reactFlowInstance.fitView()
+  
+  },[flowStore.density])
 
   const [, drop] = useDrop(
     () => ({
@@ -138,38 +144,24 @@ const FlowCanvas = () => {
           <Controls style={{ bottom: "50px" }}>
             <ControlButton
               title="horizontal layout"
-              onClick={() =>
-                updateLayoutOrientation(
-                  "horizontal",
-                  getGraphConstraintOrientation()
-                )
-              }
+              onClick={() => {
+               updateLayoutOrientation("horizontal")
+              }}
             >
               <ArrowsHorizontal />
             </ControlButton>
             <ControlButton
               title="vertical layout"
-              onClick={() =>
-                updateLayoutOrientation(
-                  "vertical",
-                  getGraphConstraintOrientation()
-                )
-              }
+              onClick={() => {
+                  updateLayoutOrientation("vertical")
+              }}
             >
               <ArrowsVertical />
             </ControlButton>
             <ControlButton
-              title="narrow"
+              title="change density"
               onClick={() =>
-                updateLayoutOrientation(getLayoutOrientation(), "narrow")
-              }
-            >
-              <Minimize />
-            </ControlButton>
-            <ControlButton
-              title="wide"
-              onClick={() =>
-                updateLayoutOrientation(getLayoutOrientation(), "wide")
+                updateLayoutDensity()
               }
             >
               <Maximize />
