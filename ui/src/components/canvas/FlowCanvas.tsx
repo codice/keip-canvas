@@ -83,13 +83,13 @@ const FlowCanvas = () => {
 
     reactFlowInstance.fitView()
   
-  },[flowStore.orientation])
+  },[flowStore.orientation, flowStore.density])
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    reactFlowInstance.fitView()
+  //   reactFlowInstance.fitView()
   
-  },[flowStore.density])
+  // },[flowStore.density])
 
   const [, drop] = useDrop(
     () => ({
