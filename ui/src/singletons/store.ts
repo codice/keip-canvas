@@ -77,9 +77,6 @@ interface AppStore {
   edges: Edge[]
   eipNodeConfigs: Record<string, EipNodeConfig>
   selectedChildNode: ChildNodeId | null
-  // orientation: Layout["orientation"]
-  // density: Layout["density"]
-
   layout: Layout
   reactFlowActions: ReactFlowActions
   appActions: AppActions
