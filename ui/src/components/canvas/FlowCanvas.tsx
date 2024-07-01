@@ -7,10 +7,7 @@ import ReactFlow, {
   useReactFlow,
 } from "reactflow"
 
-import {
-  useAppActions,
-  useFlowStore,
-} from "../../singletons/store"
+import { useAppActions, useFlowStore } from "../../singletons/store"
 import "reactflow/dist/base.css"
 import {
   TrashCan,
@@ -76,14 +73,12 @@ const FlowCanvas = () => {
     clearFlow,
     importFlowFromJson,
     updateLayoutOrientation,
-    updateLayoutDensity
+    updateLayoutDensity,
   } = useAppActions()
 
   useEffect(() => {
-
     reactFlowInstance.fitView()
-  
-  },[flowStore.orientation, flowStore.density, reactFlowInstance])
+  }, [flowStore.orientation, flowStore.density, reactFlowInstance])
 
   const [, drop] = useDrop(
     () => ({
@@ -148,10 +143,7 @@ const FlowCanvas = () => {
             >
               <ArrowsVertical />
             </ControlButton>
-            <ControlButton
-              title="change density"
-              onClick={updateLayoutDensity}
-            >
+            <ControlButton title="change density" onClick={updateLayoutDensity}>
               <Maximize />
             </ControlButton>
           </Controls>

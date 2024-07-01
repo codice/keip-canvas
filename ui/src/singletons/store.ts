@@ -70,7 +70,6 @@ interface AppActions {
   updateLayoutOrientation: (orientation: Layout["orientation"]) => void
 
   updateLayoutDensity: () => void
-
 }
 
 interface AppStore {
@@ -94,11 +93,11 @@ const useStore = create<AppStore>()(
       edges: [],
       eipNodeConfigs: {},
       selectedChildNode: null,
-      layout : {
-        orientation : "horizontal",
-        density : "cozy"
+      layout: {
+        orientation: "horizontal",
+        density: "cozy",
       },
-    
+
       reactFlowActions: {
         onNodesChange: (changes: NodeChange[]) =>
           set((state) => {
@@ -210,58 +209,48 @@ const useStore = create<AppStore>()(
             return {}
           }),
 
-        updateLayoutOrientation: (
-          orientation: Layout["orientation"]
-        ) =>
+        updateLayoutOrientation: (orientation: Layout["orientation"]) =>
           set((state) => {
-            let newLayout : Layout = {
-              orientation : orientation,
-              density : state.layout.density
+            const newLayout: Layout = {
+              orientation: orientation,
+              density: state.layout.density,
             }
-            const nodes = newFlowLayout(
-              state.nodes,
-              state.edges,
-              newLayout
-            )
+            const nodes = newFlowLayout(state.nodes, state.edges, newLayout)
             return {
               nodes: nodes,
               layout: {
                 orientation: orientation,
-                density: state.layout.density
-              }
+                density: state.layout.density,
+              },
             }
           }),
 
-          updateLayoutDensity: () =>
-            set((state) => {
-              let currentDensity = state.layout.density
-              let newDensity : Layout["density"] = "comfortable"
-              
-              if (currentDensity === "compact") {
-                newDensity = "cozy"
-              } else if (currentDensity === "cozy") {
-                newDensity = "comfortable"
-              } else if (currentDensity === "comfortable") {
-                newDensity = "compact"
-              }
+        updateLayoutDensity: () =>
+          set((state) => {
+            const currentDensity = state.layout.density
+            let newDensity: Layout["density"] = "comfortable"
 
-              let newLayout : Layout = {
-                orientation : state.layout.orientation,
-                density : newDensity
-              }       
-              const nodes = newFlowLayout(
-                state.nodes,
-                state.edges,
-                newLayout
-              )
-              return {
-                nodes: nodes,
-                layout: {
-                  orientation: state.layout.orientation,
-                  density: newDensity
-                }
-              }
-            }),
+            if (currentDensity === "compact") {
+              newDensity = "cozy"
+            } else if (currentDensity === "cozy") {
+              newDensity = "comfortable"
+            } else if (currentDensity === "comfortable") {
+              newDensity = "compact"
+            }
+
+            const newLayout: Layout = {
+              orientation: state.layout.orientation,
+              density: newDensity,
+            }
+            const nodes = newFlowLayout(state.nodes, state.edges, newLayout)
+            return {
+              nodes: nodes,
+              layout: {
+                orientation: state.layout.orientation,
+                density: newDensity,
+              },
+            }
+          }),
       },
     }),
     {
@@ -288,12 +277,12 @@ const newNode = (
     type: EIP_NODE_KEY,
     position: position,
     targetPosition: isHorizontal ? Position.Left : Position.Top,
-    sourcePosition:  isHorizontal ? Position.Right : Position.Bottom,
+    sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
     data: {
       eipId: eipId,
       label: "New Node",
     },
-  }  
+  }
   return node
 }
 
@@ -324,9 +313,11 @@ export const useNodeCount = () => useStore((state) => state.nodes.length)
 
 export const useGetNodes = () => useStore((state) => state.nodes)
 
-export const useGetLayoutOrientation = () => useStore((state) => state.layout.orientation)
+export const useGetLayoutOrientation = () =>
+  useStore((state) => state.layout.orientation)
 
-export const useGetLayoutDensity = () => useStore((state) => state.layout.density)
+export const useGetLayoutDensity = () =>
+  useStore((state) => state.layout.density)
 
 export const useSerializedStore = () =>
   useStore((state) =>
@@ -383,8 +374,8 @@ export const useFlowStore = () =>
       onEdgesChange: state.reactFlowActions.onEdgesChange,
       onConnect: state.reactFlowActions.onConnect,
     }))
-  )  
- 
+  )
+
 export const useAppActions = () => useStore((state) => state.appActions)
 
 // Warning: the following exports are not intended for use in React components
@@ -394,5 +385,5 @@ export const getEdgesView: () => Readonly<Edge[]> = () =>
   useStore.getState().edges
 export const getLayoutOrientation: () => Readonly<Layout["orientation"]> = () =>
   useStore.getState().layout.orientation
-export const getLayoutDensity: () => Readonly<Layout["density"]> =
-  () => useStore.getState().layout.density
+export const getLayoutDensity: () => Readonly<Layout["density"]> = () =>
+  useStore.getState().layout.density

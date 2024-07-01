@@ -1,5 +1,5 @@
-import { Edge, Position} from "reactflow"
-import { EipFlowNode} from "../../api/flow"
+import { Edge, Position } from "reactflow"
+import { EipFlowNode } from "../../api/flow"
 import { Layout } from "../../api/flow"
 import dagre from "@dagrejs/dagre"
 
@@ -21,10 +21,10 @@ export const newFlowLayout = (
   const isHorizontal = layout.orientation === "horizontal"
 
   let edgeSeperation
-  let nodeSeperation = 50
+  const nodeSeperation = 50
 
   if (layout.density === "compact") {
-    edgeSeperation = 50  
+    edgeSeperation = 50
   } else if (layout.density === "cozy") {
     edgeSeperation = 150
   } else if (layout.density === "comfortable") {
@@ -35,7 +35,7 @@ export const newFlowLayout = (
     rankdir: direction,
     edgesep: edgeSeperation,
     ranksep: edgeSeperation,
-    nodesep: nodeSeperation
+    nodesep: nodeSeperation,
   })
 
   nodes.forEach((node) => {
@@ -64,4 +64,3 @@ export const newFlowLayout = (
 
   return newNodes
 }
-

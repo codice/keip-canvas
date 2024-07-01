@@ -8,8 +8,8 @@ export interface EipNodeData {
 
 export type EipFlowNode = Node<EipNodeData>
 
-export type Layout = {
-  orientation: "horizontal" | "vertical",
+export interface Layout {
+  orientation: "horizontal" | "vertical"
   density: "compact" | "cozy" | "comfortable"
 }
 
