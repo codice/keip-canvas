@@ -22,7 +22,7 @@ import { EIP_NODE_KEY, EipFlowNode } from "../api/flow"
 import { ChildNodeId, EipId, areChildIdsEqual } from "../api/id"
 import { Layout } from "../api/flow"
 import { newFlowLayout } from "../components/layout/layouting"
-import { layer01 } from "@carbon/themes"
+
 
 export const ROOT_PARENT = "root"
 

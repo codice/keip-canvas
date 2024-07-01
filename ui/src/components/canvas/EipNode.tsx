@@ -1,9 +1,8 @@
 import { Button, Stack, Tile } from "@carbon/react"
 import { Handle, NodeProps, Position } from "reactflow"
-
 import { ServiceId } from "@carbon/react/icons"
 import { FlowType, Role } from "../../api/eipSchema"
-import { EipNodeData, LayoutOrientation } from "../../api/flow"
+import { EipNodeData, Layout} from "../../api/flow"
 import { ChildNodeId, EipId } from "../../api/id"
 import { lookupEipComponent } from "../../singletons/eipDefinitions"
 import getIconUrl from "../../singletons/eipIconCatalog"
@@ -11,7 +10,7 @@ import {
   useAppActions,
   useGetChildren,
   useIsChildSelected,
-  useGetLayoutOrientation,
+  useGetLayout
 } from "../../singletons/store"
 import { toTitleCase } from "../../utils/titleTransform"
 import "./nodes.scss"
@@ -25,7 +24,7 @@ interface ChildrenIconsProps {
 const defaultNamespace = "integration"
 
 // TODO: Limit handles to the appropriate number of connections
-const renderHandles = (flowType: FlowType, layoutType: LayoutOrientation) => {
+const renderHandles = (flowType: FlowType, layoutType: Layout["orientation"]) => {
   if (layoutType === "horizontal") {
     switch (flowType) {
       case "source":
@@ -120,8 +119,8 @@ export const EipNode = (props: NodeProps<EipNodeData>) => {
 
   const { data } = props
   const componentDefinition = lookupEipComponent(data.eipId)!
-  const LayoutOrientation = useGetLayoutOrientation()
-  const handles = renderHandles(componentDefinition.flowType, LayoutOrientation)
+  const layout : Layout = useGetLayout()
+  const handles = renderHandles(componentDefinition.flowType, layout.orientation)
 
   return (
     <Tile
