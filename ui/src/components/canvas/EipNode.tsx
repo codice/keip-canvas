@@ -119,7 +119,7 @@ export const EipNode = (props: NodeProps<EipNodeData>) => {
 
   const { data } = props
   const componentDefinition = lookupEipComponent(data.eipId)!
-  const layout : Layout = useGetLayout()
+  const layout = useGetLayout()
   const handles = renderHandles(componentDefinition.flowType, layout.orientation)
 
   return (
