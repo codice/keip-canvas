@@ -12,8 +12,6 @@ graph.setDefaultEdgeLabel(() => ({}))
 export const newFlowLayout = (
   nodes: EipFlowNode[],
   edges: Edge[],
-  // orientation: Layout["orientation"],
-  // density: Layout["density"]
   layout: Layout
 ) => {
   const direction = layout.orientation === "horizontal" ? "LR" : "TB"

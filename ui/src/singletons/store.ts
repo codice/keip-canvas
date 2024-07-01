@@ -22,6 +22,7 @@ import { EIP_NODE_KEY, EipFlowNode } from "../api/flow"
 import { ChildNodeId, EipId, areChildIdsEqual } from "../api/id"
 import { Layout } from "../api/flow"
 import { newFlowLayout } from "../components/layout/layouting"
+import { layer01 } from "@carbon/themes"
 
 export const ROOT_PARENT = "root"
 
@@ -310,11 +311,7 @@ export const useNodeCount = () => useStore((state) => state.nodes.length)
 
 export const useGetNodes = () => useStore((state) => state.nodes)
 
-export const useGetLayoutOrientation = () =>
-  useStore((state) => state.layout.orientation)
-
-export const useGetLayoutDensity = () =>
-  useStore((state) => state.layout.density)
+export const useGetLayout = () => useStore((state) => state.layout)
 
 export const useSerializedStore = () =>
   useStore((state) =>
@@ -365,8 +362,7 @@ export const useFlowStore = () =>
     useShallow((state: AppStore) => ({
       nodes: state.nodes,
       edges: state.edges,
-      orientation: state.layout.orientation,
-      density: state.layout.density,
+      layout: state.layout,
       onNodesChange: state.reactFlowActions.onNodesChange,
       onEdgesChange: state.reactFlowActions.onEdgesChange,
       onConnect: state.reactFlowActions.onConnect,
@@ -380,7 +376,5 @@ export const getNodesView: () => Readonly<EipFlowNode[]> = () =>
   useStore.getState().nodes
 export const getEdgesView: () => Readonly<Edge[]> = () =>
   useStore.getState().edges
-export const getLayoutOrientation: () => Readonly<Layout["orientation"]> = () =>
-  useStore.getState().layout.orientation
-export const getLayoutDensity: () => Readonly<Layout["density"]> = () =>
-  useStore.getState().layout.density
+export const getLayout: () => Readonly<Layout> = () =>
+  useStore.getState().layout
