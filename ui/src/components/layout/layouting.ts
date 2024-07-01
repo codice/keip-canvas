@@ -1,4 +1,4 @@
-import { Edge, Position, StraightEdge } from "reactflow"
+import { Edge, Position} from "reactflow"
 import { EipFlowNode} from "../../api/flow"
 import { Layout } from "../../api/flow"
 import dagre from "@dagrejs/dagre"
@@ -12,21 +12,22 @@ graph.setDefaultEdgeLabel(() => ({}))
 export const newFlowLayout = (
   nodes: EipFlowNode[],
   edges: Edge[],
-  orientation: Layout["orientation"],
-  density: Layout["density"]
+  // orientation: Layout["orientation"],
+  // density: Layout["density"]
+  layout: Layout
 ) => {
-  const direction = orientation === "horizontal" ? "LR" : "TB"
+  const direction = layout.orientation === "horizontal" ? "LR" : "TB"
 
-  const isHorizontal = orientation === "horizontal"
+  const isHorizontal = layout.orientation === "horizontal"
 
   let edgeSeperation
   let nodeSeperation = 50
 
-  if (density === "compact") {
+  if (layout.density === "compact") {
     edgeSeperation = 50  
-  } else if (density === "cozy") {
+  } else if (layout.density === "cozy") {
     edgeSeperation = 150
-  } else if (density === "comfortable") {
+  } else if (layout.density === "comfortable") {
     edgeSeperation = 250
   }
 

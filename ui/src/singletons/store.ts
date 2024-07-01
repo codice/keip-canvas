@@ -78,8 +78,10 @@ interface AppStore {
   edges: Edge[]
   eipNodeConfigs: Record<string, EipNodeConfig>
   selectedChildNode: ChildNodeId | null
-  orientation: Layout["orientation"]
-  density: Layout["density"]
+  // orientation: Layout["orientation"]
+  // density: Layout["density"]
+
+  layout: Layout
   reactFlowActions: ReactFlowActions
   appActions: AppActions
 }
@@ -92,8 +94,10 @@ const useStore = create<AppStore>()(
       edges: [],
       eipNodeConfigs: {},
       selectedChildNode: null,
-      orientation: "horizontal",
-      density: "cozy",
+      layout : {
+        orientation : "horizontal",
+        density : "cozy"
+      },
     
       reactFlowActions: {
         onNodesChange: (changes: NodeChange[]) =>
@@ -124,7 +128,7 @@ const useStore = create<AppStore>()(
       appActions: {
         createDroppedNode: (eipId, position) =>
           set((state) => {
-            const node = newNode(eipId, position, state.orientation)
+            const node = newNode(eipId, position, state.layout.orientation)
             return {
               nodes: [...state.nodes, node],
               eipNodeConfigs: {
@@ -210,21 +214,27 @@ const useStore = create<AppStore>()(
           orientation: Layout["orientation"]
         ) =>
           set((state) => {
+            let newLayout : Layout = {
+              orientation : orientation,
+              density : state.layout.density
+            }
             const nodes = newFlowLayout(
               state.nodes,
               state.edges,
-              orientation,
-              state.density
+              newLayout
             )
             return {
               nodes: nodes,
-              orientation: orientation
+              layout: {
+                orientation: orientation,
+                density: state.layout.density
+              }
             }
           }),
 
           updateLayoutDensity: () =>
             set((state) => {
-              let currentDensity = state.density
+              let currentDensity = state.layout.density
               let newDensity : Layout["density"] = "comfortable"
               
               if (currentDensity === "compact") {
@@ -235,15 +245,21 @@ const useStore = create<AppStore>()(
                 newDensity = "compact"
               }
 
+              let newLayout : Layout = {
+                orientation : state.layout.orientation,
+                density : newDensity
+              }       
               const nodes = newFlowLayout(
                 state.nodes,
                 state.edges,
-                state.orientation,
-                newDensity
+                newLayout
               )
               return {
                 nodes: nodes,
-                density: newDensity
+                layout: {
+                  orientation: state.layout.orientation,
+                  density: newDensity
+                }
               }
             }),
       },
@@ -308,9 +324,9 @@ export const useNodeCount = () => useStore((state) => state.nodes.length)
 
 export const useGetNodes = () => useStore((state) => state.nodes)
 
-export const useGetLayoutOrientation = () => useStore((state) => state.orientation)
+export const useGetLayoutOrientation = () => useStore((state) => state.layout.orientation)
 
-export const useGetLayoutDensity = () => useStore((state) => state.density)
+export const useGetLayoutDensity = () => useStore((state) => state.layout.density)
 
 export const useSerializedStore = () =>
   useStore((state) =>
@@ -361,8 +377,8 @@ export const useFlowStore = () =>
     useShallow((state: AppStore) => ({
       nodes: state.nodes,
       edges: state.edges,
-      orientation: state.orientation,
-      density: state.density,
+      orientation: state.layout.orientation,
+      density: state.layout.density,
       onNodesChange: state.reactFlowActions.onNodesChange,
       onEdgesChange: state.reactFlowActions.onEdgesChange,
       onConnect: state.reactFlowActions.onConnect,
@@ -377,6 +393,6 @@ export const getNodesView: () => Readonly<EipFlowNode[]> = () =>
 export const getEdgesView: () => Readonly<Edge[]> = () =>
   useStore.getState().edges
 export const getLayoutOrientation: () => Readonly<Layout["orientation"]> = () =>
-  useStore.getState().orientation
+  useStore.getState().layout.orientation
 export const getLayoutDensity: () => Readonly<Layout["density"]> =
-  () => useStore.getState().density
+  () => useStore.getState().layout.density

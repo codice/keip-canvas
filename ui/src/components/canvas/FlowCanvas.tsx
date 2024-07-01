@@ -83,13 +83,7 @@ const FlowCanvas = () => {
 
     reactFlowInstance.fitView()
   
-  },[flowStore.orientation, flowStore.density])
-
-  // useEffect(() => {
-
-  //   reactFlowInstance.fitView()
-  
-  // },[flowStore.density])
+  },[flowStore.orientation, flowStore.density, reactFlowInstance])
 
   const [, drop] = useDrop(
     () => ({
@@ -144,25 +138,19 @@ const FlowCanvas = () => {
           <Controls style={{ bottom: "50px" }}>
             <ControlButton
               title="horizontal layout"
-              onClick={() => {
-               updateLayoutOrientation("horizontal")
-              }}
+              onClick={() => updateLayoutOrientation("horizontal")}
             >
               <ArrowsHorizontal />
             </ControlButton>
             <ControlButton
               title="vertical layout"
-              onClick={() => {
-                  updateLayoutOrientation("vertical")
-              }}
+              onClick={() => updateLayoutOrientation("vertical")}
             >
               <ArrowsVertical />
             </ControlButton>
             <ControlButton
               title="change density"
-              onClick={() =>
-                updateLayoutDensity()
-              }
+              onClick={updateLayoutDensity}
             >
               <Maximize />
             </ControlButton>
