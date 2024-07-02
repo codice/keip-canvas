@@ -210,16 +210,13 @@ const useStore = create<AppStore>()(
         updateLayoutOrientation: (orientation: Layout["orientation"]) =>
           set((state) => {
             const newLayout: Layout = {
+              ...state.layout,
               orientation: orientation,
-              density: state.layout.density,
             }
             const nodes = newFlowLayout(state.nodes, state.edges, newLayout)
             return {
               nodes: nodes,
-              layout: {
-                orientation: orientation,
-                density: state.layout.density,
-              },
+              layout: newLayout
             }
           }),
 
@@ -237,16 +234,13 @@ const useStore = create<AppStore>()(
             }
 
             const newLayout: Layout = {
-              orientation: state.layout.orientation,
+              ...state.layout,
               density: newDensity,
             }
             const nodes = newFlowLayout(state.nodes, state.edges, newLayout)
             return {
               nodes: nodes,
-              layout: {
-                orientation: state.layout.orientation,
-                density: newDensity,
-              },
+              layout: newLayout
             }
           }),
       },
@@ -362,7 +356,6 @@ export const useFlowStore = () =>
     useShallow((state: AppStore) => ({
       nodes: state.nodes,
       edges: state.edges,
-      layout: state.layout,
       onNodesChange: state.reactFlowActions.onNodesChange,
       onEdgesChange: state.reactFlowActions.onEdgesChange,
       onConnect: state.reactFlowActions.onConnect,

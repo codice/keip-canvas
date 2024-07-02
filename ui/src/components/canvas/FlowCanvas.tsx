@@ -7,7 +7,7 @@ import ReactFlow, {
   useReactFlow,
 } from "reactflow"
 
-import { useAppActions, useFlowStore } from "../../singletons/store"
+import { useAppActions, useFlowStore, useGetLayout } from "../../singletons/store"
 import "reactflow/dist/base.css"
 import {
   TrashCan,
@@ -67,6 +67,7 @@ const nodeTypes = {
 const FlowCanvas = () => {
   const reactFlowInstance = useReactFlow()
   const flowStore = useFlowStore()
+  const layout = useGetLayout()
   const {
     createDroppedNode,
     clearSelectedChildNode,
@@ -78,7 +79,7 @@ const FlowCanvas = () => {
 
   useEffect(() => {
     reactFlowInstance.fitView()
-  }, [flowStore.layout, reactFlowInstance])
+  }, [layout, reactFlowInstance])
 
   const [, drop] = useDrop(
     () => ({
