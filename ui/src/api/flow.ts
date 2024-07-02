@@ -10,7 +10,7 @@ export type EipFlowNode = Node<EipNodeData>
 
 export interface Layout {
   orientation: "horizontal" | "vertical"
-  density: "compact" | "cozy" | "comfortable"
+  density: "compact" | "comfortable"
 }
 
 export const EIP_NODE_KEY = "eipNode"

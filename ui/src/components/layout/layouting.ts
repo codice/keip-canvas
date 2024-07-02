@@ -1,10 +1,10 @@
-import { Edge, Position } from "reactflow"
-import { EipFlowNode } from "../../api/flow"
-import { Layout } from "../../api/flow"
 import dagre from "@dagrejs/dagre"
+import { Edge, Position } from "reactflow"
+import { EipFlowNode, Layout } from "../../api/flow"
 
-const NODE_WIDTH = 128
-const NODE_HEIGHT = 128
+
+const DEFAULT_NODE_WIDTH = 128
+const DEFAULT_NODE_HEIGHT = 128
 
 const graph = new dagre.graphlib.Graph()
 graph.setDefaultEdgeLabel(() => ({}))
@@ -18,26 +18,25 @@ export const newFlowLayout = (
 
   const isHorizontal = layout.orientation === "horizontal"
 
-  let edgeSeperation
-  const nodeSeperation = 50
+  let rankSeperation
+  let nodeSeperation
 
   if (layout.density === "compact") {
-    edgeSeperation = 50
-  } else if (layout.density === "cozy") {
-    edgeSeperation = 150
+    rankSeperation = 20
+    nodeSeperation = 20
   } else if (layout.density === "comfortable") {
-    edgeSeperation = 250
+    rankSeperation = 75
+    nodeSeperation = 75
   }
 
   graph.setGraph({
     rankdir: direction,
-    edgesep: edgeSeperation,
-    ranksep: edgeSeperation,
+    ranksep: rankSeperation,
     nodesep: nodeSeperation,
   })
 
   nodes.forEach((node) => {
-    graph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT })
+    graph.setNode(node.id, { width: getWidth(node), height: getHeight(node) })
   })
 
   edges.forEach((edge) => {
@@ -54,11 +53,14 @@ export const newFlowLayout = (
       targetPosition: isHorizontal ? Position.Left : Position.Top,
       sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
       position: {
-        x: positionedNode.x - NODE_WIDTH / 2,
-        y: positionedNode.y - NODE_HEIGHT / 2,
+        x: positionedNode.x - getWidth(node) / 2,
+        y: positionedNode.y - getHeight(node) / 2,
       },
     }
   })
 
   return newNodes
 }
+
+const getHeight = (node: EipFlowNode) => node.height ?? DEFAULT_NODE_HEIGHT
+const getWidth = (node: EipFlowNode) => node.width ?? DEFAULT_NODE_WIDTH

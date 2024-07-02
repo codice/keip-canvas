@@ -1,5 +1,3 @@
-import { create } from "zustand"
-import { createJSONStorage, persist } from "zustand/middleware"
 import { nanoid } from "nanoid/non-secure"
 import {
   Connection,
@@ -16,11 +14,12 @@ import {
   applyNodeChanges,
   Position,
 } from "reactflow"
+import { create } from "zustand"
+import { createJSONStorage, persist } from "zustand/middleware"
 import { useShallow } from "zustand/react/shallow"
 import { AttributeTypes } from "../api/eipSchema"
-import { EIP_NODE_KEY, EipFlowNode } from "../api/flow"
+import { EIP_NODE_KEY, EipFlowNode, Layout} from "../api/flow"
 import { ChildNodeId, EipId, areChildIdsEqual } from "../api/id"
-import { Layout } from "../api/flow"
 import { newFlowLayout } from "../components/layout/layouting"
 
 
@@ -93,7 +92,7 @@ const useStore = create<AppStore>()(
       selectedChildNode: null,
       layout: {
         orientation: "horizontal",
-        density: "cozy",
+        density: "comfortable",
       },
 
       reactFlowActions: {
@@ -222,17 +221,7 @@ const useStore = create<AppStore>()(
 
         updateLayoutDensity: () =>
           set((state) => {
-            const currentDensity = state.layout.density
-            let newDensity: Layout["density"] = "comfortable"
-
-            if (currentDensity === "compact") {
-              newDensity = "cozy"
-            } else if (currentDensity === "cozy") {
-              newDensity = "comfortable"
-            } else if (currentDensity === "comfortable") {
-              newDensity = "compact"
-            }
-
+            const newDensity = state.layout.density === "compact" ? "comfortable" : "compact"
             const newLayout: Layout = {
               ...state.layout,
               density: newDensity,
