@@ -6,14 +6,11 @@ import { EipFlowNode, Layout } from "../../api/flow"
 const DEFAULT_NODE_WIDTH = 128
 const DEFAULT_NODE_HEIGHT = 128
 
-const graph = new dagre.graphlib.Graph()
-graph.setDefaultEdgeLabel(() => ({}))
-
 export const newFlowLayout = (
   nodes: EipFlowNode[],
   edges: Edge[],
   layout: Layout
-) => {
+): EipFlowNode[] => {
   const direction = layout.orientation === "horizontal" ? "LR" : "TB"
 
   const isHorizontal = layout.orientation === "horizontal"
@@ -29,6 +26,9 @@ export const newFlowLayout = (
     nodeSeperation = 75
   }
 
+  const graph = new dagre.graphlib.Graph()
+  graph.setDefaultEdgeLabel(() => ({}))
+
   graph.setGraph({
     rankdir: direction,
     ranksep: rankSeperation,
@@ -40,7 +40,6 @@ export const newFlowLayout = (
   })
 
   edges.forEach((edge) => {
-    edge.type = "simplebezier"
     graph.setEdge(edge.source, edge.target)
   })
 
