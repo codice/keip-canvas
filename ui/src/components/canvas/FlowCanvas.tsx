@@ -30,7 +30,6 @@ import { EipId } from "../../api/id"
 import { DragTypes } from "../draggable-panel/dragTypes"
 import { EipNode } from "./EipNode"
 import { useEffect } from "react"
-import { sleep } from "langchain/util/time"
 
 const FLOW_ERROR_MESSAGE =
   "Failed to load the canvas - the stored flow is malformed. Clearing the flow from the state store."
@@ -155,7 +154,7 @@ const FlowCanvas = () => {
           onPaneClick={() => clearSelectedChildNode()}
           fitView
         >
-          <Controls style={{ bottom: "400px" }}>
+          <Controls style={{ bottom: "50px" }}>
             <ControlButton
               title="horizontal layout"
               onClick={() => updateLayoutOrientation("horizontal")}
@@ -171,10 +170,16 @@ const FlowCanvas = () => {
             <ControlButton title="change density" onClick={updateLayoutDensity}>
               <Maximize />
             </ControlButton>
+            <ControlButton title="undo" onClick={() => undo()}>
+              <Undo />
+            </ControlButton>
+            <ControlButton title="redo" onClick={() => redo()}>
+              <Redo />
+            </ControlButton>
           </Controls>
 
           <Controls
-            position="top-left"
+            position="bottom-left"
             showFitView={false}
             showInteractive={false}
             showZoom={false}
@@ -182,15 +187,9 @@ const FlowCanvas = () => {
             <ControlButton title="clear" onClick={clearFlow}>
               <TrashCan />
             </ControlButton>
-            <ControlButton title="undo" onClick={() => undo()}>
-              <Undo />
-            </ControlButton>
-            <ControlButton title="redo" onClick={() => redo()}>
-              <Redo />
-            </ControlButton>
-            <ControlButton title="clear data" onClick={() => clear()}>
+            {/* <ControlButton title="clear data" onClick={() => clear()}>
               <TrashCan />
-            </ControlButton>
+            </ControlButton> */}
           </Controls>
 
           {/* <MiniMap /> */}
