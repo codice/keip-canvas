@@ -1,3 +1,12 @@
+import { create, useStore } from "zustand"
+import { temporal, TemporalState } from "zundo"
+import { useStoreWithEqualityFn } from "zustand/traditional"
+import shallow from "zustand/shallow"
+import { createJSONStorage, persist } from "zustand/middleware"
+import { throttle } from "throttle-debounce"
+import isDeepEqual from "fast-deep-equal"
+
+
 import { nanoid } from "nanoid/non-secure"
 import {
   Connection,
@@ -14,8 +23,6 @@ import {
   applyNodeChanges,
   Position,
 } from "reactflow"
-import { create } from "zustand"
-import { createJSONStorage, persist } from "zustand/middleware"
 import { useShallow } from "zustand/react/shallow"
 import { AttributeTypes } from "../api/eipSchema"
 import { EIP_NODE_KEY, EipFlowNode, Layout } from "../api/flow"
@@ -81,9 +88,13 @@ interface AppStore {
   appActions: AppActions
 }
 
+type PartializedStoreState = Pick<AppStore, "nodes" | "edges" | "layout">
+
+
 // If app becomes too slow, might need to switch to async persistent storage.
-const useStore = create<AppStore>()(
+export const useAppStore = create<AppStore>()(
   persist(
+    temporal (
     (set) => ({
       nodes: [],
       edges: [],
@@ -233,7 +244,39 @@ const useStore = create<AppStore>()(
             }
           }),
       },
-    }),
+    }), {
+
+      limit: 50,
+
+        handleSet: (handleSet) =>
+          throttle<typeof handleSet>(1500, (state) => {
+            console.info("handleSet called")
+            handleSet(state)
+          }),
+        
+      
+        partialize: (state) => {
+          const newNodes = state.nodes.map((node) => {
+            const n = {...node}
+            delete n.width
+            delete n.height
+            delete n.selected
+            delete n.draggable
+            delete n.dragging
+            delete n.positionAbsolute
+            return n
+          })
+          const { edges } = state
+          const { layout } = state
+          
+          return { layout, edges, nodes: newNodes,}
+        },
+        
+        equality: (pastState, currentState) =>
+          isDeepEqual(pastState, currentState),
+
+    }
+  ),
     {
       name: "eipFlow",
       version: 0,
@@ -245,6 +288,11 @@ const useStore = create<AppStore>()(
     }
   )
 )
+
+export const useTemporalStore = <T>(
+  selector: (state: TemporalState<PartializedStoreState>) => T,
+  equality?: (a: T, b: T) => boolean
+) => useStoreWithEqualityFn(useAppStore.temporal, selector, equality)
 
 const newNode = (
   eipId: EipId,
@@ -290,14 +338,14 @@ const isStoreType = (state: unknown): state is AppStore => {
   )
 }
 
-export const useNodeCount = () => useStore((state) => state.nodes.length)
+export const useNodeCount = () => useAppStore((state) => state.nodes.length)
 
-export const useGetNodes = () => useStore((state) => state.nodes)
+export const useGetNodes = () => useAppStore((state) => state.nodes)
 
-export const useGetLayout = () => useStore((state) => state.layout)
+export const useGetLayout = () => useAppStore((state) => state.layout)
 
 export const useSerializedStore = () =>
-  useStore((state) =>
+  useAppStore((state) =>
     JSON.stringify({
       nodes: state.nodes,
       edges: state.edges,
@@ -306,14 +354,14 @@ export const useSerializedStore = () =>
   )
 
 export const useGetNodeDescription = (id: string) =>
-  useStore((state) => state.eipNodeConfigs[id]?.description)
+  useAppStore((state) => state.eipNodeConfigs[id]?.description)
 
 export const useGetEipAttribute = (
   id: string,
   parentId: string,
   attrName: string
 ) =>
-  useStore((state) => {
+  useAppStore((state) => {
     if (parentId === ROOT_PARENT) {
       return state.eipNodeConfigs[id]?.attributes[attrName]
     }
@@ -321,7 +369,7 @@ export const useGetEipAttribute = (
   })
 
 export const useGetChildren = (id: string) =>
-  useStore(
+  useAppStore(
     useShallow((state) =>
       state.eipNodeConfigs[id]
         ? Object.keys(state.eipNodeConfigs[id].children)
@@ -330,10 +378,10 @@ export const useGetChildren = (id: string) =>
   )
 
 export const useGetSelectedChildNode = () =>
-  useStore(useShallow((state) => state.selectedChildNode))
+  useAppStore(useShallow((state) => state.selectedChildNode))
 
 export const useIsChildSelected = (childId: ChildNodeId) =>
-  useStore((state) => {
+  useAppStore((state) => {
     if (state.selectedChildNode === null) {
       return false
     }
@@ -341,7 +389,7 @@ export const useIsChildSelected = (childId: ChildNodeId) =>
   })
 
 export const useFlowStore = () =>
-  useStore(
+  useAppStore(
     useShallow((state: AppStore) => ({
       nodes: state.nodes,
       edges: state.edges,
@@ -351,12 +399,12 @@ export const useFlowStore = () =>
     }))
   )
 
-export const useAppActions = () => useStore((state) => state.appActions)
+export const useAppActions = () => useAppStore((state) => state.appActions)
 
 // Warning: the following exports are not intended for use in React components
 export const getNodesView: () => Readonly<EipFlowNode[]> = () =>
-  useStore.getState().nodes
+  useAppStore.getState().nodes
 export const getEdgesView: () => Readonly<Edge[]> = () =>
-  useStore.getState().edges
+  useAppStore.getState().edges
 export const getLayout: () => Readonly<Layout> = () =>
-  useStore.getState().layout
+  useAppStore.getState().layout

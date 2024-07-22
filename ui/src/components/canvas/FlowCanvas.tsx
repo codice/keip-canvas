@@ -10,7 +10,9 @@ import ReactFlow, {
 import {
   useAppActions,
   useFlowStore,
+  useAppStore,
   useGetLayout,
+  useTemporalStore
 } from "../../singletons/store"
 import "reactflow/dist/base.css"
 import {
@@ -18,6 +20,8 @@ import {
   ArrowsHorizontal,
   ArrowsVertical,
   Maximize,
+  Undo,
+  Redo
 } from "@carbon/icons-react"
 import { ErrorBoundary } from "@carbon/react"
 import { DropTargetMonitor, useDrop } from "react-dnd"
@@ -26,6 +30,7 @@ import { EipId } from "../../api/id"
 import { DragTypes } from "../draggable-panel/dragTypes"
 import { EipNode } from "./EipNode"
 import { useEffect } from "react"
+import { sleep } from "langchain/util/time"
 
 const FLOW_ERROR_MESSAGE =
   "Failed to load the canvas - the stored flow is malformed. Clearing the flow from the state store."
@@ -69,6 +74,13 @@ const nodeTypes = {
 }
 
 const FlowCanvas = () => {
+
+  const store = useAppStore()
+
+  const { undo, redo, futureStates, pastStates, clear} = useTemporalStore(
+    (state) => state
+  )
+
   const reactFlowInstance = useReactFlow()
   const flowStore = useFlowStore()
   const layout = useGetLayout()
@@ -83,7 +95,7 @@ const FlowCanvas = () => {
 
   useEffect(() => {
     reactFlowInstance.fitView()
-  }, [layout, reactFlowInstance])
+  }, [layout, reactFlowInstance, undo, redo])
 
   const [, drop] = useDrop(
     () => ({
@@ -120,6 +132,14 @@ const FlowCanvas = () => {
 
   return (
     <div className="canvas" ref={drop}>
+       {/* <p>
+        <small>past states: {JSON.stringify(pastStates)}</small>
+      </p>
+      <p>
+        <small>future states: {JSON.stringify(futureStates)}</small>
+      </p>
+      <br />
+      current state: {JSON.stringify(store)} */}
       <ErrorBoundary
         fallback={
           <ErrorHandler message={FLOW_ERROR_MESSAGE} callback={clearFlow} />
@@ -135,7 +155,7 @@ const FlowCanvas = () => {
           onPaneClick={() => clearSelectedChildNode()}
           fitView
         >
-          <Controls style={{ bottom: "50px" }}>
+          <Controls style={{ bottom: "400px" }}>
             <ControlButton
               title="horizontal layout"
               onClick={() => updateLayoutOrientation("horizontal")}
@@ -154,12 +174,21 @@ const FlowCanvas = () => {
           </Controls>
 
           <Controls
-            position="bottom-left"
+            position="top-left"
             showFitView={false}
             showInteractive={false}
             showZoom={false}
           >
             <ControlButton title="clear" onClick={clearFlow}>
+              <TrashCan />
+            </ControlButton>
+            <ControlButton title="undo" onClick={() => undo()}>
+              <Undo />
+            </ControlButton>
+            <ControlButton title="redo" onClick={() => redo()}>
+              <Redo />
+            </ControlButton>
+            <ControlButton title="clear data" onClick={() => clear()}>
               <TrashCan />
             </ControlButton>
           </Controls>
