@@ -74,7 +74,9 @@ const nodeTypes = {
 
 const FlowCanvas = () => {
 
-  const store = useAppStore()
+  // const store = useAppStore()
+
+  // const temporalStore = useAppStore.temporal.getState
 
   const { undo, redo, futureStates, pastStates, clear} = useTemporalStore(
     (state) => state
@@ -94,8 +96,27 @@ const FlowCanvas = () => {
 
   useEffect(() => {
     reactFlowInstance.fitView()
-  }, [layout, reactFlowInstance, undo, redo])
+  }, [layout, reactFlowInstance])
 
+  // useEffect(() => {
+  //   reactFlowInstance.fitView()
+  // }, [temporalStore])
+
+  const newUndo = async () => {
+      undo()
+      reactFlowInstance.fitView()
+  }
+
+  const newRedo = async () => {
+    redo()
+    reactFlowInstance.fitView()
+}
+
+  // const newRedo = () => {
+  //   redo()
+  //   reactFlowInstance.fitView
+  // }
+ 
   const [, drop] = useDrop(
     () => ({
       accept: [DragTypes.FLOWNODE, NativeTypes.FILE],
@@ -170,10 +191,10 @@ const FlowCanvas = () => {
             <ControlButton title="change density" onClick={updateLayoutDensity}>
               <Maximize />
             </ControlButton>
-            <ControlButton title="undo" onClick={() => undo()}>
+            <ControlButton title="undo" onClick={() => newUndo()}>
               <Undo />
             </ControlButton>
-            <ControlButton title="redo" onClick={() => redo()}>
+            <ControlButton title="redo" onClick={() => newRedo()}>
               <Redo />
             </ControlButton>
           </Controls>
