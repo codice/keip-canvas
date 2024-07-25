@@ -10,9 +10,8 @@ import ReactFlow, {
 import {
   useAppActions,
   useFlowStore,
-  useAppStore,
   useGetLayout,
-  useTemporalStore
+  useUndoRedo,
 } from "../../singletons/store"
 import "reactflow/dist/base.css"
 import {
@@ -21,7 +20,7 @@ import {
   ArrowsVertical,
   Maximize,
   Undo,
-  Redo
+  Redo,
 } from "@carbon/icons-react"
 import { ErrorBoundary } from "@carbon/react"
 import { DropTargetMonitor, useDrop } from "react-dnd"
@@ -29,7 +28,13 @@ import { NativeTypes } from "react-dnd-html5-backend"
 import { EipId } from "../../api/id"
 import { DragTypes } from "../draggable-panel/dragTypes"
 import { EipNode } from "./EipNode"
-import { useEffect } from "react"
+import {
+  ChangeEvent,
+  ForwardRefExoticComponent,
+  useEffect,
+  useMemo,
+} from "react"
+import debounce from "../../utils/debounce"
 
 const FLOW_ERROR_MESSAGE =
   "Failed to load the canvas - the stored flow is malformed. Clearing the flow from the state store."
@@ -73,18 +78,12 @@ const nodeTypes = {
 }
 
 const FlowCanvas = () => {
-
-  // const store = useAppStore()
-
-  // const temporalStore = useAppStore.temporal.getState
-
-  const { undo, redo, futureStates, pastStates, clear} = useTemporalStore(
-    (state) => state
-  )
+  const { undo, redo } = useUndoRedo()
 
   const reactFlowInstance = useReactFlow()
   const flowStore = useFlowStore()
   const layout = useGetLayout()
+
   const {
     createDroppedNode,
     clearSelectedChildNode,
@@ -92,31 +91,23 @@ const FlowCanvas = () => {
     importFlowFromJson,
     updateLayoutOrientation,
     updateLayoutDensity,
+    // updateFlowCanvas
   } = useAppActions()
 
   useEffect(() => {
     reactFlowInstance.fitView()
-  }, [layout, reactFlowInstance])
+  }, [layout, reactFlowInstance, undo, redo])
 
-  // useEffect(() => {
-  //   reactFlowInstance.fitView()
-  // }, [temporalStore])
+  // const handleFlowCanvasUpdates = useMemo(
+  //   () =>
+  //     debounce(
+  //       (ev: <Idk what to put here to be able to access nodes/edges in the ReactFlow element>) =>
+  //         updateFlowCanvas(flowStore.nodes, flowStore.edges, layout, another issue where i cannot access the actual nodes/edges in a ev.target.ex),
+  //       1500
+  //     ),
+  //   [flowStore.nodes, flowStore.edges, layout]
+  // )
 
-  const newUndo = async () => {
-      undo()
-      reactFlowInstance.fitView()
-  }
-
-  const newRedo = async () => {
-    redo()
-    reactFlowInstance.fitView()
-}
-
-  // const newRedo = () => {
-  //   redo()
-  //   reactFlowInstance.fitView
-  // }
- 
   const [, drop] = useDrop(
     () => ({
       accept: [DragTypes.FLOWNODE, NativeTypes.FILE],
@@ -152,14 +143,6 @@ const FlowCanvas = () => {
 
   return (
     <div className="canvas" ref={drop}>
-       {/* <p>
-        <small>past states: {JSON.stringify(pastStates)}</small>
-      </p>
-      <p>
-        <small>future states: {JSON.stringify(futureStates)}</small>
-      </p>
-      <br />
-      current state: {JSON.stringify(store)} */}
       <ErrorBoundary
         fallback={
           <ErrorHandler message={FLOW_ERROR_MESSAGE} callback={clearFlow} />
@@ -173,6 +156,7 @@ const FlowCanvas = () => {
           onEdgesChange={flowStore.onEdgesChange}
           onConnect={flowStore.onConnect}
           onPaneClick={() => clearSelectedChildNode()}
+          // onChange={() => handleFlowCanvasUpdates}
           fitView
         >
           <Controls style={{ bottom: "50px" }}>
@@ -191,10 +175,10 @@ const FlowCanvas = () => {
             <ControlButton title="change density" onClick={updateLayoutDensity}>
               <Maximize />
             </ControlButton>
-            <ControlButton title="undo" onClick={() => newUndo()}>
+            <ControlButton title="undo" onClick={() => undo()}>
               <Undo />
             </ControlButton>
-            <ControlButton title="redo" onClick={() => newRedo()}>
+            <ControlButton title="redo" onClick={() => redo()}>
               <Redo />
             </ControlButton>
           </Controls>
@@ -208,9 +192,6 @@ const FlowCanvas = () => {
             <ControlButton title="clear" onClick={clearFlow}>
               <TrashCan />
             </ControlButton>
-            {/* <ControlButton title="clear data" onClick={() => clear()}>
-              <TrashCan />
-            </ControlButton> */}
           </Controls>
 
           {/* <MiniMap /> */}
