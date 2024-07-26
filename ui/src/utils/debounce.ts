@@ -1,12 +1,20 @@
 function debounce<C extends (...args: Parameters<C>) => ReturnType<C>>(
   callback: C,
-  wait: number
+  wait: 0,
+  callAtStart = false
 ) {
-  let timeoutId: ReturnType<typeof setTimeout>
+  let timeoutId: ReturnType<typeof setTimeout> | null
   return (...args: Parameters<C>) => {
-    clearTimeout(timeoutId)
-    timeoutId = setTimeout(() => {
+    if (callAtStart && !timeoutId) {
       callback(...args)
+   }
+    timeoutId && clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => {
+      if (callAtStart) {
+        timeoutId = null
+      } else {
+        callback(...args)
+      }
     }, wait)
   }
 }

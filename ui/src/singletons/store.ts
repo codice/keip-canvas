@@ -1,8 +1,8 @@
-import { create } from "zustand"
-import { temporal } from "zundo"
-import { createJSONStorage, persist } from "zustand/middleware"
-import { throttle } from "throttle-debounce"
 import isDeepEqual from "fast-deep-equal"
+ import { temporal } from "zundo"
+import { create } from "zustand"
+import { createJSONStorage, persist } from "zustand/middleware"
+import debounce from "../utils/debounce" 
 
 import { nanoid } from "nanoid/non-secure"
 import {
@@ -14,17 +14,18 @@ import {
   OnConnect,
   OnEdgesChange,
   OnNodesChange,
+  Position,
   XYPosition,
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
-  Position,
 } from "reactflow"
 import { useShallow } from "zustand/react/shallow"
 import { AttributeTypes } from "../api/eipSchema"
 import { EIP_NODE_KEY, EipFlowNode, Layout } from "../api/flow"
 import { ChildNodeId, EipId, areChildIdsEqual } from "../api/id"
 import { newFlowLayout } from "../components/layout/layouting"
+
 
 export const ROOT_PARENT = "root"
 
@@ -65,8 +66,6 @@ interface AppActions {
   clearSelectedChildNode: () => void
 
   clearFlow: () => void
-
-  // updateFlowCanvas: (nodes: EipFlowNode[], edges: Edge[], layout: Layout) => void
 
   clearDiagramSelections: () => void
 
@@ -244,26 +243,11 @@ const useAppStore = create<AppStore>()(
                 layout: newLayout,
               }
             }),
-
-          // updateFlowCanvas: (newNodes, newEdges, newLayout) =>
-          //   set((state) => {
-          //     return {
-          //       nodes: newNodes,
-          //       edges: newEdges,
-          //       layout: newLayout
-          //     }
-          //   }),
         },
       }),
       {
         limit: 50,
-
-        handleSet: (handleSet) =>
-          throttle<typeof handleSet>(1500, (state) => {
-            console.info("handleSet called")
-            handleSet(state)
-          }),
-
+        
         partialize: (state) => {
           const newNodes = state.nodes.map((node) => {
             const n = { ...node }
@@ -286,6 +270,9 @@ const useAppStore = create<AppStore>()(
 
         equality: (pastState, currentState) =>
           isDeepEqual(pastState, currentState),
+
+        handleSet: (handleSet) =>
+          debounce((state) => handleSet(state), 1000, true),
       }
     ),
     {
