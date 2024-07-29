@@ -5,7 +5,6 @@ import ReactFlow, {
   Controls,
   ReactFlowInstance,
   useReactFlow,
-  useKeyPress,
 } from "reactflow"
 
 import {
@@ -30,6 +29,7 @@ import { EipId } from "../../api/id"
 import { DragTypes } from "../draggable-panel/dragTypes"
 import { EipNode } from "./EipNode"
 import { useEffect } from "react"
+import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts"
 
 const FLOW_ERROR_MESSAGE =
   "Failed to load the canvas - the stored flow is malformed. Clearing the flow from the state store."
@@ -74,7 +74,6 @@ const nodeTypes = {
 
 const FlowCanvas = () => {
   const { undo, redo } = useUndoRedo()
-
   const reactFlowInstance = useReactFlow()
   const flowStore = useFlowStore()
   const layout = useGetLayout()
@@ -88,31 +87,11 @@ const FlowCanvas = () => {
     updateLayoutDensity,
   } = useAppActions()
 
-  const cntlZPressed = useKeyPress("Control+z")
-  const cntlShiftZPressed = useKeyPress("Control+Shift+Z")
-  const cntlYPressed = useKeyPress("Control+y")
-  const cmdZPressed = useKeyPress("Meta+z")
-  const cmdShiftZPressed = useKeyPress("Meta+Shift+Y")
-
-  useEffect(() => {
-    if (cntlZPressed || cmdZPressed) {
-      undo()
-    } else if (cntlYPressed || cntlShiftZPressed || cmdShiftZPressed) {
-      redo()
-    }
-  }, [
-    cntlZPressed,
-    cntlYPressed,
-    cntlShiftZPressed,
-    cmdZPressed,
-    cmdShiftZPressed,
-    redo,
-    undo,
-  ])
+  useKeyboardShortcuts()
 
   useEffect(() => {
     reactFlowInstance.fitView()
-  }, [layout, reactFlowInstance, undo, redo])
+  }, [layout, reactFlowInstance])
 
   const [, drop] = useDrop(
     () => ({
@@ -180,10 +159,10 @@ const FlowCanvas = () => {
             <ControlButton title="change density" onClick={updateLayoutDensity}>
               <Maximize />
             </ControlButton>
-            <ControlButton title="undo" onClick={() => undo}>
+            <ControlButton title="undo" onClick={() => undo()}>
               <Undo />
             </ControlButton>
-            <ControlButton title="redo" onClick={() => redo}>
+            <ControlButton title="redo" onClick={() => redo()}>
               <Redo />
             </ControlButton>
           </Controls>
