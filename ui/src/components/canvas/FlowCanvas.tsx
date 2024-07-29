@@ -90,17 +90,20 @@ const FlowCanvas = () => {
     updateLayoutDensity,
   } = useAppActions()  
 
-  const cntlZPressed = useKeyPress('Control+z');
-  const cntlShiftZPressed = useKeyPress('Control+Shift+Z');
-  const cntlYPressed = useKeyPress('Control+y');
+  const cntlZPressed = useKeyPress('Control+z')
+  const cntlShiftZPressed = useKeyPress('Control+Shift+Z')
+  const cntlYPressed = useKeyPress('Control+y')
+  const cmdZPressed = useKeyPress('Meta+z')
+  const cmdShiftZPressed = useKeyPress('Meta+Shift+Y')
 
   useEffect(() => {
-    if (cntlZPressed || cntlShiftZPressed) {
+    if (cntlZPressed || cmdZPressed) {
       undo()
-    } else if (cntlYPressed) {
+      
+    } else if (cntlYPressed || cntlShiftZPressed || cmdShiftZPressed) {
       redo()
     }
-  }, [cntlZPressed, cntlYPressed, cntlShiftZPressed]);
+  }, [cntlZPressed, cntlYPressed, cntlShiftZPressed, cmdZPressed, cmdShiftZPressed, redo, undo])
 
   useEffect(() => {
     reactFlowInstance.fitView()
@@ -140,7 +143,7 @@ const FlowCanvas = () => {
   // malformed flow import. Consider less destructive options.
 
   return (
-    <div className="canvas" ref={drop}>    
+    <div className="canvas" ref={drop}>
       <ErrorBoundary
         fallback={
           <ErrorHandler message={FLOW_ERROR_MESSAGE} callback={clearFlow} />
@@ -172,10 +175,10 @@ const FlowCanvas = () => {
             <ControlButton title="change density" onClick={updateLayoutDensity}>
               <Maximize />
             </ControlButton>
-            <ControlButton title="undo" onClick={() => undo()}>
+            <ControlButton title="undo" onClick={() => undo}>
               <Undo />
             </ControlButton>
-            <ControlButton title="redo" onClick={() => redo()}>
+            <ControlButton title="redo" onClick={() => redo}>
               <Redo />
             </ControlButton>
           </Controls>

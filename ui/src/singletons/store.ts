@@ -1,8 +1,8 @@
 import isDeepEqual from "fast-deep-equal"
- import { temporal } from "zundo"
+import { temporal } from "zundo"
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
-import debounce from "../utils/debounce" 
+import debounce from "../utils/debounce"
 
 import { nanoid } from "nanoid/non-secure"
 import {
@@ -25,7 +25,6 @@ import { AttributeTypes } from "../api/eipSchema"
 import { EIP_NODE_KEY, EipFlowNode, Layout } from "../api/flow"
 import { ChildNodeId, EipId, areChildIdsEqual } from "../api/id"
 import { newFlowLayout } from "../components/layout/layouting"
-
 
 export const ROOT_PARENT = "root"
 
@@ -87,7 +86,7 @@ interface AppStore {
 }
 
 // If app becomes too slow, might need to switch to async persistent storage.
-const useAppStore = create<AppStore>()(
+const useStore = create<AppStore>()(
   persist(
     temporal(
       (set) => ({
@@ -247,7 +246,7 @@ const useAppStore = create<AppStore>()(
       }),
       {
         limit: 50,
-        
+
         partialize: (state) => {
           const newNodes = state.nodes.map((node) => {
             const n = { ...node }
@@ -288,9 +287,9 @@ const useAppStore = create<AppStore>()(
 )
 
 export const useUndoRedo = () =>
-  useAppStore(() => ({
-    undo: useAppStore.temporal.getState().undo,
-    redo: useAppStore.temporal.getState().redo,
+  useStore(() => ({
+    undo: useStore.temporal.getState().undo,
+    redo: useStore.temporal.getState().redo,
   }))
 
 const newNode = (
@@ -337,14 +336,14 @@ const isStoreType = (state: unknown): state is AppStore => {
   )
 }
 
-export const useNodeCount = () => useAppStore((state) => state.nodes.length)
+export const useNodeCount = () => useStore((state) => state.nodes.length)
 
-export const useGetNodes = () => useAppStore((state) => state.nodes)
+export const useGetNodes = () => useStore((state) => state.nodes)
 
-export const useGetLayout = () => useAppStore((state) => state.layout)
+export const useGetLayout = () => useStore((state) => state.layout)
 
 export const useSerializedStore = () =>
-  useAppStore((state) =>
+  useStore((state) =>
     JSON.stringify({
       nodes: state.nodes,
       edges: state.edges,
@@ -353,14 +352,14 @@ export const useSerializedStore = () =>
   )
 
 export const useGetNodeDescription = (id: string) =>
-  useAppStore((state) => state.eipNodeConfigs[id]?.description)
+  useStore((state) => state.eipNodeConfigs[id]?.description)
 
 export const useGetEipAttribute = (
   id: string,
   parentId: string,
   attrName: string
 ) =>
-  useAppStore((state) => {
+  useStore((state) => {
     if (parentId === ROOT_PARENT) {
       return state.eipNodeConfigs[id]?.attributes[attrName]
     }
@@ -368,7 +367,7 @@ export const useGetEipAttribute = (
   })
 
 export const useGetChildren = (id: string) =>
-  useAppStore(
+  useStore(
     useShallow((state) =>
       state.eipNodeConfigs[id]
         ? Object.keys(state.eipNodeConfigs[id].children)
@@ -377,10 +376,10 @@ export const useGetChildren = (id: string) =>
   )
 
 export const useGetSelectedChildNode = () =>
-  useAppStore(useShallow((state) => state.selectedChildNode))
+  useStore(useShallow((state) => state.selectedChildNode))
 
 export const useIsChildSelected = (childId: ChildNodeId) =>
-  useAppStore((state) => {
+  useStore((state) => {
     if (state.selectedChildNode === null) {
       return false
     }
@@ -388,7 +387,7 @@ export const useIsChildSelected = (childId: ChildNodeId) =>
   })
 
 export const useFlowStore = () =>
-  useAppStore(
+  useStore(
     useShallow((state: AppStore) => ({
       nodes: state.nodes,
       edges: state.edges,
@@ -398,12 +397,12 @@ export const useFlowStore = () =>
     }))
   )
 
-export const useAppActions = () => useAppStore((state) => state.appActions)
+export const useAppActions = () => useStore((state) => state.appActions)
 
 // Warning: the following exports are not intended for use in React components
 export const getNodesView: () => Readonly<EipFlowNode[]> = () =>
-  useAppStore.getState().nodes
+  useStore.getState().nodes
 export const getEdgesView: () => Readonly<Edge[]> = () =>
-  useAppStore.getState().edges
+  useStore.getState().edges
 export const getLayout: () => Readonly<Layout> = () =>
-  useAppStore.getState().layout
+  useStore.getState().layout
