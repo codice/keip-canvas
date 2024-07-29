@@ -5,7 +5,7 @@ import ReactFlow, {
   Controls,
   ReactFlowInstance,
   useReactFlow,
-  useKeyPress
+  useKeyPress,
 } from "reactflow"
 
 import {
@@ -30,8 +30,6 @@ import { EipId } from "../../api/id"
 import { DragTypes } from "../draggable-panel/dragTypes"
 import { EipNode } from "./EipNode"
 import { useEffect } from "react"
-
-
 
 const FLOW_ERROR_MESSAGE =
   "Failed to load the canvas - the stored flow is malformed. Clearing the flow from the state store."
@@ -88,22 +86,29 @@ const FlowCanvas = () => {
     importFlowFromJson,
     updateLayoutOrientation,
     updateLayoutDensity,
-  } = useAppActions()  
+  } = useAppActions()
 
-  const cntlZPressed = useKeyPress('Control+z')
-  const cntlShiftZPressed = useKeyPress('Control+Shift+Z')
-  const cntlYPressed = useKeyPress('Control+y')
-  const cmdZPressed = useKeyPress('Meta+z')
-  const cmdShiftZPressed = useKeyPress('Meta+Shift+Y')
+  const cntlZPressed = useKeyPress("Control+z")
+  const cntlShiftZPressed = useKeyPress("Control+Shift+Z")
+  const cntlYPressed = useKeyPress("Control+y")
+  const cmdZPressed = useKeyPress("Meta+z")
+  const cmdShiftZPressed = useKeyPress("Meta+Shift+Y")
 
   useEffect(() => {
     if (cntlZPressed || cmdZPressed) {
       undo()
-      
     } else if (cntlYPressed || cntlShiftZPressed || cmdShiftZPressed) {
       redo()
     }
-  }, [cntlZPressed, cntlYPressed, cntlShiftZPressed, cmdZPressed, cmdShiftZPressed, redo, undo])
+  }, [
+    cntlZPressed,
+    cntlYPressed,
+    cntlShiftZPressed,
+    cmdZPressed,
+    cmdShiftZPressed,
+    redo,
+    undo,
+  ])
 
   useEffect(() => {
     reactFlowInstance.fitView()
