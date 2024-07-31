@@ -5,7 +5,6 @@ import { useUndoRedo } from '../singletons/store';
 export const useKeyboardShortcuts = () => {
  
     const { undo, redo } = useUndoRedo()
-    
     const undoKeyPressed = useKeyPress(['Control+z', 'Meta+z'])
     const redoKeyPressed = useKeyPress(['Control+Shift+Z', 'Meta+Shift+Z', 'Meta+y', 'Control+y'])
   
