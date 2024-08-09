@@ -28,8 +28,7 @@ import { NativeTypes } from "react-dnd-html5-backend"
 import { EipId } from "../../api/id"
 import { DragTypes } from "../draggable-panel/dragTypes"
 import { EipNode } from "./EipNode"
-import { useEffect } from "react"
-import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts"
+import { useEffect, KeyboardEvent } from "react"
 
 const FLOW_ERROR_MESSAGE =
   "Failed to load the canvas - the stored flow is malformed. Clearing the flow from the state store."
@@ -87,11 +86,27 @@ const FlowCanvas = () => {
     updateLayoutDensity,
   } = useAppActions()
 
-  useKeyboardShortcuts()
-
   useEffect(() => {
     reactFlowInstance.fitView()
   }, [layout, reactFlowInstance])
+
+  const onUndoRedoKeyDown = (event: KeyboardEvent) => {
+    if (
+      (event.ctrlKey && event.shiftKey && event.key === "z") ||
+      (event.metaKey && event.shiftKey && event.key === "z") ||
+      (event.metaKey && event.key === "y") ||
+      (event.ctrlKey && event.key === "y")
+    ) {
+      event.preventDefault()
+      redo()
+    } else if (
+      (event.ctrlKey && event.key === "z") ||
+      (event.metaKey && event.key === "z")
+    ) {
+      event.preventDefault()
+      undo()
+    }
+  }
 
   const [, drop] = useDrop(
     () => ({
@@ -137,6 +152,8 @@ const FlowCanvas = () => {
           nodes={flowStore.nodes}
           edges={flowStore.edges}
           nodeTypes={nodeTypes}
+          tabIndex={0}
+          onKeyDown={(e) => onUndoRedoKeyDown(e)}
           onNodesChange={flowStore.onNodesChange}
           onEdgesChange={flowStore.onEdgesChange}
           onConnect={flowStore.onConnect}

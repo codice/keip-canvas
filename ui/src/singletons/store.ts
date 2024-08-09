@@ -263,8 +263,9 @@ const useStore = create<AppStore>()(
           })
           const { edges } = state
           const { layout } = state
+          const { eipNodeConfigs } = state
 
-          return { layout, edges, nodes: newNodes }
+          return { eipNodeConfigs, layout, edges, nodes: newNodes }
         },
 
         equality: (pastState, currentState) =>
