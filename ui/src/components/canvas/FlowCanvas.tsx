@@ -71,11 +71,33 @@ const nodeTypes = {
   eipNode: EipNode,
 }
 
+const onUndoRedoKeyDown = (
+  event: KeyboardEvent,
+  undo: () => void,
+  redo: () => void
+) => {
+  if (
+    (event.ctrlKey && event.shiftKey && event.key === "Z") ||
+    (event.metaKey && event.shiftKey && event.key === "Z") ||
+    (event.metaKey && event.key === "y") ||
+    (event.ctrlKey && event.key === "y")
+  ) {
+    event.preventDefault()
+    redo()
+  } else if (
+    (event.ctrlKey && event.key === "z") ||
+    (event.metaKey && event.key === "z")
+  ) {
+    event.preventDefault()
+    undo()
+  }
+}
+
 const FlowCanvas = () => {
-  const { undo, redo } = useUndoRedo()
   const reactFlowInstance = useReactFlow()
   const flowStore = useFlowStore()
   const layout = useGetLayout()
+  const { undo, redo } = useUndoRedo()
 
   const {
     createDroppedNode,
@@ -89,24 +111,6 @@ const FlowCanvas = () => {
   useEffect(() => {
     reactFlowInstance.fitView()
   }, [layout, reactFlowInstance])
-
-  const onUndoRedoKeyDown = (event: KeyboardEvent) => {
-    if (
-      (event.ctrlKey && event.shiftKey && event.key === "z") ||
-      (event.metaKey && event.shiftKey && event.key === "z") ||
-      (event.metaKey && event.key === "y") ||
-      (event.ctrlKey && event.key === "y")
-    ) {
-      event.preventDefault()
-      redo()
-    } else if (
-      (event.ctrlKey && event.key === "z") ||
-      (event.metaKey && event.key === "z")
-    ) {
-      event.preventDefault()
-      undo()
-    }
-  }
 
   const [, drop] = useDrop(
     () => ({
@@ -153,7 +157,13 @@ const FlowCanvas = () => {
           edges={flowStore.edges}
           nodeTypes={nodeTypes}
           tabIndex={0}
-          onKeyDown={(e) => onUndoRedoKeyDown(e)}
+          onKeyDown={(e) =>
+            onUndoRedoKeyDown(
+              e,
+              () => undo(),
+              () => redo()
+            )
+          }
           onNodesChange={flowStore.onNodesChange}
           onEdgesChange={flowStore.onEdgesChange}
           onConnect={flowStore.onConnect}
