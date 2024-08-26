@@ -245,7 +245,7 @@ const useStore = create<AppStore>()(
         },
       }),
       {
-        limit: 50,
+        limit: 20,
 
         partialize: (state) => {
           const newNodes = state.nodes.map((node) => {
@@ -261,13 +261,12 @@ const useStore = create<AppStore>()(
             } = n
             return rest
           })
-
-          const { edges, layout } = state
-
-          return { layout, edges, nodes: newNodes }
+     
+          const { eipNodeConfigs, edges, layout} = state
+          return {eipNodeConfigs, layout, edges, nodes: newNodes}
         },
 
-        equality: (pastState, currentState) =>
+        equality: (pastState, currentState) =>  
           isDeepEqual(pastState, currentState),
 
         handleSet: (handleSet) =>
