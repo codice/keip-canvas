@@ -170,7 +170,14 @@ const FlowCanvas = () => {
           onPaneClick={() => clearSelectedChildNode()}
           fitView
         >
-          <Controls style={{ bottom: "50px" }}>
+          <Controls style={{ bottom: "235px" }} />
+
+          <Controls
+            style={{ bottom: "130px" }}
+            showFitView={false}
+            showInteractive={false}
+            showZoom={false}
+          >
             <ControlButton
               title="horizontal layout"
               onClick={() => updateLayoutOrientation("horizontal")}
@@ -186,6 +193,14 @@ const FlowCanvas = () => {
             <ControlButton title="change density" onClick={updateLayoutDensity}>
               <Maximize />
             </ControlButton>
+          </Controls>
+
+          <Controls
+            style={{ bottom: "50px" }}
+            showFitView={false}
+            showInteractive={false}
+            showZoom={false}
+          >
             <ControlButton title="undo" onClick={() => undo()}>
               <Undo />
             </ControlButton>

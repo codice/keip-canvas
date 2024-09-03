@@ -245,32 +245,25 @@ const useStore = create<AppStore>()(
         },
       }),
       {
-        limit: 20,
+        limit: 50,
 
         partialize: (state) => {
           const newNodes = state.nodes.map((node) => {
             const n = { ...node }
-            const {
-              width,
-              height,
-              selected,
-              draggable,
-              dragging,
-              positionAbsolute,
-              ...rest
-            } = n
+            const { selected, draggable, dragging, positionAbsolute, ...rest } =
+              n
             return rest
           })
-     
-          const { eipNodeConfigs, edges, layout} = state
-          return {eipNodeConfigs, layout, edges, nodes: newNodes}
+
+          const { eipNodeConfigs, edges, layout } = state
+          return { eipNodeConfigs, layout, edges, nodes: newNodes }
         },
 
-        equality: (pastState, currentState) =>  
+        equality: (pastState, currentState) =>
           isDeepEqual(pastState, currentState),
 
         handleSet: (handleSet) =>
-          debounce((state) => handleSet(state), 1000, true),
+          debounce<typeof handleSet>((state) => handleSet(state), 1000, true),
       }
     ),
     {
@@ -284,12 +277,6 @@ const useStore = create<AppStore>()(
     }
   )
 )
-
-export const useUndoRedo = () =>
-  useStore(() => ({
-    undo: useStore.temporal.getState().undo,
-    redo: useStore.temporal.getState().redo,
-  }))
 
 const newNode = (
   eipId: EipId,
@@ -395,6 +382,12 @@ export const useFlowStore = () =>
       onConnect: state.reactFlowActions.onConnect,
     }))
   )
+
+export const useUndoRedo = () =>
+  useStore(() => ({
+    undo: useStore.temporal.getState().undo,
+    redo: useStore.temporal.getState().redo,
+  }))
 
 export const useAppActions = () => useStore((state) => state.appActions)
 
