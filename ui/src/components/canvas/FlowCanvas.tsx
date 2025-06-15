@@ -67,7 +67,12 @@ const ErrorHandler = ({ message, callback }: ErrorHandlerProps) => {
 const acceptDroppedFile = (file: File, importFlow: (json: string) => void) => {
   const reader = new FileReader()
   reader.onload = (e) => {
-    e.target && importFlow(e.target.result as string)
+    try {
+      e.target && importFlow(e.target.result as string)
+    } catch (e) {
+      // TODO: Display an error pop-up on failed import
+      console.error((e as Error).message)
+    }
   }
   reader.readAsText(file)
 }

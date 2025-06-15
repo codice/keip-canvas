@@ -603,8 +603,7 @@ describe("import flow from an exported JSON file", () => {
       const flow = JSON.parse(validExportedFlow) as Record<string, object>
       delete flow[key]
 
-      act(() => importFlowFromJson(JSON.stringify(flow)))
-
+      expect(() => importFlowFromJson(JSON.stringify(flow))).toThrowError()
       expect(getNodesView()).toEqual(initialNodes)
       expect(getEdgesView()).toEqual(initialEdges)
     }

@@ -198,12 +198,10 @@ export const importFlowFromJson = (json: string) => {
   importFlowFromObject(flow)
 }
 
-// TODO: Should a failed import throw an error on failure instead (for an error pop-up)?
 export const importFlowFromObject = (flow: SerializedFlow) => {
   useAppStore.setState(() => {
     if (!isStoreType(flow)) {
-      console.error("Failed to import an EIP flow JSON. Malformed input")
-      return {}
+      throw new Error("Failed to import an EIP flow JSON. Malformed input")
     }
 
     // Maintain backwards compatibility with older exported formats
