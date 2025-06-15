@@ -48,6 +48,28 @@
   }
 }
 
+$options-modal-editor-height: 30vh;
+
+.options-modal__editor {
+  background-color: themes.$layer-02;
+  overflow-y: auto;
+  height: $options-modal-editor-height;
+
+  @include type.type-style("code-02");
+}
+
+.options-modal__editor > div {
+  min-height: $options-modal-editor-height;
+}
+
+.options-modal__editor:focus-within {
+  outline: 2px solid themes.$border-interactive;
+}
+
+.options-modal__editor-textarea:focus {
+  outline: none;
+}
+
 .canvas {
   width: 100%;
   height: 100%;
