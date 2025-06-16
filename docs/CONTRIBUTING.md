@@ -34,11 +34,13 @@ Enhancements or new features can also be proposed by opening an issue. Please de
    git checkout -b feature/your-feature-name
    ```
 1. Make your changes.
-1. Commit your changes, including a descriptive commit message:
+1. Commit your changes, including a descriptive commit message following the [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) style. Example:
 
    ```shell
-   git commit -m "Short description of the changes (Issue # if present)"
+   git commit -m "feat(ui): description of a new ui feature (Issue # if present)"
    ```
+
+   See the project's commit log for more examples.
 
 1. Push to your fork and submit a pull request:
 
@@ -46,5 +48,4 @@ Enhancements or new features can also be proposed by opening an issue. Please de
    git push origin feature/your-feature-name
    ```
 
-1. Ensure the pull request description clearly describes the problem and solution. Include the issue number if
-   applicable.
+1. Ensure the pull request description clearly describes the problem and solution. Include the issue number if applicable.
