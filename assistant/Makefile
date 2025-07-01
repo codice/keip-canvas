@@ -40,7 +40,7 @@ clean:
 
 
 clean-config:
-    @rm ../ui/.env.development.local
+	@rm ../ui/.env.development.local
 
 config-ollama:
 	@echo "Configuring for remote Ollama instance..."
