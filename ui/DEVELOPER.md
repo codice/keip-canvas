@@ -19,7 +19,7 @@ For local development, the following must be installed:
 Clone the repository:
 
 ```shell
-git clone https://github.com/OctoConsulting/keip-canvas.git && cd keip-canvas/ui
+git clone https://github.com/codice/keip-canvas.git && cd keip-canvas/ui
 ```
 
 Install dependencies:

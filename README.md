@@ -1,7 +1,7 @@
 # Keip Canvas
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![GitHub Pages Pipeline](https://github.com/OctoConsulting/keip-canvas/actions/workflows/deploy-canvas-webapp.yaml/badge.svg)](https://github.com/OctoConsulting/keip-canvas/actions/workflows/deploy-canvas-webapp.yaml)
+[![GitHub Pages Pipeline](https://github.com/codice/keip-canvas/actions/workflows/deploy-canvas-webapp.yaml/badge.svg)](https://github.com/codice/keip-canvas/actions/workflows/deploy-canvas-webapp.yaml)
 
 Intuitive drag and drop UI for creating deployable integration flow diagrams.
 
@@ -17,13 +17,13 @@ understandability of a diagram. Consequently, Keip Canvas is designed to let you
 
 - Rapidly create data flows with
   full [Enterprise Integration Patterns](https://www.enterpriseintegrationpatterns.com/patterns/messaging/) support
-- Easily deploy diagrams to a Kubernetes cluster powered by [keip](https://github.com/OctoConsulting/keip)
+- Easily deploy diagrams to a Kubernetes cluster powered by [keip](https://github.com/codice/keip)
 - Focus on a flow's business logic rather than XML boilerplate
 - Share and collaborate on visual models rather than verbose XML
 
 ## Usage
 
-Keip Canvas is hosted at https://octoconsulting.github.io/keip-canvas/
+Keip Canvas is hosted at https://codice.org/keip-canvas/
 
 ## Development
 

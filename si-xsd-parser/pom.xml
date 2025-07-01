@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.octo.keip</groupId>
+    <groupId>org.codice.keip</groupId>
     <artifactId>si-xsd-parser</artifactId>
     <version>0.1.0</version>
 
@@ -81,7 +81,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.octo.keip.schemas</groupId>
+            <groupId>org.codice.keip.schemas</groupId>
             <artifactId>validation</artifactId>
             <version>0.1.0</version>
             <scope>test</scope>
@@ -109,7 +109,7 @@
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.octo.keip.schema.XsdParserApplication</mainClass>
+                                    <mainClass>org.codice.keip.schema.XsdParserApplication</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

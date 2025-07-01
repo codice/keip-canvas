@@ -1,9 +1,9 @@
-package com.octo.keip.schemas.validation
+package org.codice.keip.schemas.validation
 
 import com.networknt.schema.AbsoluteIri
 import spock.lang.Specification
 
-import static com.octo.keip.schemas.validation.EipSchemaValidator.SCHEMAS_PREFIX
+import static org.codice.keip.schemas.validation.EipSchemaValidator.SCHEMAS_PREFIX
 
 class VersionlessSchemaMapperTest extends Specification {
 

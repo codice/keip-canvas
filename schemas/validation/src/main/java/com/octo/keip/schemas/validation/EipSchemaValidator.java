@@ -1,4 +1,4 @@
-package com.octo.keip.schemas.validation;
+package org.codice.keip.schemas.validation;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,7 +30,7 @@ public final class EipSchemaValidator {
           .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
           .build();
   private final JsonSchema eipSchema;
-  static final String SCHEMAS_PREFIX = "https://github.com/OctoConsulting/keip-canvas/schemas/";
+  static final String SCHEMAS_PREFIX = "https://github.com/codice/keip-canvas/schemas/";
 
   private EipSchemaValidator(String schemaPath) {
     JsonSchemaFactory jsonSchemaFactory =

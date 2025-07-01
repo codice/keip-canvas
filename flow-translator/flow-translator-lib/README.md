@@ -19,7 +19,7 @@ To use, add as a dependency in `pom.xml`:
 ```xml
 
 <dependency>
-    <groupId>com.octo.keip</groupId>
+    <groupId>org.codice.keip</groupId>
     <artifactId>flow-translator-lib</artifactId>
     <version>0.1.0</version>
 </dependency>
@@ -28,10 +28,10 @@ To use, add as a dependency in `pom.xml`:
 ## Usage
 
 ```java
-import com.octo.keip.flow.FlowTranslator;
-import com.octo.keip.flow.error.TransformationError;
-import com.octo.keip.flow.xml.GraphTransformer;
-import com.octo.keip.flow.xml.spring.IntegrationGraphTransformer;
+import org.codice.keip.flow.FlowTranslator;
+import org.codice.keip.flow.error.TransformationError;
+import org.codice.keip.flow.xml.GraphTransformer;
+import org.codice.keip.flow.xml.spring.IntegrationGraphTransformer;
 
 // Specify a translation target by initializing a GraphTransformer implementation
 // e.g. for Spring Integration XML:

@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>com.octo.keip</groupId>
+    <groupId>org.codice.keip</groupId>
     <artifactId>flow-translator-webapp</artifactId>
     <version>0.1.0</version>
 
@@ -18,9 +18,9 @@
     <properties>
         <java.version>21</java.version>
 
-        <docker.registry>ghcr.io/octoconsulting</docker.registry>
+        <docker.registry>ghcr.io/codice</docker.registry>
         <image-name>keip-canvas/${project.artifactId}</image-name>
-        <container.source.label>https://github.com/OctoConsulting/keip-canvas</container.source.label>
+        <container.source.label>https://github.com/codice/keip-canvas</container.source.label>
 
         <!-- skip deploying jar -->
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -41,7 +41,7 @@
             <version>2.6.0</version>
         </dependency>
         <dependency>
-            <groupId>com.octo.keip</groupId>
+            <groupId>org.codice.keip</groupId>
             <artifactId>flow-translator-lib</artifactId>
             <version>0.1.0</version>
         </dependency>

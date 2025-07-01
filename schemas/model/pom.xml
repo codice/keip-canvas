@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.octo.keip.schemas</groupId>
+        <groupId>org.codice.keip.schemas</groupId>
         <artifactId>schema-parent</artifactId>
         <version>0.1.0</version>
     </parent>

@@ -20,7 +20,7 @@ java -jar ./target/flow-translator-webapp-0.1.0.jar
 Or in a Docker container:
 
 ```shell
-docker run --name flow-translator -p 8080:8080 ghcr.io/octoconsulting/keip-canvas/flow-translator-webapp
+docker run --name flow-translator -p 8080:8080 ghcr.io/codice/keip-canvas/flow-translator-webapp
 ```
 
 ## API Documentation

@@ -19,7 +19,7 @@ const GENERATED_SOURCE_DIR = path.resolve("src", "api", "generated")
 
 const buildUrl = (schemaFileName) =>
   new URL(
-    `OctoConsulting/keip-canvas/${COMMIT_HASH}/schemas/model/json/${schemaFileName}`,
+    `codice/keip-canvas/${COMMIT_HASH}/schemas/model/json/${schemaFileName}`,
     SCHEMAS_BASE_URL
   ).toString()
 
@@ -30,8 +30,12 @@ const generateSources = async (schemaFileName) => {
     additionalProperties: false,
   })
 
-  const outputFile = `${schemaFileName.split(".")[0]}.ts`
-  await writeFile(path.join(GENERATED_SOURCE_DIR, outputFile), generatedCode)
+  const outputFileName = `${schemaFileName.split(".")[0]}.ts`
+  const outputPath = path.join(GENERATED_SOURCE_DIR, outputFileName)
+  
+  console.log(`generating ${outputPath}`)
+  
+  await writeFile(outputPath, generatedCode)
 }
 
 fs.mkdirSync(GENERATED_SOURCE_DIR, { recursive: true })

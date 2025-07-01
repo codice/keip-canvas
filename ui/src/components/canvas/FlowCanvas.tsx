@@ -71,7 +71,7 @@ const acceptDroppedFile = (file: File, importFlow: (json: string) => void) => {
       e.target && importFlow(e.target.result as string)
     } catch (e) {
       // TODO: Display an error pop-up on failed import
-      // https://github.com/OctoConsulting/keip-canvas/issues/7
+      // https://github.com/codice/keip-canvas/issues/7
       console.error((e as Error).message)
     }
   }

@@ -9,14 +9,14 @@ The Keip Canvas UI provides experimental support for generative AI models to aid
 The `keip-assistant:32b` model is designed to help users create and modify flow diagrams through natural language interactions.
 
 ### Prerequisites
-- [Ollama](https://github.com/ollama/ollama) installed on your system
+- [Ollama](https://github.com/ollama/ollama) installed on your system (`v0.9+`)
 - The Modelfile and Makefile from this repository
 
 ### Install Ollama
 Install [Ollama](https://github.com/ollama/ollama?tab=readme-ov-file#ollama) following the instructions for your platform.
 - To allow the Canvas UI to access the local Ollama server, add the following web origin:
   ```shell
-  OLLAMA_ORIGINS="https://octoconsulting.github.io"
+  OLLAMA_ORIGINS="https://codice.org"
   ```
   [See here](https://github.com/ollama/ollama/blob/main/docs/faq.md#how-do-i-configure-ollama-server) for
   details on configuring the Ollama server.
@@ -42,7 +42,7 @@ make status
 ```
 
 ### Navigate to Keip Canvas
-In a web browser, navigate to the [Canvas](https://octoconsulting.github.io/keip-canvas/).
+In a web browser, navigate to the [Canvas](https://codice.org/keip-canvas/).
 The `KeipAssistant` button should be enabled in the bottom toolbar. Click it to open a chat panel.
 
 ### Example Prompts

@@ -1,4 +1,4 @@
-package com.octo.keip.schemas.validation
+package org.codice.keip.schemas.validation
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import spock.lang.Specification

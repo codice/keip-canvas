@@ -15,7 +15,7 @@ The version of the schemas are stored as part of each schema's URI set with the 
 ```
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/OctoConsulting/keip-canvas/schemas/v0.1.0/eipFlow.schema.json",
+  "$id": "https://github.com/codice/keip-canvas/schemas/v0.1.0/eipFlow.schema.json",
   "title": "EipFlow",
   .
   .
@@ -32,7 +32,7 @@ For JVM-based services, a Maven dependency is provided to streamline validating 
 
 ```xml
 <dependency>
-    <groupId>com.octo.keip.schemas</groupId>
+    <groupId>org.codice.keip.schemas</groupId>
     <artifactId>validation</artifactId>
     <version>0.1.0</version>
 </dependency>
@@ -41,8 +41,8 @@ For JVM-based services, a Maven dependency is provided to streamline validating 
 The `EipSchemaValidator` can then be used:
 
 ```java
-import com.octo.keip.schemas.validation.EipSchema;
-import com.octo.keip.schemas.validation.EipSchemaValidator;
+import org.codice.keip.schemas.validation.EipSchema;
+import org.codice.keip.schemas.validation.EipSchemaValidator;
         
 EipSchemaValidator validator = EipSchemaValidator.getInstance(EipSchema.FLOW);
 

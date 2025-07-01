@@ -4,7 +4,7 @@ A tool for parsing Spring Integration XSDs into
 an [Enterprise Integration Patterns (EIP)](https://www.enterpriseintegrationpatterns.com/patterns/messaging/) JSON
 model. It is mainly used to
 integrate Spring's library of integration components into
-the [Keip Canvas UI](https://github.com/OctoConsulting/keip-canvas).
+the [Keip Canvas UI](https://github.com/codice/keip-canvas).
 
 ## Getting Started
 

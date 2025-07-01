@@ -10,7 +10,7 @@ pull request.
 
 ### Reporting Bugs
 
-If you find a bug, please report it by opening a [GitHub Issue](https://github.com/OctoConsulting/keip-canvas/issues).
+If you find a bug, please report it by opening a [GitHub Issue](https://github.com/codice/keip-canvas/issues).
 When you do so, please include:
 
 - A clear and descriptive title.
