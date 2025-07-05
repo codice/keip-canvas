@@ -6,6 +6,7 @@
   "type": "string",
   "enum": [
     "content_based_router",
+    "inbound_request_reply",
     "passthru",
     "request_reply",
     "sink",
