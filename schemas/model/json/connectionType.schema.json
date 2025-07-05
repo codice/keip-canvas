@@ -1,11 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/codice/keip-canvas/schemas/v0.1.0/connectionType.schema.json",
+  "$id": "https://github.com/codice/keip-canvas/schemas/v0.2.0/connectionType.schema.json",
   "title": "ConnectionType",
   "description": "Defines a connection pattern for an EIP component",
   "type": "string",
   "enum": [
     "content_based_router",
+    "inbound_request_reply",
     "passthru",
     "request_reply",
     "sink",

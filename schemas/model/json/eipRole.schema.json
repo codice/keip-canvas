@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/codice/keip-canvas/schemas/v0.1.0/eipRole.schema.json",
+  "$id": "https://github.com/codice/keip-canvas/schemas/v0.2.0/eipRole.schema.json",
   "title": "EipRole",
   "description": "Describes the expected general behavior of an EIP component",
   "type": "string",
