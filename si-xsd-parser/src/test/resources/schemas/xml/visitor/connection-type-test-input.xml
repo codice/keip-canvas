@@ -13,6 +13,20 @@
 
     <xsd:element name="outboundGateway" type="xsd:string"/>
 
+    <xsd:element name="outbound-gateway-with-attrs" type="xsd:string">
+        <xsd:complexType>
+            <xsd:attribute name="request-channel" type="xsd:string"/>
+            <xsd:attribute name="reply-channel" type="xsd:string"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="test-inbound-gateway" type="xsd:string">
+        <xsd:complexType>
+            <xsd:attribute name="request-channel" type="xsd:string"/>
+            <xsd:attribute name="reply-channel" type="xsd:string"/>
+        </xsd:complexType>
+    </xsd:element>
+
     <xsd:element name="tee-type-element">
         <xsd:complexType>
             <xsd:attribute name="input-channel" type="xsd:string"/>
