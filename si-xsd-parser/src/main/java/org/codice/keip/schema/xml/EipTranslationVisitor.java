@@ -269,7 +269,9 @@ public class EipTranslationVisitor implements XmlSchemaVisitor {
     Set<String> attrNames =
         eipComponent.getAttributes().stream().map(Attribute::name).collect(Collectors.toSet());
 
-    if (attrNames.contains("request-channel") && attrNames.contains("reply-channel")) {
+    if (elementName.contains("inbound-gateway")) {
+      return ConnectionType.INBOUND_REQUEST_REPLY;
+    } else if (attrNames.contains("request-channel") && attrNames.contains("reply-channel")) {
       return ConnectionType.REQUEST_REPLY;
     } else if (attrNames.contains("input-channel")
         && attrNames.contains("output-channel")

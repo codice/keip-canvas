@@ -204,18 +204,20 @@ class EipTranslationVisitorTest extends Specification {
         eipComponent.getConnectionType() == expectedType
 
         where:
-        elementName              | expectedType
-        "requestReplyElement"    | ConnectionType.REQUEST_REPLY
-        "outboundGateway"        | ConnectionType.REQUEST_REPLY
-        "tee-type-element"       | ConnectionType.TEE
-        "validating-Filter"      | ConnectionType.TEE
-        "example-Router"         | ConnectionType.CONTENT_BASED_ROUTER
-        "InboundElement"         | ConnectionType.SOURCE
-        "source"                 | ConnectionType.SOURCE
-        "example-message-driven" | ConnectionType.SOURCE
-        "example-Outbound"       | ConnectionType.SINK
-        "sink"                   | ConnectionType.SINK
-        "handler"                | ConnectionType.PASSTHRU
+        elementName                   | expectedType
+        "requestReplyElement"         | ConnectionType.REQUEST_REPLY
+        "outboundGateway"             | ConnectionType.REQUEST_REPLY
+        "outbound-gateway-with-attrs" | ConnectionType.REQUEST_REPLY
+        "test-inbound-gateway"        | ConnectionType.INBOUND_REQUEST_REPLY
+        "tee-type-element"            | ConnectionType.TEE
+        "validating-Filter"           | ConnectionType.TEE
+        "example-Router"              | ConnectionType.CONTENT_BASED_ROUTER
+        "InboundElement"              | ConnectionType.SOURCE
+        "source"                      | ConnectionType.SOURCE
+        "example-message-driven"      | ConnectionType.SOURCE
+        "example-Outbound"            | ConnectionType.SINK
+        "sink"                        | ConnectionType.SINK
+        "handler"                     | ConnectionType.PASSTHRU
     }
 
     def "Eip Component check role is set correctly"(String elementName, Role expectedRole) {
