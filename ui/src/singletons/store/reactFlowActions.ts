@@ -7,7 +7,12 @@ import {
   NodeChange,
   NodeRemoveChange,
 } from "@xyflow/react"
-import { CustomEdge, CustomNode, DYNAMIC_EDGE_TYPE } from "../../api/flow"
+import {
+  CustomEdge,
+  CustomNode,
+  CustomNodeType,
+  DYNAMIC_EDGE_TYPE,
+} from "../../api/flow"
 import { EipComponent } from "../../api/generated/eipComponentDef"
 import {
   CHANNEL_ATTR_NAME,
@@ -20,11 +25,23 @@ import { childrenDepthTraversal, getEipId } from "./storeViews"
 
 export const onNodesChange = (changes: NodeChange<CustomNode>[]) =>
   useAppStore.setState((state) => {
+    const removals: NodeRemoveChange[] = changes.filter(
+      (c) => c.type === "remove"
+    )
+
+    const followerRemovals = resolveFollowerRemovals(state.nodes, removals)
+
+    const allChanges = [...changes, ...followerRemovals]
+
     const updates: Partial<AppStore> = {
-      nodes: applyNodeChanges(changes, state.nodes),
+      nodes: applyNodeChanges(allChanges, state.nodes),
     }
 
-    const updatedEipConfigs = removeDeletedNodeConfigs(state, changes)
+    const updatedEipConfigs = removeDeletedNodeConfigs(state, [
+      ...removals,
+      ...followerRemovals,
+    ])
+
     if (updatedEipConfigs) {
       updates.eipConfigs = updatedEipConfigs
     }
@@ -51,15 +68,64 @@ export const onConnect = (connection: Connection) =>
     }
   })
 
-const removeDeletedNodeConfigs = (state: AppStore, changes: NodeChange[]) => {
-  const deletes: NodeRemoveChange[] = changes.filter((c) => c.type === "remove")
+/*
+Assumption 1: Deleting a leader node deletes its follower
+Assumption 2: Deleting a follower node deletes its leader
 
-  if (deletes.length === 0) {
+Returns a list of additional NodeRemoveChanges that need to be applied
+*/
+const resolveFollowerRemovals = (
+  nodes: CustomNode[],
+  changes: NodeRemoveChange[]
+) => {
+  const nodeLookup = createNodeLookupMap(nodes)
+  const newRemovalIds = new Set<string>()
+
+  changes.forEach((change) => {
+    const node = nodeLookup.get(change.id)
+    if (!node) {
+      throw new Error(
+        `attempting to delete a non-existent node (id: ${change.id})`
+      )
+    }
+
+    switch (node.type) {
+      case CustomNodeType.EipNode: {
+        node.data.followerId && newRemovalIds.add(node.data.followerId)
+        break
+      }
+      case CustomNodeType.FollowerNode: {
+        node.data.leaderId && newRemovalIds.add(node.data.leaderId)
+        break
+      }
+    }
+  })
+
+  return [...newRemovalIds].map(
+    (id) =>
+      ({
+        type: "remove",
+        id,
+      }) as NodeRemoveChange
+  )
+}
+
+const createNodeLookupMap = (nodes: CustomNode[]) => {
+  const map = new Map<string, CustomNode>()
+  nodes.forEach((node) => map.set(node.id, node))
+  return map
+}
+
+const removeDeletedNodeConfigs = (
+  state: AppStore,
+  removals: NodeRemoveChange[]
+) => {
+  if (removals.length === 0) {
     return null
   }
 
   const updatedConfigs = { ...state.eipConfigs }
-  deletes.forEach((c) => removeNestedConfigs(c.id, updatedConfigs))
+  removals.forEach((c) => removeNestedConfigs(c.id, updatedConfigs))
   return updatedConfigs
 }
 

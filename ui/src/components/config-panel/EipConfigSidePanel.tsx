@@ -6,6 +6,8 @@ import {
   CustomNode,
   DynamicEdge,
   isDynamicEdge,
+  isEipNode,
+  isFollowerNode,
 } from "../../api/flow"
 import { Attribute } from "../../api/generated/eipComponentDef"
 import { EipId } from "../../api/generated/eipFlow"
@@ -18,7 +20,11 @@ import { clearSelectedChildNode } from "../../singletons/store/appActions"
 import { useGetSelectedChildNode } from "../../singletons/store/getterHooks"
 import { getEipId } from "../../singletons/store/storeViews"
 import DynamicEdgeConfig from "./DynamicEdgeConfig"
-import { ChildNodeConfig, RootNodeConfig } from "./NodeConfigPanel"
+import {
+  ChildNodeConfig,
+  FollowerNodePanel,
+  RootNodeConfig,
+} from "./NodeConfigPanel"
 import { findChildDefinition } from "./childDefinitions"
 
 const isDynamicRouterAttribute = (attribute: Attribute, eipId?: EipId) => {
@@ -76,7 +82,7 @@ const EipConfigSidePanel = () => {
         attributes={configurableAttrs}
       />
     )
-  } else if (selectedNode) {
+  } else if (selectedNode && isEipNode(selectedNode)) {
     // TODO: Handle error case if eipComponent is undefined
     const selectedNodeEipId = selectedNode && getEipId(selectedNode.id)
     const eipComponent =
@@ -92,6 +98,8 @@ const EipConfigSidePanel = () => {
         attributes={configurableAttrs}
       />
     )
+  } else if (selectedNode && isFollowerNode(selectedNode)) {
+    sidePanelContent = <FollowerNodePanel node={selectedNode} />
   } else if (selectedEdge) {
     sidePanelContent = (
       <DynamicEdgeConfig key={selectedEdge.id} edge={selectedEdge} />

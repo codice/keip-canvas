@@ -1,0 +1,71 @@
+{
+  "nodes": [
+    {
+      "id": "_k0Z45PtEc",
+      "type": "eipNode",
+      "position": { "x": 0, "y": 0 },
+      "data": { "followerId": "hF-dVMmHqZ", "label": "testIn" },
+      "measured": { "width": 109, "height": 116 },
+      "selected": false,
+      "dragging": false,
+      "targetPosition": "left",
+      "sourcePosition": "right"
+    },
+    {
+      "id": "hF-dVMmHqZ",
+      "type": "followerNode",
+      "position": { "x": 358, "y": 12 },
+      "data": { "leaderId": "_k0Z45PtEc" },
+      "measured": { "width": 114, "height": 92 },
+      "selected": false,
+      "dragging": false,
+      "targetPosition": "left",
+      "sourcePosition": "right"
+    },
+    {
+      "id": "QvmTf6Jm4O",
+      "type": "eipNode",
+      "position": { "x": 184, "y": 13 },
+      "data": {},
+      "measured": { "width": 99, "height": 90 },
+      "selected": false,
+      "dragging": false,
+      "targetPosition": "left",
+      "sourcePosition": "right"
+    }
+  ],
+  "edges": [
+    {
+      "source": "_k0Z45PtEc",
+      "sourceHandle": "output",
+      "target": "QvmTf6Jm4O",
+      "targetHandle": "input",
+      "id": "xy-edge___k0Z45PtEcoutput-QvmTf6Jm4Oinput"
+    },
+    {
+      "source": "QvmTf6Jm4O",
+      "sourceHandle": "output",
+      "target": "hF-dVMmHqZ",
+      "targetHandle": "input",
+      "id": "xy-edge__QvmTf6Jm4Ooutput-hF-dVMmHqZinput"
+    }
+  ],
+  "eipConfigs": {
+    "_k0Z45PtEc": {
+      "attributes": {},
+      "children": [],
+      "eipId": { "namespace": "http", "name": "inbound-gateway" }
+    },
+    "hF-dVMmHqZ": {
+      "attributes": {},
+      "children": [],
+      "eipId": { "namespace": "integration", "name": "channel" }
+    },
+    "QvmTf6Jm4O": {
+      "attributes": {},
+      "children": [],
+      "eipId": { "namespace": "integration", "name": "transformer" }
+    }
+  },
+  "version": "1.0"
+}

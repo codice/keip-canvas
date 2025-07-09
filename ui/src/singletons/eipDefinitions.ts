@@ -10,6 +10,9 @@ import eipDefintion from "../json/springIntegrationEipComponents.json"
 export const EIP_SCHEMA: Readonly<EipComponentDefinition> =
   eipDefintion as EipComponentDefinition
 
+export const eipIdToString = (eipId: EipId) =>
+  `${eipId.namespace}.${eipId.name}`
+
 const getFlatMap = (schema: EipComponentDefinition) => {
   const map = new Map<string, EipComponent>()
   for (const [namespace, componentList] of Object.entries(schema)) {
@@ -21,7 +24,7 @@ const getFlatMap = (schema: EipComponentDefinition) => {
 const componentFlatMap = getFlatMap(EIP_SCHEMA)
 
 export const lookupEipComponent = (eipId: EipId) => {
-  const component = componentFlatMap.get(`${eipId.namespace}.${eipId.name}`)
+  const component = componentFlatMap.get(eipIdToString(eipId))
   if (component === undefined) {
     console.warn(`Did not find component with id: ${JSON.stringify(eipId)}`)
   }
@@ -63,9 +66,7 @@ const contentBasedRouterTargets: ReadonlyMap<string, RouterTarget> = new Map([
 export const lookupContentBasedRouterKeys = (
   eipId: EipId
 ): RouterKeyDef | null => {
-  const target = contentBasedRouterTargets.get(
-    `${eipId.namespace}.${eipId.name}`
-  )
+  const target = contentBasedRouterTargets.get(eipIdToString(eipId))
   if (!target) {
     return null
   }

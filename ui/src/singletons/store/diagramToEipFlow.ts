@@ -1,10 +1,13 @@
 import isDeepEqual from "fast-deep-equal"
 import { useStoreWithEqualityFn } from "zustand/traditional"
 import {
+  CustomEdge,
   CustomNode,
+  CustomNodeType,
   DynamicEdge,
-  EipNodeData,
+  EipFlowNode,
   isDynamicEdge,
+  isFollowerNode,
   RouterKey,
 } from "../../api/flow"
 import {
@@ -21,6 +24,7 @@ import {
   lookupContentBasedRouterKeys,
   lookupEipComponent,
 } from "../eipDefinitions"
+import { describeFollower, describeFollowerFromId } from "../followerNodeDefs"
 import { AppStore, EipConfig } from "./api"
 import { useAppStore } from "./appStore"
 import { childrenBreadthTraversal, getEipId } from "./storeViews"
@@ -45,9 +49,11 @@ const diagramToEipFlow = (state: AppStore): EipFlow => {
   const routerChildMap = new Map<string, EipChildNode[]>()
   const routerAttrMap = new Map<string, Attributes>()
 
-  const edges: FlowEdge[] = state.edges.map((edge) => {
-    const source = nodeLookup.get(edge.source)?.label || edge.source
-    const target = nodeLookup.get(edge.target)?.label || edge.target
+  const allEdges = addHiddenFollowerEdges(state.nodes, state.edges)
+
+  const edges: FlowEdge[] = allEdges.map((edge) => {
+    const source = getNodeId(edge.source, nodeLookup)
+    const target = getNodeId(edge.target, nodeLookup)
     const edgeId = `ch-${source}-${target}`
 
     if (isDynamicEdge(edge)) {
@@ -74,7 +80,7 @@ const diagramToEipFlow = (state: AppStore): EipFlow => {
         : {}
 
     return {
-      id: node.data.label ? node.data.label : node.id,
+      id: getNodeId(node.id, nodeLookup),
       eipId: {
         ...eipId,
         namespace: EIP_NAMESPACE_TO_XML_PREFIX[namespace] ?? namespace,
@@ -95,6 +101,49 @@ const diagramToEipFlow = (state: AppStore): EipFlow => {
   })
 
   return { nodes, edges }
+}
+
+const getNodeId = (nodeId: string, nodeLookup: Map<string, CustomNode>) => {
+  const node = nodeLookup.get(nodeId)
+  if (!node) {
+    console.error(`Could not find node with id: ${nodeId}`)
+    return nodeId
+  }
+
+  switch (node.type) {
+    case CustomNodeType.EipNode: {
+      return node.data.label ? node.data.label : node.id
+    }
+    case CustomNodeType.FollowerNode: {
+      const leaderEipId = getEipId(node.data.leaderId)
+      const descriptor = leaderEipId && describeFollower(leaderEipId)
+      if (!descriptor) {
+        return node.id
+      }
+      const leaderNode = nodeLookup.get(node.data.leaderId) as EipFlowNode
+      return descriptor.generateLabel(
+        leaderNode?.data.label ?? node.data.leaderId
+      )
+    }
+  }
+}
+
+const addHiddenFollowerEdges = (nodes: CustomNode[], edges: CustomEdge[]) => {
+  const combinedEdges = [...edges]
+  nodes.forEach((node) => {
+    if (isFollowerNode(node)) {
+      const followerDesc = describeFollowerFromId(node.data.leaderId)
+      if (followerDesc?.hiddenEdges) {
+        const edges = followerDesc.hiddenEdges(
+          node.data.leaderId,
+          node.id
+        ) as CustomEdge[]
+        combinedEdges.push(...edges)
+      }
+    }
+  })
+
+  return combinedEdges
 }
 
 const buildChildTree = (
@@ -124,8 +173,8 @@ const childConfigToNode = (config: EipConfig): EipChildNode => ({
 })
 
 const createNodeLookupMap = (nodes: CustomNode[]) => {
-  const map = new Map<string, EipNodeData>()
-  nodes.forEach((node) => map.set(node.id, node.data))
+  const map = new Map<string, CustomNode>()
+  nodes.forEach((node) => map.set(node.id, node))
   return map
 }
 

@@ -7,17 +7,37 @@ export interface Layout {
   density: "compact" | "comfortable"
 }
 
-export const EIP_NODE_TYPE = "eipNode"
+export enum CustomNodeType {
+  EipNode = "eipNode",
+  FollowerNode = "followerNode",
+}
 
 // react flow requires using a type rather than an interface for NodeData
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type EipNodeData = {
   label?: string
+
+  // The id of a follower that is linked to this one (i.e. has the same lifecycle)
+  followerId?: string
 }
 
-export type EipFlowNode = Node<EipNodeData, typeof EIP_NODE_TYPE>
+export type EipFlowNode = Node<EipNodeData, CustomNodeType.EipNode>
 
-export type CustomNode = EipFlowNode
+export const isEipNode = (node?: Node): node is EipFlowNode =>
+  node?.type === CustomNodeType.EipNode
+
+// react flow requires using a type rather than an interface for NodeData
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type FollowerNodeData = {
+  leaderId: string
+}
+
+export type FollowerNode = Node<FollowerNodeData, CustomNodeType.FollowerNode>
+
+export const isFollowerNode = (node?: Node): node is FollowerNode =>
+  node?.type === CustomNodeType.FollowerNode
+
+export type CustomNode = EipFlowNode | FollowerNode
 
 export interface ChannelMapping {
   mapperName: string

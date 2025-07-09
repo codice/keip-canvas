@@ -4,8 +4,11 @@ import isDeepEqual from "fast-deep-equal"
 import { beforeEach, describe, expect, test, vi } from "vitest"
 import {
   ChannelMapping,
+  CustomNodeType,
   DynamicEdgeData,
-  EIP_NODE_TYPE,
+  EipFlowNode,
+  FollowerNode,
+  isEipNode,
   Layout,
   RouterKey,
 } from "../../api/flow"
@@ -21,7 +24,6 @@ import nestedChildFlow from "./testdata/store-initializers/nestedChildFlow.json"
 import selectedNodeFlow from "./testdata/store-initializers/singleSelectedNodeFlow.json"
 import standardFlow from "./testdata/store-initializers/standardFlow.json"
 import unspecifiedRouterFlow from "./testdata/store-initializers/unspecifiedRouterFlow.json"
-import verticalFlow from "./testdata/store-initializers/verticalFlow.json"
 
 import { EipId } from "../../api/generated/eipFlow"
 import {
@@ -33,6 +35,7 @@ import {
   enableChild,
   importFlowFromJson,
   reorderEnabledChildren,
+  switchNodeSelection,
   toggleLayoutDensity,
   updateContentRouterKey,
   updateDynamicEdgeMapping,
@@ -55,6 +58,7 @@ vi.mock("zustand")
 
 const STANDARD_INBOUND_ADAPTER = "9KWCqlIyy7"
 const STANDARD_ROUTER = "LoiC2CFbLP"
+const STANDARD_FILTER = "SV43RVeijQ"
 const STANDARD_POLLER_CHILD = "mcyTryMPewJ"
 const STANDARD_TRANSACTIONAL_CHILD = "V1ls9ri4szs"
 const NESTED_CHILD_PARENT_ID = "FL5Tssm8tV"
@@ -65,10 +69,10 @@ beforeEach(() => {
   })
 })
 
-const getNode = (id: string) => {
+const getEipNode = (id: string) => {
   const nodes = getNodesView()
   const target = nodes.find((n) => n.id === id)
-  if (!target) {
+  if (!target || !isEipNode(target)) {
     throw new Error(`Could not find node with id: ${id}`)
   }
   return target
@@ -81,36 +85,24 @@ const getNodePositions = () =>
     },
   }))
 
+const updateSelectedNodes = (ids: Set<string>) => ({
+  ...standardFlow,
+  nodes: standardFlow.nodes.map((node) => {
+    if (ids.has(node.id)) {
+      return { ...node, selected: true }
+    }
+    return node
+  }),
+})
+
 describe("create dropped node", () => {
-  test.each([
-    {
-      msg: "create with horizontal layout",
-      storeState: standardFlow,
-      orientation: "horizontal",
-      handlePosition: {
-        targetPosition: Position.Left,
-        sourcePosition: Position.Right,
-      },
-    },
-    {
-      msg: "create with vertical layout",
-      storeState: verticalFlow,
-      orientation: "vertical",
-      handlePosition: {
-        targetPosition: Position.Top,
-        sourcePosition: Position.Bottom,
-      },
-    },
-  ])("$msg", ({ storeState, orientation, handlePosition }) => {
-    // Initialize store
+  beforeEach(() => {
     act(() => {
-      resetMockStore(storeState)
+      resetMockStore(standardFlow)
     })
+  })
 
-    // Assert expected layout
-    const layout = getLayoutView()
-    expect(layout.orientation).toEqual(orientation)
-
+  test("drop basic node", () => {
     const eipId = { namespace: "test", name: "transformer" }
     const position = { x: 5, y: 10 }
     act(() => createDroppedNode(eipId, position))
@@ -120,9 +112,32 @@ describe("create dropped node", () => {
 
     expect(node.position).toEqual(position)
     expect(node.id).toBeTruthy()
-    expect(node.type).toEqual(EIP_NODE_TYPE)
-    expect(node.targetPosition).toEqual(handlePosition.targetPosition)
-    expect(node.sourcePosition).toEqual(handlePosition.sourcePosition)
+    expect(node.type).toEqual(CustomNodeType.EipNode)
+  })
+
+  test("drop node with a follower", () => {
+    const eipId = { namespace: "http", name: "inbound-gateway" }
+    const position = { x: 5, y: 10 }
+    act(() => createDroppedNode(eipId, position))
+
+    const nodes = getNodesView()
+    const leader = nodes.find((n) =>
+      isDeepEqual(getEipId(n.id), eipId)
+    )! as EipFlowNode
+
+    expect(leader.type).toEqual(CustomNodeType.EipNode)
+    expect(leader.position).toEqual(position)
+    expect(leader.id).toBeTruthy()
+    expect(leader.data.followerId).toBeTruthy()
+
+    const follower = nodes.find(
+      (n) => n.id === leader.data.followerId
+    )! as FollowerNode
+
+    expect(follower.type).toEqual(CustomNodeType.FollowerNode)
+    expect(follower.position).toEqual({ x: position.x + 200, y: position.y })
+    expect(follower.id).toBeTruthy()
+    expect(follower.data.leaderId).toEqual(leader.id)
   })
 })
 
@@ -132,12 +147,12 @@ describe("update node label", () => {
 
     act(() => void updateNodeLabel(STANDARD_INBOUND_ADAPTER, label))
 
-    const target = getNode(STANDARD_INBOUND_ADAPTER)
+    const target = getEipNode(STANDARD_INBOUND_ADAPTER)
     expect(target.data.label).toEqual(label)
   })
 
   test("update node with duplicated label -> error", () => {
-    let target = getNode(STANDARD_INBOUND_ADAPTER)
+    let target = getEipNode(STANDARD_INBOUND_ADAPTER)
     const originalLabel = target.data.label
 
     const duplicatedLabel = "test-router"
@@ -145,7 +160,7 @@ describe("update node label", () => {
     const result = updateNodeLabel(STANDARD_INBOUND_ADAPTER, duplicatedLabel)
     expect(result instanceof Error).toBeTruthy()
 
-    target = getNode(STANDARD_INBOUND_ADAPTER)
+    target = getEipNode(STANDARD_INBOUND_ADAPTER)
     expect(target.data.label).toEqual(originalLabel)
   })
 
@@ -650,4 +665,62 @@ test("toggle layout density", () => {
   const comfortablePositions = getNodePositions()
   expect(comfortablePositions).not.toEqual(compactPositions)
   expect(getLayoutView().density).toEqual("comfortable")
+})
+
+describe("Switch Node Selection", () => {
+  test("no pre-selected nodes", () => {
+    act(() => {
+      resetMockStore(standardFlow)
+    })
+
+    let nodes = getNodesView()
+    let selectedNodes = nodes.filter((n) => n.selected)
+    expect(selectedNodes).toHaveLength(0)
+
+    act(() => switchNodeSelection(STANDARD_ROUTER))
+
+    nodes = getNodesView()
+    selectedNodes = nodes.filter((n) => n.selected)
+    expect(selectedNodes).toHaveLength(1)
+    expect(selectedNodes[0].id).toEqual(STANDARD_ROUTER)
+  })
+
+  test("single pre-selected node", () => {
+    const nodesToSelect = new Set([STANDARD_INBOUND_ADAPTER])
+
+    act(() => {
+      resetMockStore(updateSelectedNodes(nodesToSelect))
+    })
+
+    let nodes = getNodesView()
+    let selectedNodes = nodes.filter((n) => n.selected)
+    expect(selectedNodes).toHaveLength(1)
+    expect(selectedNodes[0].id).toEqual(STANDARD_INBOUND_ADAPTER)
+
+    act(() => switchNodeSelection(STANDARD_ROUTER))
+
+    nodes = getNodesView()
+    selectedNodes = nodes.filter((n) => n.selected)
+    expect(selectedNodes).toHaveLength(1)
+    expect(selectedNodes[0].id).toEqual(STANDARD_ROUTER)
+  })
+
+  test("multiple pre-selected nodes", () => {
+    const nodesToSelect = new Set([STANDARD_INBOUND_ADAPTER, STANDARD_FILTER])
+
+    act(() => {
+      resetMockStore(updateSelectedNodes(nodesToSelect))
+    })
+
+    let nodes = getNodesView()
+    let selectedNodes = nodes.filter((n) => n.selected)
+    expect(selectedNodes).toHaveLength(2)
+
+    act(() => switchNodeSelection(STANDARD_ROUTER))
+
+    nodes = getNodesView()
+    selectedNodes = nodes.filter((n) => n.selected)
+    expect(selectedNodes).toHaveLength(1)
+    expect(selectedNodes[0].id).toEqual(STANDARD_ROUTER)
+  })
 })

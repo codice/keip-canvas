@@ -9,7 +9,8 @@ import path from "node:path"
 
 // TODO: Use git tags instead of commit hashes
 // To use an updated source schema, change this to point to the desired version.
-const COMMIT_HASH = "4fe59e1438fad31b79c87568686cf867fd14a41e"
+
+const COMMIT_HASH = "9ccbe6e4f960451e36476572df05aa2bad375d4e"
 
 const SCHEMAS = ["eipComponentDef.schema.json", "eipFlow.schema.json"]
 
@@ -32,9 +33,9 @@ const generateSources = async (schemaFileName) => {
 
   const outputFileName = `${schemaFileName.split(".")[0]}.ts`
   const outputPath = path.join(GENERATED_SOURCE_DIR, outputFileName)
-  
+
   console.log(`generating ${outputPath}`)
-  
+
   await writeFile(outputPath, generatedCode)
 }
 

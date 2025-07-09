@@ -1,9 +1,10 @@
 import { Button, Stack, TextArea, TextInput } from "@carbon/react"
-import { Settings } from "@carbon/react/icons"
+import { ParentNode, Settings } from "@carbon/react/icons"
 import { ChangeEvent, useMemo, useState } from "react"
-import { EipFlowNode } from "../../api/flow"
+import { EipFlowNode, FollowerNode } from "../../api/flow"
 import { Attribute } from "../../api/generated/eipComponentDef"
 import {
+  switchNodeSelection,
   updateNodeDescription,
   updateNodeLabel,
 } from "../../singletons/store/appActions"
@@ -42,6 +43,10 @@ interface RootPanelProps {
 interface ChildPanelProps {
   childPath: string[]
   attributes: Attribute[]
+}
+
+interface FollowerPanelProps {
+  node: FollowerNode
 }
 
 const IdDisplay = ({ id }: IdDisplayProps) => (
@@ -180,5 +185,27 @@ export const ChildNodeConfig = ({ childPath, attributes }: ChildPanelProps) => {
       metadataInputs={metadataInputs}
       childPath={childPath}
     />
+  )
+}
+
+export const FollowerNodePanel = ({ node }: FollowerPanelProps) => {
+  const eipId = getEipId(node.id)
+
+  return (
+    <div className="cfg-panel__container__top-padding-add">
+      <Stack gap={6} className="cfg-panel__container__side-padding-add">
+        {eipId && <h4>{getNamespacedTitle(eipId)}</h4>}
+        <IdDisplay id={node.id} />
+        <h5>This node is managed by its parent</h5>
+        <Button
+          className="cfg-panel__button"
+          kind="primary"
+          onClick={() => switchNodeSelection(node.data.leaderId)}
+          renderIcon={ParentNode}
+        >
+          Go to Parent
+        </Button>
+      </Stack>
+    </div>
   )
 }

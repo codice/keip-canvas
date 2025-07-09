@@ -7,11 +7,14 @@ import { onConnect, onNodesChange } from "./reactFlowActions"
 import { renderAndUnwrapHook, resetMockStore } from "./storeTestingUtils"
 import { getEdgesView, getEipId, getNodesView } from "./storeViews"
 import disconnectedFlow from "./testdata/store-initializers/disconnectedFlow.json"
+import inboundGatewayFlow from "./testdata/store-initializers/inboundGatewayFlow.json"
 import standardFlow from "./testdata/store-initializers/standardFlow.json"
 
 vi.mock("zustand")
 
 const STANDARD_FILE_ADAPTER_ID = "MrMneIdthg"
+const LEADER_NODE_ID = "_k0Z45PtEc"
+const FOLLOWER_NODE_ID = "hF-dVMmHqZ"
 
 beforeEach(() => {
   act(() => {
@@ -19,30 +22,103 @@ beforeEach(() => {
   })
 })
 
-describe("onNodesChange", () => {
-  test("top-level config and all child configs are removed when node is deleted", () => {
-    // assert configs exist before removing node
-    expect(getEipId(STANDARD_FILE_ADAPTER_ID)).not.toBeUndefined()
-    const children = renderAndUnwrapHook(() =>
-      useGetEnabledChildren(STANDARD_FILE_ADAPTER_ID)
-    )
-    expect(children).toHaveLength(1)
-    const childId = children[0]
-    expect(getEipId(childId)).not.toBeUndefined()
+test("onNodesChange node removal -> top-level config and all child configs are removed", () => {
+  // assert configs exist before removing node
+  expect(getEipId(STANDARD_FILE_ADAPTER_ID)).toBeDefined()
+  const children = renderAndUnwrapHook(() =>
+    useGetEnabledChildren(STANDARD_FILE_ADAPTER_ID)
+  )
+  expect(children).toHaveLength(1)
+  const childId = children[0]
+  expect(getEipId(childId)).not.toBeUndefined()
 
+  const change: NodeRemoveChange = {
+    id: STANDARD_FILE_ADAPTER_ID,
+    type: "remove",
+  }
+  act(() => onNodesChange([change]))
+
+  const checkDeleted = getNodesView().find(
+    (n) => n.id === STANDARD_FILE_ADAPTER_ID
+  )
+  expect(checkDeleted).toBeUndefined()
+
+  expect(getEipId(STANDARD_FILE_ADAPTER_ID)).toBeUndefined()
+  expect(getEipId(childId)).toBeUndefined()
+})
+
+describe("onNodesChange remove leader/follower nodes", () => {
+  beforeEach(() => {
+    act(() => {
+      resetMockStore(inboundGatewayFlow)
+    })
+
+    // assert nodes exist
+    expect(getNode(LEADER_NODE_ID)).toBeDefined()
+    expect(getNode(FOLLOWER_NODE_ID)).toBeDefined()
+
+    // assert node configs exist
+    expect(getEipId(LEADER_NODE_ID)).toBeDefined()
+    expect(getEipId(FOLLOWER_NODE_ID)).toBeDefined()
+  })
+
+  test("delete leader node -> follower is also deleted", () => {
     const change: NodeRemoveChange = {
-      id: STANDARD_FILE_ADAPTER_ID,
+      id: LEADER_NODE_ID,
       type: "remove",
     }
+
     act(() => onNodesChange([change]))
 
-    const checkDeleted = getNodesView().find(
-      (n) => n.id === STANDARD_FILE_ADAPTER_ID
+    const checkDeleted = getNodesView().filter(
+      (n) => n.id === LEADER_NODE_ID || n.id === FOLLOWER_NODE_ID
     )
-    expect(checkDeleted).toBeUndefined()
 
-    expect(getEipId(STANDARD_FILE_ADAPTER_ID)).toBeUndefined()
-    expect(getEipId(childId)).toBeUndefined()
+    expect(checkDeleted).toHaveLength(0)
+
+    expect(getEipId(LEADER_NODE_ID)).toBeUndefined()
+    expect(getEipId(FOLLOWER_NODE_ID)).toBeUndefined()
+  })
+
+  test("delete follower node -> leader is also deleted", () => {
+    const change: NodeRemoveChange = {
+      id: FOLLOWER_NODE_ID,
+      type: "remove",
+    }
+
+    act(() => onNodesChange([change]))
+
+    const checkDeleted = getNodesView().filter(
+      (n) => n.id === LEADER_NODE_ID || n.id === FOLLOWER_NODE_ID
+    )
+
+    expect(checkDeleted).toHaveLength(0)
+
+    expect(getEipId(LEADER_NODE_ID)).toBeUndefined()
+    expect(getEipId(FOLLOWER_NODE_ID)).toBeUndefined()
+  })
+
+  test("delete leader node as part of multiple removals -> follower is also deleted", () => {
+    const transformerId = "QvmTf6Jm4O"
+
+    const changes: NodeRemoveChange[] = [
+      {
+        id: LEADER_NODE_ID,
+        type: "remove",
+      },
+      {
+        id: transformerId,
+        type: "remove",
+      },
+    ]
+
+    act(() => onNodesChange(changes))
+
+    expect(getNodesView()).toHaveLength(0)
+
+    expect(getEipId(LEADER_NODE_ID)).toBeUndefined()
+    expect(getEipId(FOLLOWER_NODE_ID)).toBeUndefined()
+    expect(getEipId(transformerId)).toBeUndefined()
   })
 })
 
@@ -100,3 +176,12 @@ describe("onConnect", () => {
     expect(data.mapping.matcher.name).toEqual("value")
   })
 })
+
+const getNode = (id: string) => {
+  const nodes = getNodesView()
+  const target = nodes.find((n) => n.id === id)
+  if (!target) {
+    throw new Error(`Could not find node with id: ${id}`)
+  }
+  return target
+}

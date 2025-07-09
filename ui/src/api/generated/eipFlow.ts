@@ -12,7 +12,14 @@ export type EipRole = "channel" | "endpoint" | "router" | "transformer";
 /**
  * Defines a connection pattern for an EIP component
  */
-export type ConnectionType = "content_based_router" | "passthru" | "request_reply" | "sink" | "source" | "tee";
+export type ConnectionType =
+  | "content_based_router"
+  | "inbound_request_reply"
+  | "passthru"
+  | "request_reply"
+  | "sink"
+  | "source"
+  | "tee";
 /**
  * The attribute's value type (attribute keys are always strings)
  */

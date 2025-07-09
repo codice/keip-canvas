@@ -69,6 +69,23 @@ $icon-button-focus-shadow:
   height: 3rem;
 }
 
+// Follower node style overrides
+.eip-follower-node {
+  border-color: themes.$border-disabled;
+
+  .eip-node-title {
+    color: themes.$text-on-color-disabled;
+  }
+
+  .eip-node-label {
+    color: themes.$text-on-color-disabled;
+  }
+
+  .eip-node-image {
+    stroke: themes.$text-on-color-disabled;
+  }
+}
+
 .react-flow {
   .react-flow__handle-left,
   .react-flow__handle-right {

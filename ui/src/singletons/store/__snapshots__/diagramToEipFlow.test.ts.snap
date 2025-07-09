@@ -151,6 +151,69 @@ exports[`diagram with deep child nesting 1`] = `
 }
 `;
 
+exports[`diagram with inbound-request-reply node 1`] = `
+{
+  "edges": [
+    {
+      "id": "ch-testIn-QvmTf6Jm4O",
+      "source": "testIn",
+      "target": "QvmTf6Jm4O",
+      "type": "default",
+    },
+    {
+      "id": "ch-QvmTf6Jm4O-testIn-reply-channel",
+      "source": "QvmTf6Jm4O",
+      "target": "testIn-reply-channel",
+      "type": "default",
+    },
+    {
+      "id": "ch-testIn-reply-channel-testIn",
+      "source": "testIn-reply-channel",
+      "target": "testIn",
+      "type": "default",
+    },
+  ],
+  "nodes": [
+    {
+      "attributes": {},
+      "children": [],
+      "connectionType": "inbound_request_reply",
+      "description": undefined,
+      "eipId": {
+        "name": "inbound-gateway",
+        "namespace": "http",
+      },
+      "id": "testIn",
+      "role": "endpoint",
+    },
+    {
+      "attributes": {},
+      "children": [],
+      "connectionType": "passthru",
+      "description": undefined,
+      "eipId": {
+        "name": "channel",
+        "namespace": "integration",
+      },
+      "id": "testIn-reply-channel",
+      "role": "channel",
+    },
+    {
+      "attributes": {},
+      "children": [],
+      "connectionType": "passthru",
+      "description": undefined,
+      "eipId": {
+        "name": "transformer",
+        "namespace": "integration",
+      },
+      "id": "QvmTf6Jm4O",
+      "role": "transformer",
+    },
+  ],
+}
+`;
+
 exports[`standard diagram to EipFlow success 1`] = `
 {
   "edges": [
