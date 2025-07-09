@@ -1,29 +1,45 @@
-import { Edge, Position, XYPosition } from "@xyflow/react"
+import { Edge, XYPosition } from "@xyflow/react"
 import { produce } from "immer"
 import { nanoid } from "nanoid/non-secure"
 import {
   ChannelMapping,
   CustomNode,
+  CustomNodeType,
   DYNAMIC_EDGE_TYPE,
-  EIP_NODE_TYPE,
+  EipFlowNode,
+  FollowerNode,
   isDynamicEdge,
   Layout,
 } from "../../api/flow"
 import { AttributeType } from "../../api/generated/eipComponentDef"
 import { EipId } from "../../api/generated/eipFlow"
 import { newFlowLayout } from "../../components/layout/layouting"
+import { generateFollowerNodes } from "../eipDefinitions"
 import { AppStore, EipConfig, SerializedFlow } from "./api"
 import { useAppStore } from "./appStore"
 import { childrenDepthTraversal } from "./storeViews"
 
 export const createDroppedNode = (eipId: EipId, position: XYPosition) =>
   useAppStore.setState((state) => {
-    const node = newNode(position, state.layout.orientation)
+    const nodeDescriptors = generateNodes(eipId, position)
+
+    const nodeConfigs = nodeDescriptors.reduce(
+      (acc, desc) => {
+        acc[desc.node.id] = {
+          attributes: {},
+          children: [],
+          eipId: desc.eipId,
+        }
+        return acc
+      },
+      {} as AppStore["eipConfigs"]
+    )
+
     return {
-      nodes: [...state.nodes, node],
+      nodes: [...state.nodes, ...nodeDescriptors.map((r) => r.node)],
       eipConfigs: {
         ...state.eipConfigs,
-        [node.id]: { attributes: {}, children: [], eipId },
+        ...nodeConfigs,
       },
     }
   })
@@ -193,6 +209,16 @@ export const clearDiagramSelections = () =>
     edges: state.edges.map((edge) => ({ ...edge, selected: false })),
   }))
 
+export const switchNodeSelection = (id: string) =>
+  useAppStore.setState((state) => ({
+    nodes: state.nodes.map((node) => {
+      if (node.id === id) {
+        return { ...node, selected: true }
+      }
+      return { ...node, selected: false }
+    }),
+  }))
+
 export const importFlowFromJson = (json: string) => {
   const flow = JSON.parse(json) as SerializedFlow
   importFlowFromObject(flow)
@@ -245,16 +271,53 @@ export const toggleLayoutDensity = () =>
     }
   })
 
-const newNode = (position: XYPosition, orientation: Layout["orientation"]) => {
+interface NodeDescriptor {
+  node: CustomNode
+  eipId: EipId
+}
+
+const POSITION_X_OFFSET = 200
+const POSITION_Y_OFFSET = 0
+
+// TODO: refactor, return type is awkward
+const generateNodes = (eipId: EipId, position: XYPosition) => {
+  const node = newEipNode(position)
+
+  const descriptors: NodeDescriptor[] = [{ node, eipId }]
+
+  generateFollowerNodes(eipId).forEach((follower) => {
+    const offsetPos = {
+      x: position.x + POSITION_X_OFFSET,
+      y: position.y + POSITION_Y_OFFSET,
+    }
+
+    const followerNode = newFollowerNode(node.id, offsetPos)
+    descriptors.push({ node: followerNode, eipId: follower.eipId })
+  })
+
+  return descriptors
+}
+
+const newEipNode = (position: XYPosition) => {
   const id = nanoid(10)
-  const isHorizontal = orientation === "horizontal"
-  const node: CustomNode = {
+  const node: EipFlowNode = {
     id: id,
-    type: EIP_NODE_TYPE,
+    type: CustomNodeType.EipNode,
     position: position,
-    targetPosition: isHorizontal ? Position.Left : Position.Top,
-    sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
     data: {},
+  }
+  return node
+}
+
+const newFollowerNode = (leaderId: string, position: XYPosition) => {
+  const id = nanoid(10)
+  const node: FollowerNode = {
+    id: id,
+    type: CustomNodeType.FollowerNode,
+    position: position,
+    data: {
+      leaderId,
+    },
   }
   return node
 }

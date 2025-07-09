@@ -20,7 +20,7 @@ import "@xyflow/react/dist/style.css"
 import { KeyboardEvent, useEffect } from "react"
 import { DropTargetMonitor, useDrop } from "react-dnd"
 import { NativeTypes } from "react-dnd-html5-backend"
-import { DYNAMIC_EDGE_TYPE, EIP_NODE_TYPE } from "../../api/flow"
+import { CustomNodeType, DYNAMIC_EDGE_TYPE } from "../../api/flow"
 import { EipId } from "../../api/generated/eipFlow"
 import {
   clearFlow,
@@ -42,7 +42,7 @@ import {
 } from "../../singletons/store/reactFlowActions"
 import { DragTypes } from "../draggable-panel/dragTypes"
 import DynamicEdge from "./DynamicEdge"
-import { EipNode } from "./EipNode"
+import { EipNode, FollowerNode } from "./EipNode"
 
 const FLOW_ERROR_MESSAGE =
   "Failed to load the canvas - the stored flow is malformed. Clearing the flow from the state store."
@@ -88,7 +88,8 @@ const getDropPosition = (
 }
 
 const nodeTypes = {
-  [EIP_NODE_TYPE]: EipNode,
+  [CustomNodeType.EipNode]: EipNode,
+  [CustomNodeType.FollowerNode]: FollowerNode,
 }
 
 const edgeTypes = {

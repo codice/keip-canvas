@@ -4,6 +4,7 @@ import { useState } from "react"
 import {
   CustomEdge,
   CustomNode,
+  CustomNodeType,
   DynamicEdge,
   isDynamicEdge,
 } from "../../api/flow"
@@ -14,7 +15,10 @@ import {
   lookupContentBasedRouterKeys,
   lookupEipComponent,
 } from "../../singletons/eipDefinitions"
-import { clearSelectedChildNode } from "../../singletons/store/appActions"
+import {
+  clearSelectedChildNode,
+  switchNodeSelection,
+} from "../../singletons/store/appActions"
 import { useGetSelectedChildNode } from "../../singletons/store/getterHooks"
 import { getEipId } from "../../singletons/store/storeViews"
 import DynamicEdgeConfig from "./DynamicEdgeConfig"
@@ -53,7 +57,13 @@ const EipConfigSidePanel = () => {
     onChange: ({ nodes, edges }) => {
       selectedChildPath && clearSelectedChildNode()
       const numSelected = nodes.length + edges.length
-      setSelectedNode(numSelected === 1 ? nodes[0] : null)
+      // TODO: Use the common type guard
+      if (nodes.length === 1 && nodes[0].type === CustomNodeType.FollowerNode) {
+        const leaderId = nodes[0].data.leaderId
+        switchNodeSelection(leaderId)
+      } else {
+        setSelectedNode(numSelected === 1 ? nodes[0] : null)
+      }
       setSelectedEdge(
         numSelected === 1 && isDynamicEdge(edges[0]) ? edges[0] : null
       )

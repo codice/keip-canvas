@@ -1,14 +1,22 @@
 import { Tile } from "@carbon/react"
 
 import { Handle, NodeProps, Position } from "@xyflow/react"
-import { EipFlowNode, Layout } from "../../api/flow"
+import {
+  EipFlowNode,
+  FollowerNode as FollowerNodeType,
+  Layout,
+} from "../../api/flow"
 import { ConnectionType, EipRole } from "../../api/generated/eipComponentDef"
-import { lookupEipComponent } from "../../singletons/eipDefinitions"
+import {
+  generateFollowerNodes,
+  lookupEipComponent,
+} from "../../singletons/eipDefinitions"
 import getIconUrl from "../../singletons/eipIconCatalog"
 import { clearSelectedChildNode } from "../../singletons/store/appActions"
 import {
   useGetEnabledChildren,
   useGetLayout,
+  useGetNodeLabel,
 } from "../../singletons/store/getterHooks"
 import { getEipId } from "../../singletons/store/storeViews"
 import { getNamespacedTitle } from "../../utils/titleTransform"
@@ -20,6 +28,7 @@ const DEFAULT_NODE_LABEL = "New Node"
 const renderHorizontalHandles = (connectionType: ConnectionType) => {
   switch (connectionType) {
     case "source":
+    case "inbound_request_reply":
       return <Handle id="output" type="source" position={Position.Right} />
     case "sink":
       return <Handle id="input" type="target" position={Position.Left} />
@@ -46,6 +55,7 @@ const renderHorizontalHandles = (connectionType: ConnectionType) => {
 const renderVerticalHandles = (connectionType: ConnectionType) => {
   switch (connectionType) {
     case "source":
+    case "inbound_request_reply":
       return <Handle id="output" type="source" position={Position.Bottom} />
     case "sink":
       return <Handle id="input" type="target" position={Position.Top} />
@@ -78,10 +88,10 @@ const renderHandles = (
     ? renderHorizontalHandles(connectionType)
     : renderVerticalHandles(connectionType)
 
-const getClassNames = (props: NodeProps<EipFlowNode>, role: EipRole) => {
+const getClassNames = (isSelected: boolean, role: EipRole) => {
   const roleClsName =
     role === "channel" ? "eip-channel-node" : "eip-endpoint-node"
-  const selectedClsName = props.selected ? "eip-node-selected" : ""
+  const selectedClsName = isSelected ? "eip-node-selected" : ""
   return ["eip-node", roleClsName, selectedClsName].join(" ")
 }
 
@@ -105,7 +115,7 @@ export const EipNode = (props: NodeProps<EipFlowNode>) => {
 
   return (
     <Tile
-      className={getClassNames(props, componentDefinition.role)}
+      className={getClassNames(props.selected, componentDefinition.role)}
       onClick={hasChildren ? () => clearSelectedChildNode() : undefined}
     >
       <div>{getNamespacedTitle(eipId)}</div>
@@ -114,6 +124,45 @@ export const EipNode = (props: NodeProps<EipFlowNode>) => {
         <strong>{data.label || DEFAULT_NODE_LABEL}</strong>
       </div>
       {hasChildren && <ChildrenNavigationPopover />}
+      {handles}
+    </Tile>
+  )
+}
+
+// TODO: Reduce duplication with EipNode component
+export const FollowerNode = (props: NodeProps<FollowerNodeType>) => {
+  const layout = useGetLayout()
+  const leaderId = props.data.leaderId
+  const leaderLabel = useGetNodeLabel(leaderId)
+
+  const eipId = getEipId(props.id)
+  const componentDefinition = eipId && lookupEipComponent(eipId)
+
+  const leaderEipId = getEipId(leaderId)
+
+  if (!componentDefinition || !leaderEipId) {
+    const eipIdStr = eipId ? `${eipId.namespace}.${eipId.name}` : null
+    console.error(
+      `Failed to render follower node with eipId: ${eipIdStr} for leaderId: ${leaderId}`
+    )
+    return null
+  }
+
+  const followerDescriptor = generateFollowerNodes(leaderEipId)[0]
+
+  const handles = renderHandles(
+    followerDescriptor.overrides?.connectionType ??
+      componentDefinition.connectionType,
+    layout.orientation
+  )
+
+  return (
+    <Tile className={getClassNames(props.selected, componentDefinition.role)}>
+      <div>{getNamespacedTitle(eipId)}</div>
+      <img className="eip-node-image" src={getIconUrl(eipId)} />
+      <div className="eip-node-label">
+        <strong>{followerDescriptor.generateLabel(leaderLabel)}</strong>
+      </div>
       {handles}
     </Tile>
   )

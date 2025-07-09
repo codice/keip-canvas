@@ -5,8 +5,9 @@ import { beforeEach, describe, expect, test, vi } from "vitest"
 import {
   ChannelMapping,
   DynamicEdgeData,
-  EIP_NODE_TYPE,
+  EipFlowNode,
   Layout,
+  NodeTypeNames,
   RouterKey,
 } from "../../api/flow"
 import {
@@ -120,10 +121,26 @@ describe("create dropped node", () => {
 
     expect(node.position).toEqual(position)
     expect(node.id).toBeTruthy()
-    expect(node.type).toEqual(EIP_NODE_TYPE)
+    expect(node.type).toEqual(NodeTypeNames.EipNode)
     expect(node.targetPosition).toEqual(handlePosition.targetPosition)
     expect(node.sourcePosition).toEqual(handlePosition.sourcePosition)
   })
+})
+
+test("create a dropped node with followers", () => {
+  const eipId = { namespace: "http", name: "inbound-gateway" }
+  const position = { x: 5, y: 10 }
+  act(() => createDroppedNode(eipId, position))
+
+  const nodes = getNodesView()
+  const node: EipFlowNode = nodes.find((n) =>
+    isDeepEqual(getEipId(n.id), eipId)
+  )!
+
+  expect(node.position).toEqual(position)
+  expect(node.id).toBeTruthy()
+  expect(node.type).toEqual(NodeTypeNames.EipNode)
+  expect(node.data.followerNodes).toHaveLength(1)
 })
 
 describe("update node label", () => {

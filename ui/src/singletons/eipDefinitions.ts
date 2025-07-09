@@ -1,5 +1,6 @@
 import { RouterKeyDef } from "../api/flow"
 import {
+  ConnectionType,
   EipComponent,
   EipComponentDefinition,
 } from "../api/generated/eipComponentDef"
@@ -101,4 +102,38 @@ export const lookupContentBasedRouterKeys = (
       }
     }
   }
+}
+
+// TODO: Move follower logic to separate file?
+interface FollowerNodeDescriptor {
+  eipId: EipId
+  generateLabel: (leaderLabel?: string) => string
+  overrides?: {
+    connectionType: ConnectionType
+  }
+}
+
+export const generateFollowerNodes = (
+  leaderId: EipId
+): FollowerNodeDescriptor[] => {
+  const leaderComponent = lookupEipComponent(leaderId)
+  if (!leaderComponent) {
+    return []
+  }
+
+  if (leaderComponent.connectionType === "inbound_request_reply") {
+    // For greater separation of concerns, consider returning a node generator function instead.
+    return [
+      {
+        eipId: { namespace: "integration", name: "channel" },
+        generateLabel: (parentLabel) =>
+          `${parentLabel || leaderId.name} reply channel`,
+        overrides: {
+          connectionType: "sink",
+        },
+      },
+    ]
+  }
+
+  return []
 }
