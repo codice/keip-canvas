@@ -11,11 +11,7 @@
       "sourcePosition": "bottom",
       "data": {},
       "width": 114,
-      "height": 121,
-      "positionAbsolute": {
-        "x": 2.5,
-        "y": 0
-      }
+      "height": 121
     },
     {
       "id": "UrnBcciyaA",
@@ -28,11 +24,7 @@
       "sourcePosition": "bottom",
       "data": {},
       "width": 114,
-      "height": 76,
-      "positionAbsolute": {
-        "x": 2.5,
-        "y": 141
-      }
+      "height": 76
     },
     {
       "id": "4s1rNUykz1",
@@ -45,11 +37,7 @@
       "sourcePosition": "bottom",
       "data": {},
       "width": 119,
-      "height": 121,
-      "positionAbsolute": {
-        "x": 0,
-        "y": 237
-      }
+      "height": 121
     }
   ],
   "edges": [

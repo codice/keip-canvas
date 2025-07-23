@@ -1,10 +1,10 @@
 import isDeepEqual from "fast-deep-equal"
 import { useStoreWithEqualityFn } from "zustand/traditional"
 import {
-  DYNAMIC_EDGE_TYPE,
+  CustomNode,
   DynamicEdge,
-  EipFlowNode,
   EipNodeData,
+  isDynamicEdge,
   RouterKey,
 } from "../../api/flow"
 import {
@@ -50,7 +50,7 @@ const diagramToEipFlow = (state: AppStore): EipFlow => {
     const target = nodeLookup.get(edge.target)?.label || edge.target
     const edgeId = `ch-${source}-${target}`
 
-    if (edge.type === DYNAMIC_EDGE_TYPE) {
+    if (isDynamicEdge(edge)) {
       addRouterChannelMapping(edgeId, edge, routerChildMap, routerAttrMap)
     }
 
@@ -123,7 +123,7 @@ const childConfigToNode = (config: EipConfig): EipChildNode => ({
   attributes: config.attributes,
 })
 
-const createNodeLookupMap = (nodes: EipFlowNode[]) => {
+const createNodeLookupMap = (nodes: CustomNode[]) => {
   const map = new Map<string, EipNodeData>()
   nodes.forEach((node) => map.set(node.id, node.data))
   return map

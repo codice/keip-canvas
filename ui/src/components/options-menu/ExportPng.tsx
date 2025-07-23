@@ -1,9 +1,9 @@
 import { OverflowMenuItem } from "@carbon/react"
 import { OverflowMenuItemProps } from "@carbon/react/lib/components/OverflowMenuItem/OverflowMenuItem"
 import { layer01 } from "@carbon/themes"
+import { getNodesBounds, getViewportForBounds } from "@xyflow/react"
 import { toPng } from "html-to-image"
 import { forwardRef } from "react"
-import { getNodesBounds, getViewportForBounds } from "reactflow"
 import { clearDiagramSelections } from "../../singletons/store/appActions"
 import { useGetNodes } from "../../singletons/store/getterHooks"
 
@@ -31,7 +31,8 @@ const ExportPng = forwardRef<HTMLElement>(
         imageWidth,
         imageHeight,
         0.5,
-        2
+        2,
+        0.1
       )
 
       const viewport: HTMLElement = document.querySelector(

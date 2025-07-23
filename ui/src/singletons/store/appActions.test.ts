@@ -1,6 +1,6 @@
 import { act } from "@testing-library/react"
+import { Position } from "@xyflow/react"
 import isDeepEqual from "fast-deep-equal"
-import { Position } from "reactflow"
 import { beforeEach, describe, expect, test, vi } from "vitest"
 import {
   ChannelMapping,
@@ -78,7 +78,6 @@ const getNodePositions = () =>
   getNodesView().map((node) => ({
     [node.id]: {
       position: node.position,
-      absPosition: node.positionAbsolute,
     },
   }))
 

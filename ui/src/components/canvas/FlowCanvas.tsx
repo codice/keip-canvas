@@ -7,9 +7,6 @@ import {
   Undo,
 } from "@carbon/icons-react"
 import { ErrorBoundary } from "@carbon/react"
-import { KeyboardEvent, useEffect } from "react"
-import { DropTargetMonitor, useDrop } from "react-dnd"
-import { NativeTypes } from "react-dnd-html5-backend"
 import {
   Background,
   BackgroundVariant,
@@ -18,8 +15,11 @@ import {
   ReactFlow,
   ReactFlowInstance,
   useReactFlow,
-} from "reactflow"
-import "reactflow/dist/base.css"
+} from "@xyflow/react"
+import "@xyflow/react/dist/style.css"
+import { KeyboardEvent, useEffect } from "react"
+import { DropTargetMonitor, useDrop } from "react-dnd"
+import { NativeTypes } from "react-dnd-html5-backend"
 import { DYNAMIC_EDGE_TYPE, EIP_NODE_TYPE } from "../../api/flow"
 import { EipId } from "../../api/generated/eipFlow"
 import {
@@ -124,7 +124,9 @@ const FlowCanvas = () => {
   const { undo, redo } = useUndoRedo()
 
   useEffect(() => {
-    reactFlowInstance.fitView()
+    reactFlowInstance
+      .fitView()
+      .catch((e) => console.warn("failed to call fitView", e))
   }, [layout, reactFlowInstance])
 
   const [, drop] = useDrop(

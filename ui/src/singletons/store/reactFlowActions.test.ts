@@ -1,5 +1,5 @@
 import { act } from "@testing-library/react"
-import { Connection, NodeRemoveChange } from "reactflow"
+import { Connection, NodeRemoveChange } from "@xyflow/react"
 import { beforeEach, describe, expect, test, vi } from "vitest"
 import { DYNAMIC_EDGE_TYPE, DynamicEdgeData } from "../../api/flow"
 import { useGetEnabledChildren } from "./getterHooks"
@@ -67,7 +67,10 @@ describe("onConnect", () => {
     expect(edges).toHaveLength(1)
 
     const edge = edges[0]
-    expect(edge).toMatchObject(connection)
+    expect(edge).toMatchObject({
+      source: connection.source,
+      target: connection.target,
+    })
     expect(edge.type).toBeUndefined()
     expect(edge.animated).toBeUndefined()
     expect(edge.data).toBeUndefined()

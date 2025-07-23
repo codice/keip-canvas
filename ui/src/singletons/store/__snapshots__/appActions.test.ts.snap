@@ -59,10 +59,6 @@ exports[`import flow from an exported JSON file > 'import a deprecated flow part
         "x": 0,
         "y": 0,
       },
-      "positionAbsolute": {
-        "x": 0,
-        "y": 0,
-      },
       "selected": false,
       "sourcePosition": "right",
       "targetPosition": "left",
@@ -78,10 +74,6 @@ exports[`import flow from an exported JSON file > 'import a deprecated flow part
         "x": 203,
         "y": 18.5,
       },
-      "positionAbsolute": {
-        "x": 203,
-        "y": 18.5,
-      },
       "selected": false,
       "sourcePosition": "right",
       "targetPosition": "left",
@@ -94,10 +86,6 @@ exports[`import flow from an exported JSON file > 'import a deprecated flow part
       "height": 121,
       "id": "THgI9WvsJh",
       "position": {
-        "x": 377,
-        "y": 5.5,
-      },
-      "positionAbsolute": {
         "x": 377,
         "y": 5.5,
       },
@@ -172,10 +160,6 @@ exports[`import flow from an exported JSON file > 'import a valid flow success' 
         "x": 0,
         "y": 0,
       },
-      "positionAbsolute": {
-        "x": 0,
-        "y": 0,
-      },
       "selected": false,
       "sourcePosition": "right",
       "targetPosition": "left",
@@ -191,10 +175,6 @@ exports[`import flow from an exported JSON file > 'import a valid flow success' 
         "x": 203,
         "y": 18.5,
       },
-      "positionAbsolute": {
-        "x": 203,
-        "y": 18.5,
-      },
       "selected": false,
       "sourcePosition": "right",
       "targetPosition": "left",
@@ -207,10 +187,6 @@ exports[`import flow from an exported JSON file > 'import a valid flow success' 
       "height": 121,
       "id": "THgI9WvsJh",
       "position": {
-        "x": 377,
-        "y": 5.5,
-      },
-      "positionAbsolute": {
         "x": 377,
         "y": 5.5,
       },

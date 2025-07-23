@@ -32,11 +32,7 @@
       "width": 114,
       "height": 71,
       "selected": false,
-      "dragging": false,
-      "positionAbsolute": {
-        "x": 201.02071435884494,
-        "y": 121.16003882408089
-      }
+      "dragging": false
     },
     {
       "id": "H4-ED4F0XT",
@@ -102,10 +98,6 @@
       "width": 111,
       "height": 121,
       "selected": false,
-      "positionAbsolute": {
-        "x": 526.8005098062063,
-        "y": 400.71416837852064
-      },
       "dragging": false
     }
   ],

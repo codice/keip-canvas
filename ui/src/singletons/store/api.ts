@@ -1,7 +1,5 @@
-import { Edge } from "reactflow"
-import { EipFlowNode, Layout, RouterKey } from "../../api/flow"
-import { Attributes } from "../../api/generated/eipFlow"
-import { EipId } from "../../api/generated/eipFlow"
+import { CustomEdge, CustomNode, Layout, RouterKey } from "../../api/flow"
+import { Attributes, EipId } from "../../api/generated/eipFlow"
 
 export interface EipConfig {
   attributes: Attributes
@@ -12,8 +10,8 @@ export interface EipConfig {
 }
 
 export interface AppStore {
-  nodes: EipFlowNode[]
-  edges: Edge[]
+  nodes: CustomNode[]
+  edges: CustomEdge[]
   eipConfigs: Record<string, EipConfig>
   selectedChildNode: string[] | null
   layout: Layout

@@ -1,7 +1,7 @@
 import { Tile } from "@carbon/react"
 
-import { Handle, NodeProps, Position } from "reactflow"
-import { EipNodeData, Layout } from "../../api/flow"
+import { Handle, NodeProps, Position } from "@xyflow/react"
+import { EipFlowNode, Layout } from "../../api/flow"
 import { ConnectionType, EipRole } from "../../api/generated/eipComponentDef"
 import { lookupEipComponent } from "../../singletons/eipDefinitions"
 import getIconUrl from "../../singletons/eipIconCatalog"
@@ -78,15 +78,14 @@ const renderHandles = (
     ? renderHorizontalHandles(connectionType)
     : renderVerticalHandles(connectionType)
 
-const getClassNames = (props: NodeProps<EipNodeData>, role: EipRole) => {
+const getClassNames = (props: NodeProps<EipFlowNode>, role: EipRole) => {
   const roleClsName =
     role === "channel" ? "eip-channel-node" : "eip-endpoint-node"
   const selectedClsName = props.selected ? "eip-node-selected" : ""
   return ["eip-node", roleClsName, selectedClsName].join(" ")
 }
 
-// TODO: Consider separating into Endpoint and Channel custom node types
-export const EipNode = (props: NodeProps<EipNodeData>) => {
+export const EipNode = (props: NodeProps<EipFlowNode>) => {
   const layout = useGetLayout()
   const children = useGetEnabledChildren(props.id)
   const hasChildren = children.length > 0
@@ -111,10 +110,7 @@ export const EipNode = (props: NodeProps<EipNodeData>) => {
     >
       <div>{getNamespacedTitle(eipId)}</div>
       <img className="eip-node-image" src={getIconUrl(eipId)} />
-      <div
-        className="eip-node-label"
-        style={hasChildren ? { marginBottom: "0.5rem" } : {}}
-      >
+      <div className="eip-node-label">
         <strong>{data.label || DEFAULT_NODE_LABEL}</strong>
       </div>
       {hasChildren && <ChildrenNavigationPopover />}

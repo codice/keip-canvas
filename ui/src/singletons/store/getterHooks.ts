@@ -1,5 +1,5 @@
 import { useShallow } from "zustand/react/shallow"
-import { DYNAMIC_EDGE_TYPE, DynamicEdge } from "../../api/flow"
+import { isDynamicEdge } from "../../api/flow"
 import { AppStore, SerializedFlow } from "./api"
 import { EXPORTED_FLOW_VERSION, useAppStore } from "./appStore"
 
@@ -58,7 +58,7 @@ export const useGetRouterDefaultEdgeMapping = (routerId: string) =>
     state.edges.find(
       (edge) =>
         edge.source === routerId &&
-        edge.type === DYNAMIC_EDGE_TYPE &&
-        (edge as DynamicEdge).data?.mapping.isDefaultMapping
+        isDynamicEdge(edge) &&
+        edge.data?.mapping.isDefaultMapping
     )
   )

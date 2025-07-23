@@ -9,7 +9,6 @@
       "data": { "label": "ws-in" },
       "width": 128,
       "height": 124,
-      "positionAbsolute": { "x": 0, "y": 0 },
       "selected": false,
       "dragging": false
     },
@@ -22,7 +21,6 @@
       "data": {},
       "width": 99,
       "height": 87,
-      "positionAbsolute": { "x": 203, "y": 18.5 },
       "selected": false,
       "dragging": false
     },
@@ -35,7 +33,6 @@
       "data": {},
       "width": 109,
       "height": 121,
-      "positionAbsolute": { "x": 377, "y": 5.5 },
       "selected": false,
       "dragging": false
     }

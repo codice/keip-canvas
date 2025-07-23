@@ -8,7 +8,7 @@ import {
 } from "@carbon/react"
 import { ParentChild } from "@carbon/react/icons"
 import { ReactElement, useState } from "react"
-import { useNodeId } from "reactflow"
+import { useNodeId } from "@xyflow/react"
 import { updateSelectedChildNode } from "../../singletons/store/appActions"
 import {
   getEipId,

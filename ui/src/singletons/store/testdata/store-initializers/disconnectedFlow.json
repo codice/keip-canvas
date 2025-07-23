@@ -13,10 +13,6 @@
       "width": 114,
       "height": 121,
       "selected": false,
-      "positionAbsolute": {
-        "x": -8.813082912319118,
-        "y": 113.59746102027287
-      },
       "dragging": false
     },
     {
@@ -32,10 +28,6 @@
       "width": 114,
       "height": 71,
       "selected": false,
-      "positionAbsolute": {
-        "x": 197.24568570810294,
-        "y": 74.05877001110413
-      },
       "dragging": false
     },
     {
@@ -51,10 +43,6 @@
       "width": 128,
       "height": 132,
       "selected": true,
-      "positionAbsolute": {
-        "x": 191.29150284979056,
-        "y": 210.41352010814853
-      },
       "dragging": false
     }
   ],

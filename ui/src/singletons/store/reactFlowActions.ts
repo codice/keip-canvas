@@ -6,8 +6,8 @@ import {
   EdgeChange,
   NodeChange,
   NodeRemoveChange,
-} from "reactflow"
-import { DYNAMIC_EDGE_TYPE } from "../../api/flow"
+} from "@xyflow/react"
+import { CustomEdge, CustomNode, DYNAMIC_EDGE_TYPE } from "../../api/flow"
 import { EipComponent } from "../../api/generated/eipComponentDef"
 import {
   CHANNEL_ATTR_NAME,
@@ -18,7 +18,7 @@ import { AppStore } from "./api"
 import { useAppStore } from "./appStore"
 import { childrenDepthTraversal, getEipId } from "./storeViews"
 
-export const onNodesChange = (changes: NodeChange[]) =>
+export const onNodesChange = (changes: NodeChange<CustomNode>[]) =>
   useAppStore.setState((state) => {
     const updates: Partial<AppStore> = {
       nodes: applyNodeChanges(changes, state.nodes),
@@ -32,9 +32,7 @@ export const onNodesChange = (changes: NodeChange[]) =>
     return updates
   })
 
-// TODO: Use the new 'selectable` DefaultEdgeProp after migrating to ReactFlow v12.
-// Only dynamic router edges should be selectable.
-export const onEdgesChange = (changes: EdgeChange[]) =>
+export const onEdgesChange = (changes: EdgeChange<CustomEdge>[]) =>
   useAppStore.setState((state) => ({
     edges: applyEdgeChanges(changes, state.edges),
   }))

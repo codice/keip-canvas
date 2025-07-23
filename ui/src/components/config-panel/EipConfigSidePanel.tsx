@@ -1,7 +1,12 @@
 import { HeaderPanel } from "@carbon/react"
+import { useOnSelectionChange } from "@xyflow/react"
 import { useState } from "react"
-import { Edge, useOnSelectionChange, useStoreApi } from "reactflow"
-import { DYNAMIC_EDGE_TYPE, DynamicEdge, EipFlowNode } from "../../api/flow"
+import {
+  CustomEdge,
+  CustomNode,
+  DynamicEdge,
+  isDynamicEdge,
+} from "../../api/flow"
 import { Attribute } from "../../api/generated/eipComponentDef"
 import { EipId } from "../../api/generated/eipFlow"
 import {
@@ -39,15 +44,12 @@ const filterConfigurableAttributes = (attrs?: Attribute[], eipId?: EipId) => {
     : []
 }
 
-const isDynamicEdge = (edge: Edge) => edge?.type === DYNAMIC_EDGE_TYPE
-
 const EipConfigSidePanel = () => {
-  const reactFlowStore = useStoreApi()
-  const [selectedNode, setSelectedNode] = useState<EipFlowNode | null>(null)
+  const [selectedNode, setSelectedNode] = useState<CustomNode | null>(null)
   const [selectedEdge, setSelectedEdge] = useState<DynamicEdge | null>(null)
   const selectedChildPath = useGetSelectedChildNode()
 
-  useOnSelectionChange({
+  useOnSelectionChange<CustomNode, CustomEdge>({
     onChange: ({ nodes, edges }) => {
       selectedChildPath && clearSelectedChildNode()
       const numSelected = nodes.length + edges.length
@@ -91,15 +93,8 @@ const EipConfigSidePanel = () => {
       />
     )
   } else if (selectedEdge) {
-    const { nodeInternals } = reactFlowStore.getState()
-    const sourceNode = nodeInternals.get(selectedEdge.source)
-    const targetNode = nodeInternals.get(selectedEdge.target)
-
     sidePanelContent = (
-      <DynamicEdgeConfig
-        key={selectedEdge.id}
-        edge={{ ...selectedEdge, sourceNode, targetNode }}
-      />
+      <DynamicEdgeConfig key={selectedEdge.id} edge={selectedEdge} />
     )
   } else {
     // Returning an empty fragment because the HeaderPanel component spams

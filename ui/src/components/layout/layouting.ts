@@ -1,15 +1,15 @@
 import dagre from "@dagrejs/dagre"
-import { Edge, Position } from "reactflow"
-import { EipFlowNode, Layout } from "../../api/flow"
+import { Position } from "@xyflow/react"
+import { CustomEdge, CustomNode, Layout } from "../../api/flow"
 
 const DEFAULT_NODE_WIDTH = 128
 const DEFAULT_NODE_HEIGHT = 128
 
 export const newFlowLayout = (
-  nodes: EipFlowNode[],
-  edges: Edge[],
+  nodes: CustomNode[],
+  edges: CustomEdge[],
   layout: Layout
-): EipFlowNode[] => {
+): CustomNode[] => {
   const direction = layout.orientation === "horizontal" ? "LR" : "TB"
 
   const isHorizontal = layout.orientation === "horizontal"
@@ -56,12 +56,13 @@ export const newFlowLayout = (
       targetPosition: isHorizontal ? Position.Left : Position.Top,
       sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
       position: updatedPosition,
-      positionAbsolute: updatedPosition,
     }
   })
 
   return newNodes
 }
 
-const getHeight = (node: EipFlowNode) => node.height ?? DEFAULT_NODE_HEIGHT
-const getWidth = (node: EipFlowNode) => node.width ?? DEFAULT_NODE_WIDTH
+const getHeight = (node: CustomNode) =>
+  node.measured?.height ?? DEFAULT_NODE_HEIGHT
+const getWidth = (node: CustomNode) =>
+  node.measured?.width ?? DEFAULT_NODE_WIDTH

@@ -1,5 +1,4 @@
-import { Edge } from "reactflow"
-import { EipFlowNode, Layout } from "../../api/flow"
+import { CustomEdge, CustomNode, Layout } from "../../api/flow"
 import { EipId } from "../../api/generated/eipFlow"
 import { useAppStore } from "./appStore"
 
@@ -10,10 +9,11 @@ interface ChildTraversalItem {
 
 // WARNING: store-based exports defined here provide non-reactive access to the store's state
 
-export const getNodesView = (): readonly EipFlowNode[] =>
+export const getNodesView = (): readonly CustomNode[] =>
   useAppStore.getState().nodes
 
-export const getEdgesView = (): readonly Edge[] => useAppStore.getState().edges
+export const getEdgesView = (): readonly CustomEdge[] =>
+  useAppStore.getState().edges
 
 export const getLayoutView = (): Readonly<Layout> =>
   useAppStore.getState().layout

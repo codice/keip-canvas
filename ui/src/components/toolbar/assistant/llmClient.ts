@@ -1,10 +1,11 @@
 import { Ollama } from "@langchain/ollama"
-import { Edge, Node } from "reactflow"
+import { BuiltInEdge, Node } from "@xyflow/react"
 import { EipId } from "../../../api/generated/eipFlow"
+import { KEIP_ASSISTANT_OLLAMA_URL } from "../../../singletons/externalEndpoints"
 import { EipConfig, SerializedFlow } from "../../../singletons/store/api"
 import { EXPORTED_FLOW_VERSION } from "../../../singletons/store/appStore"
-import { KEIP_ASSISTANT_OLLAMA_URL } from "../../../singletons/externalEndpoints"
 
+import { EIP_NODE_TYPE } from "../../../api/flow"
 import {
   getEdgesView,
   getEipId,
@@ -16,14 +17,16 @@ import { newFlowLayout } from "../../layout/layouting"
 import { fuzzyEipMatch } from "./fuzzyEipIdMatch"
 import { flowCreatePrompt, flowUpdatePrompt } from "./prompt"
 
-interface GenNodeData {
+// react flow requires using a type rather than an interface for EdgeData
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+type GenNodeData = {
   eipId: EipId
   label?: string
 }
 
 interface ModelFlowResponse {
   nodes: Node<GenNodeData>[]
-  edges: Edge[]
+  edges: BuiltInEdge[]
   eipConfigs: Record<string, EipConfig>
 }
 
@@ -153,6 +156,7 @@ const convertToSerializedFlow = (
 ): SerializedFlow => ({
   nodes: response.nodes.map((node) => ({
     ...node,
+    type: EIP_NODE_TYPE,
     data: { label: node?.data?.label },
   })),
   edges: response.edges,

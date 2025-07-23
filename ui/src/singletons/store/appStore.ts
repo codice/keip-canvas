@@ -27,8 +27,7 @@ export const useAppStore = create<AppStore>()(
         partialize: (state) => {
           const newNodes = state.nodes.map((node) => {
             const n = { ...node }
-            const { selected, draggable, dragging, positionAbsolute, ...rest } =
-              n
+            const { selected, draggable, dragging, ...rest } = n
             return rest
           })
 

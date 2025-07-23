@@ -1,12 +1,12 @@
+import { Edge, Position, XYPosition } from "@xyflow/react"
 import { produce } from "immer"
 import { nanoid } from "nanoid/non-secure"
-import { Edge, Position, XYPosition } from "reactflow"
 import {
   ChannelMapping,
+  CustomNode,
   DYNAMIC_EDGE_TYPE,
-  DynamicEdge,
   EIP_NODE_TYPE,
-  EipFlowNode,
+  isDynamicEdge,
   Layout,
 } from "../../api/flow"
 import { AttributeType } from "../../api/generated/eipComponentDef"
@@ -84,7 +84,7 @@ export const updateDynamicEdgeMapping = (
           ...dynamic,
           data: {
             ...dynamic.data,
-            mapping: { ...dynamic.data?.mapping, ...mapping },
+            mapping: { ...dynamic.data!.mapping, ...mapping },
           },
         }
       }
@@ -248,7 +248,7 @@ export const toggleLayoutDensity = () =>
 const newNode = (position: XYPosition, orientation: Layout["orientation"]) => {
   const id = nanoid(10)
   const isHorizontal = orientation === "horizontal"
-  const node: EipFlowNode = {
+  const node: CustomNode = {
     id: id,
     type: EIP_NODE_TYPE,
     position: position,
@@ -260,12 +260,12 @@ const newNode = (position: XYPosition, orientation: Layout["orientation"]) => {
 }
 
 const validateDynamicEdgeType = (edge: Edge) => {
-  if (edge.type !== DYNAMIC_EDGE_TYPE) {
+  if (!isDynamicEdge(edge)) {
     throw new Error(
       `The provided edge did not have the expected type: "${edge.type}". Should be "${DYNAMIC_EDGE_TYPE}"`
     )
   }
-  return edge as DynamicEdge
+  return edge
 }
 
 const isStoreType = (state: unknown): state is AppStore => {

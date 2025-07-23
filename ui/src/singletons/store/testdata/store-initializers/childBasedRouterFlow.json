@@ -13,10 +13,6 @@
       "width": 128,
       "height": 132,
       "selected": false,
-      "positionAbsolute": {
-        "x": -23.429531055166507,
-        "y": 14.944329221193257
-      },
       "dragging": false
     },
     {
@@ -32,10 +28,6 @@
       "width": 114,
       "height": 71,
       "selected": false,
-      "positionAbsolute": {
-        "x": 134.31436102080585,
-        "y": 45.35279034427229
-      },
       "dragging": false
     },
     {
@@ -51,10 +43,6 @@
       "width": 128,
       "height": 132,
       "selected": false,
-      "positionAbsolute": {
-        "x": 310.14028354278037,
-        "y": 87.30725789068367
-      },
       "dragging": false
     },
     {
@@ -70,10 +58,6 @@
       "width": 128,
       "height": 132,
       "selected": false,
-      "positionAbsolute": {
-        "x": 307.3643702586668,
-        "y": -66.29327716359978
-      },
       "dragging": false
     }
   ],

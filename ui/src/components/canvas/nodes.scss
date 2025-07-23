@@ -69,30 +69,22 @@ $icon-button-focus-shadow:
   height: 3rem;
 }
 
-.react-flow .react-flow__handle-right {
-  background-color: themes.$icon-interactive;
-  height: 25px;
-  width: 6px;
-  right: -5px;
-}
+.react-flow {
+  .react-flow__handle-left,
+  .react-flow__handle-right {
+    background-color: themes.$icon-interactive;
+    border: none;
+    border-radius: 20%;
+    height: 23px;
+    width: 6px;
+  }
 
-.react-flow .react-flow__handle-left {
-  background-color: themes.$icon-interactive;
-  height: 25px;
-  width: 6px;
-  left: -5px;
-}
-
-.react-flow .react-flow__handle-top {
-  background-color: themes.$icon-interactive;
-  height: 6px;
-  width: 25px;
-  top: -5px;
-}
-
-.react-flow .react-flow__handle-bottom {
-  background-color: themes.$icon-interactive;
-  height: 6px;
-  width: 25px;
-  bottom: -5px;
+  .react-flow__handle-top,
+  .react-flow__handle-bottom {
+    background-color: themes.$icon-interactive;
+    border: none;
+    border-radius: 20%;
+    height: 6px;
+    width: 23px;
+  }
 }

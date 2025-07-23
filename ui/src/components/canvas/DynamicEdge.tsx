@@ -1,5 +1,5 @@
-import { BaseEdge, EdgeProps, getBezierPath } from "reactflow"
-import { DynamicEdgeData } from "../../api/flow"
+import { BaseEdge, EdgeProps, getBezierPath } from "@xyflow/react"
+import { type DynamicEdge } from "../../api/flow"
 
 const DynamicEdge = ({
   id,
@@ -9,7 +9,7 @@ const DynamicEdge = ({
   targetX,
   targetY,
   targetPosition,
-}: EdgeProps<DynamicEdgeData>) => {
+}: EdgeProps<DynamicEdge>) => {
   const [path] = getBezierPath({
     sourceX,
     sourceY,
