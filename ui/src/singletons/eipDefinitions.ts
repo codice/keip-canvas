@@ -1,6 +1,5 @@
 import { RouterKeyDef } from "../api/flow"
 import {
-  ConnectionType,
   EipComponent,
   EipComponentDefinition,
 } from "../api/generated/eipComponentDef"
@@ -10,6 +9,9 @@ import eipDefintion from "../json/springIntegrationEipComponents.json"
 // TODO: Validate that the parsed JSON matches the schema type
 export const EIP_SCHEMA: Readonly<EipComponentDefinition> =
   eipDefintion as EipComponentDefinition
+
+export const eipIdToString = (eipId: EipId) =>
+  `${eipId.namespace}.${eipId.name}`
 
 const getFlatMap = (schema: EipComponentDefinition) => {
   const map = new Map<string, EipComponent>()
@@ -22,7 +24,7 @@ const getFlatMap = (schema: EipComponentDefinition) => {
 const componentFlatMap = getFlatMap(EIP_SCHEMA)
 
 export const lookupEipComponent = (eipId: EipId) => {
-  const component = componentFlatMap.get(`${eipId.namespace}.${eipId.name}`)
+  const component = componentFlatMap.get(eipIdToString(eipId))
   if (component === undefined) {
     console.warn(`Did not find component with id: ${JSON.stringify(eipId)}`)
   }
@@ -64,9 +66,7 @@ const contentBasedRouterTargets: ReadonlyMap<string, RouterTarget> = new Map([
 export const lookupContentBasedRouterKeys = (
   eipId: EipId
 ): RouterKeyDef | null => {
-  const target = contentBasedRouterTargets.get(
-    `${eipId.namespace}.${eipId.name}`
-  )
+  const target = contentBasedRouterTargets.get(eipIdToString(eipId))
   if (!target) {
     return null
   }
@@ -102,38 +102,4 @@ export const lookupContentBasedRouterKeys = (
       }
     }
   }
-}
-
-// TODO: Move follower logic to separate file?
-interface FollowerNodeDescriptor {
-  eipId: EipId
-  generateLabel: (leaderLabel?: string) => string
-  overrides?: {
-    connectionType: ConnectionType
-  }
-}
-
-export const generateFollowerNodes = (
-  leaderId: EipId
-): FollowerNodeDescriptor[] => {
-  const leaderComponent = lookupEipComponent(leaderId)
-  if (!leaderComponent) {
-    return []
-  }
-
-  if (leaderComponent.connectionType === "inbound_request_reply") {
-    // For greater separation of concerns, consider returning a node generator function instead.
-    return [
-      {
-        eipId: { namespace: "integration", name: "channel" },
-        generateLabel: (parentLabel) =>
-          `${parentLabel || leaderId.name} reply channel`,
-        overrides: {
-          connectionType: "sink",
-        },
-      },
-    ]
-  }
-
-  return []
 }

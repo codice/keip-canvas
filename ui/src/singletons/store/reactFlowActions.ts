@@ -7,7 +7,12 @@ import {
   NodeChange,
   NodeRemoveChange,
 } from "@xyflow/react"
-import { CustomEdge, CustomNode, DYNAMIC_EDGE_TYPE } from "../../api/flow"
+import {
+  CustomEdge,
+  CustomNode,
+  DYNAMIC_EDGE_TYPE,
+  isEipNode,
+} from "../../api/flow"
 import { EipComponent } from "../../api/generated/eipComponentDef"
 import {
   CHANNEL_ATTR_NAME,
@@ -18,13 +23,48 @@ import { AppStore } from "./api"
 import { useAppStore } from "./appStore"
 import { childrenDepthTraversal, getEipId } from "./storeViews"
 
+const createNodeLookupMap = (nodes: CustomNode[]) => {
+  const map = new Map<string, CustomNode>()
+  nodes.forEach((node) => isEipNode(node) && map.set(node.id, node))
+  return map
+}
+
 export const onNodesChange = (changes: NodeChange<CustomNode>[]) =>
   useAppStore.setState((state) => {
+    // TODO: refactor - ugly
+    // also consider forcing both leader and follower to be selected together always
+    // makes deleting easier
+    const nodeLookup = createNodeLookupMap(state.nodes)
+
+    const followerDeletes = changes.reduce((acc, change) => {
+      if (change.type !== "remove") {
+        return acc
+      }
+
+      const node = nodeLookup.get(change.id)
+      if (isEipNode(node)) {
+        const followerIds = node.data.followerIds ?? []
+        const deletes = followerIds.map(
+          (id) =>
+            ({
+              type: "remove",
+              id,
+            }) as NodeRemoveChange
+        )
+        acc.push(...deletes)
+        return acc
+      }
+
+      return acc
+    }, [] as NodeRemoveChange[])
+
+    const allChanges = [...changes, ...followerDeletes]
+
     const updates: Partial<AppStore> = {
-      nodes: applyNodeChanges(changes, state.nodes),
+      nodes: applyNodeChanges(allChanges, state.nodes),
     }
 
-    const updatedEipConfigs = removeDeletedNodeConfigs(state, changes)
+    const updatedEipConfigs = removeDeletedNodeConfigs(state, allChanges)
     if (updatedEipConfigs) {
       updates.eipConfigs = updatedEipConfigs
     }

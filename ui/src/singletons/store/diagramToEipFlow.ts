@@ -5,6 +5,7 @@ import {
   DynamicEdge,
   EipNodeData,
   isDynamicEdge,
+  isEipNode,
   RouterKey,
 } from "../../api/flow"
 import {
@@ -125,7 +126,7 @@ const childConfigToNode = (config: EipConfig): EipChildNode => ({
 
 const createNodeLookupMap = (nodes: CustomNode[]) => {
   const map = new Map<string, EipNodeData>()
-  nodes.forEach((node) => map.set(node.id, node.data))
+  nodes.forEach((node) => isEipNode(node) && map.set(node.id, node.data))
   return map
 }
 

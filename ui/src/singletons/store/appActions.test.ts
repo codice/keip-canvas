@@ -4,10 +4,10 @@ import isDeepEqual from "fast-deep-equal"
 import { beforeEach, describe, expect, test, vi } from "vitest"
 import {
   ChannelMapping,
+  CustomNodeType,
   DynamicEdgeData,
   EipFlowNode,
   Layout,
-  NodeTypeNames,
   RouterKey,
 } from "../../api/flow"
 import {
@@ -121,7 +121,7 @@ describe("create dropped node", () => {
 
     expect(node.position).toEqual(position)
     expect(node.id).toBeTruthy()
-    expect(node.type).toEqual(NodeTypeNames.EipNode)
+    expect(node.type).toEqual(CustomNodeType.EipNode)
     expect(node.targetPosition).toEqual(handlePosition.targetPosition)
     expect(node.sourcePosition).toEqual(handlePosition.sourcePosition)
   })
@@ -139,8 +139,8 @@ test("create a dropped node with followers", () => {
 
   expect(node.position).toEqual(position)
   expect(node.id).toBeTruthy()
-  expect(node.type).toEqual(NodeTypeNames.EipNode)
-  expect(node.data.followerNodes).toHaveLength(1)
+  expect(node.type).toEqual(CustomNodeType.EipNode)
+  expect(node.data.followerIds).toHaveLength(1)
 })
 
 describe("update node label", () => {

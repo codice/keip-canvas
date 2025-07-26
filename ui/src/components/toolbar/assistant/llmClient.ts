@@ -5,7 +5,7 @@ import { KEIP_ASSISTANT_OLLAMA_URL } from "../../../singletons/externalEndpoints
 import { EipConfig, SerializedFlow } from "../../../singletons/store/api"
 import { EXPORTED_FLOW_VERSION } from "../../../singletons/store/appStore"
 
-import { EIP_NODE_TYPE } from "../../../api/flow"
+import { CustomNodeType } from "../../../api/flow"
 import {
   getEdgesView,
   getEipId,
@@ -156,7 +156,7 @@ const convertToSerializedFlow = (
 ): SerializedFlow => ({
   nodes: response.nodes.map((node) => ({
     ...node,
-    type: EIP_NODE_TYPE,
+    type: CustomNodeType.EipNode,
     data: { label: node?.data?.label },
   })),
   edges: response.edges,

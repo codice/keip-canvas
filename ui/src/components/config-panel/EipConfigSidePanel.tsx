@@ -4,9 +4,10 @@ import { useState } from "react"
 import {
   CustomEdge,
   CustomNode,
-  CustomNodeType,
   DynamicEdge,
   isDynamicEdge,
+  isEipNode,
+  isFollowerNode,
 } from "../../api/flow"
 import { Attribute } from "../../api/generated/eipComponentDef"
 import { EipId } from "../../api/generated/eipFlow"
@@ -57,8 +58,7 @@ const EipConfigSidePanel = () => {
     onChange: ({ nodes, edges }) => {
       selectedChildPath && clearSelectedChildNode()
       const numSelected = nodes.length + edges.length
-      // TODO: Use the common type guard
-      if (nodes.length === 1 && nodes[0].type === CustomNodeType.FollowerNode) {
+      if (nodes.length === 1 && isFollowerNode(nodes[0])) {
         const leaderId = nodes[0].data.leaderId
         switchNodeSelection(leaderId)
       } else {
@@ -86,7 +86,7 @@ const EipConfigSidePanel = () => {
         attributes={configurableAttrs}
       />
     )
-  } else if (selectedNode) {
+  } else if (selectedNode && isEipNode(selectedNode)) {
     // TODO: Handle error case if eipComponent is undefined
     const selectedNodeEipId = selectedNode && getEipId(selectedNode.id)
     const eipComponent =

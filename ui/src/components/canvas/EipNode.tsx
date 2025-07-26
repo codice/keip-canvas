@@ -1,6 +1,8 @@
 import { Tile } from "@carbon/react"
 
-import { Handle, NodeProps, Position } from "@xyflow/react"
+import isDeepEqual from "fast-deep-equal"
+
+import { Handle, NodeProps, Position, useNodesData } from "@xyflow/react"
 import {
   EipFlowNode,
   FollowerNode as FollowerNodeType,
@@ -8,15 +10,15 @@ import {
 } from "../../api/flow"
 import { ConnectionType, EipRole } from "../../api/generated/eipComponentDef"
 import {
-  generateFollowerNodes,
+  eipIdToString,
   lookupEipComponent,
 } from "../../singletons/eipDefinitions"
 import getIconUrl from "../../singletons/eipIconCatalog"
+import { describeFollowers } from "../../singletons/followerNodeDefs"
 import { clearSelectedChildNode } from "../../singletons/store/appActions"
 import {
   useGetEnabledChildren,
   useGetLayout,
-  useGetNodeLabel,
 } from "../../singletons/store/getterHooks"
 import { getEipId } from "../../singletons/store/storeViews"
 import { getNamespacedTitle } from "../../utils/titleTransform"
@@ -130,10 +132,11 @@ export const EipNode = (props: NodeProps<EipFlowNode>) => {
 }
 
 // TODO: Reduce duplication with EipNode component
+// TODO: Gray out the follower node
 export const FollowerNode = (props: NodeProps<FollowerNodeType>) => {
   const layout = useGetLayout()
   const leaderId = props.data.leaderId
-  const leaderLabel = useGetNodeLabel(leaderId)
+  const leaderData = useNodesData<EipFlowNode>(leaderId)
 
   const eipId = getEipId(props.id)
   const componentDefinition = eipId && lookupEipComponent(eipId)
@@ -141,14 +144,22 @@ export const FollowerNode = (props: NodeProps<FollowerNodeType>) => {
   const leaderEipId = getEipId(leaderId)
 
   if (!componentDefinition || !leaderEipId) {
-    const eipIdStr = eipId ? `${eipId.namespace}.${eipId.name}` : null
     console.error(
-      `Failed to render follower node with eipId: ${eipIdStr} for leaderId: ${leaderId}`
+      `Failed to render follower node with eipId: (${eipId && eipIdToString(eipId)}) for leaderId: (${leaderId})`
     )
     return null
   }
 
-  const followerDescriptor = generateFollowerNodes(leaderEipId)[0]
+  const followerDescriptor = describeFollowers(leaderEipId).find((fd) =>
+    isDeepEqual(fd.eipId, eipId)
+  )
+
+  if (!followerDescriptor) {
+    console.error(
+      `Failed to find follower descriptor for node with eipId: (${eipIdToString(eipId)}) for leaderId: (${leaderId})`
+    )
+    return null
+  }
 
   const handles = renderHandles(
     followerDescriptor.overrides?.connectionType ??
@@ -161,7 +172,9 @@ export const FollowerNode = (props: NodeProps<FollowerNodeType>) => {
       <div>{getNamespacedTitle(eipId)}</div>
       <img className="eip-node-image" src={getIconUrl(eipId)} />
       <div className="eip-node-label">
-        <strong>{followerDescriptor.generateLabel(leaderLabel)}</strong>
+        <strong>
+          {followerDescriptor.generateLabel(leaderData?.data.label ?? leaderId)}
+        </strong>
       </div>
       {handles}
     </Tile>

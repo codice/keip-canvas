@@ -9,12 +9,13 @@ import {
   EipFlowNode,
   FollowerNode,
   isDynamicEdge,
+  isEipNode,
   Layout,
 } from "../../api/flow"
 import { AttributeType } from "../../api/generated/eipComponentDef"
 import { EipId } from "../../api/generated/eipFlow"
 import { newFlowLayout } from "../../components/layout/layouting"
-import { generateFollowerNodes } from "../eipDefinitions"
+import { describeFollowers } from "../followerNodeDefs"
 import { AppStore, EipConfig, SerializedFlow } from "./api"
 import { useAppStore } from "./appStore"
 import { childrenDepthTraversal } from "./storeViews"
@@ -48,10 +49,10 @@ export const updateNodeLabel = (id: string, label: string) => {
   let error: Error | undefined
   useAppStore.setState((state) => {
     const updatedNodes = state.nodes.map((node) => {
-      if (node.id === id) {
+      if (node.id === id && isEipNode(node)) {
         return { ...node, data: { ...node.data, label } }
       } else {
-        if (node.data.label === label) {
+        if ("label" in node.data && node.data.label === label) {
           error = new Error("Node labels must be unique")
         }
         return node
@@ -280,22 +281,24 @@ const POSITION_X_OFFSET = 200
 const POSITION_Y_OFFSET = 0
 
 // TODO: refactor, return type is awkward
-const generateNodes = (eipId: EipId, position: XYPosition) => {
+const generateNodes = (
+  eipId: EipId,
+  position: XYPosition
+): NodeDescriptor[] => {
   const node = newEipNode(position)
 
-  const descriptors: NodeDescriptor[] = [{ node, eipId }]
-
-  generateFollowerNodes(eipId).forEach((follower) => {
+  const followers = describeFollowers(eipId).map((follower) => {
     const offsetPos = {
       x: position.x + POSITION_X_OFFSET,
       y: position.y + POSITION_Y_OFFSET,
     }
 
     const followerNode = newFollowerNode(node.id, offsetPos)
-    descriptors.push({ node: followerNode, eipId: follower.eipId })
+    return { node: followerNode, eipId: follower.eipId }
   })
 
-  return descriptors
+  node.data.followerIds = followers.map((desc) => desc.node.id)
+  return [{ node, eipId }, ...followers]
 }
 
 const newEipNode = (position: XYPosition) => {
@@ -351,7 +354,7 @@ const isStoreType = (state: unknown): state is AppStore => {
 }
 
 // Maintains compatibility with older exported formats
-const importDeprecatedFlow = (flow: SerializedFlow) => {
+const importDeprecatedFlow = (flow: SerializedFlow): Partial<AppStore> => {
   const eipConfigs = {} as AppStore["eipConfigs"]
   const nodes = flow.nodes.map((node) => {
     const { eipId: oldEipId, ...rest } = node.data as { eipId: EipId }
@@ -364,7 +367,7 @@ const importDeprecatedFlow = (flow: SerializedFlow) => {
       ...node,
       data: rest,
     }
-  })
+  }) as CustomNode[]
 
   return {
     nodes,

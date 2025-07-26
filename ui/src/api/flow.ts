@@ -17,13 +17,17 @@ export enum CustomNodeType {
 export type EipNodeData = {
   label?: string
 
-  // TODO: naming?
   // The ids of nodes that are linked to this one (i.e. have the same lifecycle)
-  followerNodes?: string[]
+  followerIds?: string[]
 }
 
 export type EipFlowNode = Node<EipNodeData, CustomNodeType.EipNode>
 
+export const isEipNode = (node?: Node): node is EipFlowNode =>
+  node?.type === CustomNodeType.EipNode
+
+// TODO: Consider using ReactFlow's parentId field instead of a distinct node type
+//
 // react flow requires using a type rather than an interface for NodeData
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type FollowerNodeData = {
@@ -31,6 +35,9 @@ export type FollowerNodeData = {
 }
 
 export type FollowerNode = Node<FollowerNodeData, CustomNodeType.FollowerNode>
+
+export const isFollowerNode = (node?: Node): node is FollowerNode =>
+  node?.type === CustomNodeType.FollowerNode
 
 export type CustomNode = EipFlowNode | FollowerNode
 
