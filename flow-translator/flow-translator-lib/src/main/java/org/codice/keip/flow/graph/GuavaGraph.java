@@ -25,9 +25,6 @@ public class GuavaGraph implements EipGraph {
   private final ImmutableValueGraph<EipNode, EdgeProps> graph;
 
   private GuavaGraph(ImmutableValueGraph<EipNode, EdgeProps> graph) {
-    if (Graphs.hasCycle(graph.asGraph())) {
-      throw new IllegalArgumentException("Graphs with cycles are not allowed");
-    }
     this.graph = graph;
   }
 
@@ -63,7 +60,12 @@ public class GuavaGraph implements EipGraph {
 
   /** Finds the nodes in the graph that have no incoming edges (indicating the start of a flow). */
   private Stream<EipNode> findRoots() {
-    return graph.nodes().stream().filter(node -> graph.inDegree(node) == 0);
+    Stream<EipNode> roots = graph.nodes().stream().filter(node -> graph.inDegree(node) == 0);
+    if (Graphs.hasCycle(graph.asGraph())) {
+      // traverse acyclic components first
+      return Stream.concat(roots, graph.nodes().stream());
+    }
+    return roots;
   }
 
   private static void addNodes(

@@ -19,7 +19,8 @@ import static org.codice.keip.flow.xml.XmlComparisonUtil.readTestXml
 class FlowToSpringIntegrationTest extends Specification {
     private static final List<NamespaceSpec> NAMESPACES = [
             new NamespaceSpec("jms", "http://www.springframework.org/schema/integration/jms", "https://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd"),
-            new NamespaceSpec("http", "http://www.springframework.org/schema/integration/http", "https://www.springframework.org/schema/integration/http/spring-integration-http.xsd")
+            new NamespaceSpec("http", "http://www.springframework.org/schema/integration/http", "https://www.springframework.org/schema/integration/http/spring-integration-http.xsd"),
+            new NamespaceSpec("ftp", "http://www.springframework.org/schema/integration/ftp", "https://www.springframework.org/schema/integration/ftp/spring-integration-ftp.xsd")
     ]
 
     private static final JsonMapper MAPPER =
@@ -47,6 +48,7 @@ class FlowToSpringIntegrationTest extends Specification {
         "flowGraph1.json" | Path.of("end-to-end", "spring-integration-1.xml").toString()
         "flowGraph2.json" | Path.of("end-to-end", "spring-integration-2.xml").toString()
         "flowGraph3.json" | Path.of("end-to-end", "spring-integration-3.xml").toString()
+        "flowGraph4.json" | Path.of("end-to-end", "spring-integration-4.xml").toString()
     }
 
     def "Verify transformation error list is populated on node transformation error"() {

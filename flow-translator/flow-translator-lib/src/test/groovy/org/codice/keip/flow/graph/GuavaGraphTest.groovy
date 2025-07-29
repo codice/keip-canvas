@@ -9,6 +9,7 @@ import org.codice.keip.flow.model.FlowEdge
 import org.codice.keip.flow.model.Role
 import spock.lang.Specification
 
+import java.util.stream.Collectors
 import java.util.stream.Stream
 
 class GuavaGraphTest extends Specification {
@@ -183,7 +184,7 @@ class GuavaGraphTest extends Specification {
         graph.getEdgeProps(n1, n2).get().id() == parallelEdge.id()
     }
 
-    def "graph with a cycle throws exception"() {
+    def "graph with a single cycle -> each node is traversed once"() {
         given:
         def n1 = newNode("1")
         def n2 = newNode("2")
@@ -196,10 +197,43 @@ class GuavaGraphTest extends Specification {
         def flow = new Flow([n1, n2, n3], [e1, e2, e3])
 
         when:
-        GuavaGraph.from(flow)
+        def graph = GuavaGraph.from(flow)
 
         then:
-        thrown(IllegalArgumentException)
+        graph.traverse().map { it.id() }.collect(Collectors.toSet()).size() == 3
+    }
+
+    def "graph with multiple cycles is allowed -> each node is traversed once"() {
+        given:
+        def n1 = newNode("1")
+        def n2 = newNode("2")
+        def n3 = newNode("3")
+
+        def n4 = newNode("4")
+        def n5 = newNode("5")
+        def n6 = newNode("6")
+
+        // cycle free connected component
+        def n7 = newNode("7")
+        def n8 = newNode("8")
+
+        def e1 = new FlowEdge("a", n1.id(), n2.id())
+        def e2 = new FlowEdge("b", n2.id(), n3.id())
+        def e3 = new FlowEdge("c", n3.id(), n1.id())
+
+        def e4 = new FlowEdge("d", n4.id(), n5.id())
+        def e5 = new FlowEdge("e", n5.id(), n6.id())
+        def e6 = new FlowEdge("f", n6.id(), n4.id())
+
+        def e7 = new FlowEdge("g", n7.id(), n8.id())
+
+        def flow = new Flow([n1, n2, n3, n4, n5, n6, n7, n8], [e1, e2, e3, e4, e5, e6, e7])
+
+        when:
+        def graph = GuavaGraph.from(flow)
+
+        then:
+        graph.traverse().toList().size() == 8
     }
 
     private static EipNode newNode(String id) {

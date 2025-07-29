@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:integration="http://www.springframework.org/schema/integration"
+       xmlns:http="http://www.springframework.org/schema/integration/http"
+       xmlns:ftp="http://www.springframework.org/schema/integration/ftp"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/integration https://www.springframework.org/schema/integration/spring-integration.xsd http://www.springframework.org/schema/integration/http https://www.springframework.org/schema/integration/http/spring-integration-http.xsd http://www.springframework.org/schema/integration/ftp https://www.springframework.org/schema/integration/ftp/spring-integration-ftp.xsd">
+
+    <http:inbound-channel-adapter id="httpIn" channel="ch-httpIn-ftpOut"/>
+
+    <integration:channel id="ch-httpIn-ftpOut"/>
+
+    <ftp:outbound-channel-adapter id="ftpOut" channel="ch-httpIn-ftpOut"/>
+
+    <ftp:inbound-channel-adapter id="ftpToReply" channel="testIn-reply-channel"/>
+
+    <integration:channel id="testIn-reply-channel"/>
+
+    <http:inbound-gateway id="testIn" reply-channel="testIn-reply-channel" request-channel="ch-testIn-updatePayload"/>
+
+    <integration:channel id="ch-testIn-updatePayload"/>
+
+    <integration:transformer id="updatePayload" input-channel="ch-testIn-updatePayload"
+                             output-channel="testIn-reply-channel"/>
+</beans>

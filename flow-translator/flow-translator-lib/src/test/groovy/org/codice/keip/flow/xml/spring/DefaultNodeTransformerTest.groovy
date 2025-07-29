@@ -77,6 +77,24 @@ class DefaultNodeTransformerTest extends Specification {
         []                                           | [createNodeStub("n1"), createNodeStub("n2")]
     }
 
+    def "multi-input/multi-output 'inbound_request_reply' node fails validation"(Set<EipNode> predecessors, Set<EipNode> successors) {
+        given:
+        graph.predecessors(testNode) >> predecessors
+        graph.successors(testNode) >> successors
+
+        when:
+        transformer.apply(testNode, graph)
+
+        then:
+        testNode.connectionType() >> ConnectionType.INBOUND_REQUEST_REPLY
+        thrown(IllegalArgumentException)
+
+        where:
+        predecessors                                 | successors
+        [createNodeStub("n1"), createNodeStub("n2")] | []
+        []                                           | [createNodeStub("n1"), createNodeStub("n2")]
+    }
+
     def "multi-input/single-output 'sink' node fails validation"(Set<EipNode> predecessors, Set<EipNode> successors) {
         given:
         graph.predecessors(testNode) >> predecessors
@@ -281,6 +299,29 @@ class DefaultNodeTransformerTest extends Specification {
         attributes.size() == 2
         attributes[REQUEST_CHANNEL] == "in"
         attributes[REPLY_CHANNEL] == "out"
+    }
+
+    def "addChannelAttributes with 'inbound_request_reply' node -> input and output channel attributes added"() {
+        given:
+        def preNode = createNodeStub("pre1")
+        def postNode = createNodeStub("post1")
+
+        graph.predecessors(testNode) >> [preNode]
+        graph.successors(testNode) >> [postNode]
+
+        graph.getEdgeProps(preNode, testNode) >> createEdgeProps("in")
+        graph.getEdgeProps(testNode, postNode) >> createEdgeProps("out")
+
+        when:
+        def transformation = new DefaultNodeTransformer.DefaultTransformation(testNode, graph)
+        def attributes = transformation.createChannelAttributes()
+
+        then:
+        testNode.connectionType() >> ConnectionType.INBOUND_REQUEST_REPLY
+
+        attributes.size() == 2
+        attributes[REQUEST_CHANNEL] == "out"
+        attributes[REPLY_CHANNEL] == "in"
     }
 
     def "addChannelAttributes with 'sink' node -> channel attribute is added"() {

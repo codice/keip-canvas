@@ -1,0 +1,102 @@
+{
+  "nodes": [
+    {
+      "id": "testIn",
+      "eipId": {
+        "namespace": "http",
+        "name": "inbound-gateway"
+      },
+      "role": "endpoint",
+      "connectionType": "inbound_request_reply",
+      "attributes": {},
+      "children": []
+    },
+    {
+      "id": "testIn-reply-channel",
+      "eipId": {
+        "namespace": "integration",
+        "name": "channel"
+      },
+      "role": "channel",
+      "connectionType": "passthru",
+      "attributes": {},
+      "children": []
+    },
+    {
+      "id": "updatePayload",
+      "eipId": {
+        "namespace": "integration",
+        "name": "transformer"
+      },
+      "role": "transformer",
+      "connectionType": "passthru",
+      "attributes": {},
+      "children": []
+    },
+    {
+      "id": "httpIn",
+      "eipId": {
+        "namespace": "http",
+        "name": "inbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "source",
+      "attributes": {},
+      "children": []
+    },
+    {
+      "id": "ftpOut",
+      "eipId": {
+        "namespace": "ftp",
+        "name": "outbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "sink",
+      "attributes": {},
+      "children": []
+    },
+    {
+      "id": "ftpToReply",
+      "eipId": {
+        "namespace": "ftp",
+        "name": "inbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "source",
+      "attributes": {},
+      "children": []
+    }
+  ],
+  "edges": [
+    {
+      "id": "ch-testIn-updatePayload",
+      "source": "testIn",
+      "target": "updatePayload",
+      "type": "default"
+    },
+    {
+      "id": "ch-updatePayload-testIn-reply-channel",
+      "source": "updatePayload",
+      "target": "testIn-reply-channel",
+      "type": "default"
+    },
+    {
+      "id": "ch-httpIn-ftpOut",
+      "source": "httpIn",
+      "target": "ftpOut",
+      "type": "default"
+    },
+    {
+      "id": "ch-ftpToReply-testIn-reply-channel",
+      "source": "ftpToReply",
+      "target": "testIn-reply-channel",
+      "type": "default"
+    },
+    {
+      "id": "ch-testIn-reply-channel-testIn",
+      "source": "testIn-reply-channel",
+      "target": "testIn",
+      "type": "default"
+    }
+  ]
+}

@@ -95,6 +95,8 @@ public class DefaultNodeTransformer implements NodeTransformer {
       Map<String, Object> attributes = new LinkedHashMap<>();
       return switch (this.node.connectionType()) {
         case CONTENT_BASED_ROUTER -> handleRouter(attributes, predecessors);
+        case INBOUND_REQUEST_REPLY ->
+            handleInboundRequestReply(attributes, predecessors, successors);
         case PASSTHRU -> handlePassthru(attributes, predecessors, successors);
         case REQUEST_REPLY -> handleRequestReply(attributes, predecessors, successors);
         case SINK -> handleSink(attributes, predecessors, successors);
@@ -112,6 +114,21 @@ public class DefaultNodeTransformer implements NodeTransformer {
       predecessors.stream()
           .findFirst()
           .ifPresent(p -> attributes.put(INPUT_CHANNEL, getChannelId(p, this.node)));
+      return attributes;
+    }
+
+    private Map<String, Object> handleInboundRequestReply(
+        Map<String, Object> attributes, Set<EipNode> predecessors, Set<EipNode> successors) {
+      if (predecessors.size() > 1 || successors.size() > 1) {
+        throw new IllegalArgumentException(
+            "'RequestReply' nodes can have at most one incoming and one outgoing edge");
+      }
+      predecessors.stream()
+          .findFirst()
+          .ifPresent(p -> attributes.put(REPLY_CHANNEL, getChannelId(p, this.node)));
+      successors.stream()
+          .findFirst()
+          .ifPresent(s -> attributes.put(REQUEST_CHANNEL, getChannelId(this.node, s)));
       return attributes;
     }
 

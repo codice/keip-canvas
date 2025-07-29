@@ -6,7 +6,7 @@
 
     <groupId>org.codice.keip</groupId>
     <artifactId>flow-translator-lib</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 
     <packaging>jar</packaging>
 
@@ -48,7 +48,7 @@
         <dependency>
             <groupId>org.codice.keip.schemas</groupId>
             <artifactId>validation</artifactId>
-            <version>0.1.0</version>
+            <version>0.2.0</version>
             <scope>test</scope>
         </dependency>
 
