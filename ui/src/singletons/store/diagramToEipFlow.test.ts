@@ -3,6 +3,7 @@ import { expect, test, vi } from "vitest"
 import { useEipFlow } from "./diagramToEipFlow"
 import { resetMockStore } from "./storeTestingUtils"
 import childBasedRouterFlow from "./testdata/store-initializers/childBasedRouterFlow.json"
+import customEntitiesFlow from "./testdata/store-initializers/customEntitiesFlow.json"
 import inboundGatewayFlow from "./testdata/store-initializers/inboundGatewayFlow.json"
 import nestedChildFlow from "./testdata/store-initializers/nestedChildFlow.json"
 import standardFlow from "./testdata/store-initializers/standardFlow.json"
@@ -39,6 +40,15 @@ test("diagram with deep child nesting", () => {
 test("diagram with inbound-request-reply node", () => {
   act(() => {
     resetMockStore(inboundGatewayFlow)
+  })
+
+  const { result } = renderHook(() => useEipFlow())
+  expect(result.current).toMatchSnapshot()
+})
+
+test("diagram with custom entities", () => {
+  act(() => {
+    resetMockStore(customEntitiesFlow)
   })
 
   const { result } = renderHook(() => useEipFlow())

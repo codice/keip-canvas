@@ -29,6 +29,11 @@ export const getEipId = (nodeId: string): Readonly<EipId> | undefined =>
 export const getSelectedChildNode = (): readonly string[] | null =>
   useAppStore.getState().selectedChildNode
 
+export const getCustomEntityContent = (
+  entityId: string
+): Readonly<string> | undefined =>
+  useAppStore.getState().customEntities[entityId]
+
 export const childrenBreadthTraversal = function* (
   rootId: string
 ): Generator<ChildTraversalItem> {

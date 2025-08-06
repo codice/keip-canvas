@@ -50,7 +50,7 @@
 
 $options-modal-editor-height: 30vh;
 
-.options-modal__editor {
+.modal__code-editor {
   background-color: themes.$layer-02;
   overflow-y: auto;
   height: $options-modal-editor-height;
@@ -58,16 +58,26 @@ $options-modal-editor-height: 30vh;
   @include type.type-style("code-02");
 }
 
-.options-modal__editor > div {
+.modal__code-editor > div {
   min-height: $options-modal-editor-height;
 }
 
-.options-modal__editor:focus-within {
+.modal__code-editor:focus-within {
   outline: 2px solid themes.$border-interactive;
 }
 
-.options-modal__editor-textarea:focus {
+.modal__code-editor-textarea:focus {
   outline: none;
+}
+
+p.modal__error-message {
+  color: themes.$text-error;
+
+  @include type.type-style("label-02");
+}
+
+p.modal__helper-text {
+  @include type.type-style("helper-text-01");
 }
 
 .canvas {
@@ -165,11 +175,16 @@ $options-modal-editor-height: 30vh;
   //        End XML Editor Panel       //
 }
 
-.node-chooser-panel {
+.resizable-panel-divider {
+  border: 1px solid themes.$border-strong-01;
+}
+
+.node-palette {
   position: static;
   inline-size: 100%;
   max-inline-size: 18rem;
   max-height: 100%;
+  user-select: none;
 
   a.cds--side-nav__link {
     padding-left: 1rem;
@@ -204,10 +219,6 @@ $options-modal-editor-height: 30vh;
   .search-bar-container {
     margin-top: 1rem;
     padding: 1rem;
-  }
-
-  .eip-namespace-list {
-    overflow-y: auto;
   }
 
   .eip-item-list {

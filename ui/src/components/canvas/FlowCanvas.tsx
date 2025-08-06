@@ -40,7 +40,7 @@ import {
   onEdgesChange,
   onNodesChange,
 } from "../../singletons/store/reactFlowActions"
-import { DragTypes } from "../draggable-panel/dragTypes"
+import { DragTypes } from "../palette/dragTypes"
 import DynamicEdge from "./DynamicEdge"
 import { EipNode, FollowerNode } from "./EipNode"
 
@@ -235,6 +235,7 @@ const FlowCanvas = () => {
             showZoom={false}
           >
             <ControlButton title="clear" onClick={clearFlow}>
+              {/* TODO: style this button as a dangerous action */}
               <TrashCan />
             </ControlButton>
           </Controls>

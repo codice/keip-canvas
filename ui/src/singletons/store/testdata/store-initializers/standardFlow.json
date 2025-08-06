@@ -257,5 +257,6 @@
   "layout": {
     "orientation": "horizontal",
     "density": "comfortable"
-  }
+  },
+  "customEntities": {}
 }

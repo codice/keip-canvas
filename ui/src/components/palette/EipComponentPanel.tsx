@@ -2,7 +2,6 @@ import {
   Accordion,
   AccordionItem,
   Search,
-  SideNav,
   SideNavMenuItem,
 } from "@carbon/react"
 
@@ -95,8 +94,7 @@ const namespacesToDisplay = (
   )
 }
 
-// TODO: Make node chooser panel collapsable
-const NodeChooserPanel = () => {
+export const EipComponentPanel = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [expandedNamespace, setExpandedNamespace] = useState("")
   const nodeCount = useNodeCount()
@@ -123,13 +121,7 @@ const NodeChooserPanel = () => {
   ))
 
   return (
-    <SideNav
-      className="node-chooser-panel"
-      isFixedNav
-      expanded={true}
-      isChildOfHeader={false}
-      aria-label="side-navigation"
-    >
+    <>
       <div className="search-bar-container">
         <Search
           labelText="Narrow component selections"
@@ -144,8 +136,6 @@ const NodeChooserPanel = () => {
       <Accordion className="eip-namespace-list" size="lg" isFlush>
         {collections}
       </Accordion>
-    </SideNav>
+    </>
   )
 }
-
-export default NodeChooserPanel

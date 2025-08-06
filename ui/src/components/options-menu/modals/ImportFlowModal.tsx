@@ -1,22 +1,13 @@
 import { Modal } from "@carbon/react"
 import { InlineLoadingStatus } from "@carbon/react/lib/components/InlineLoading/InlineLoading"
-import hljs from "highlight.js/lib/core"
-import json from "highlight.js/lib/languages/json"
 import { useState } from "react"
 import { createPortal } from "react-dom"
-import Editor from "react-simple-code-editor"
 import { importFlowFromJson } from "../../../singletons/store/appActions"
-
-hljs.registerLanguage("json", json)
+import { ModalCodeEditor } from "../../editor/ModalCodeEditor"
 
 interface ImportFlowModalProps {
   open: boolean
   setOpen: (open: boolean) => void
-}
-
-interface JsonEditorProps {
-  content: string
-  setContent: (content: string) => void
 }
 
 const getLoadingDescription = (status: InlineLoadingStatus) => {
@@ -29,20 +20,6 @@ const getLoadingDescription = (status: InlineLoadingStatus) => {
     case "finished":
       return ""
   }
-}
-
-const FlowJsonEditor = ({ content, setContent }: JsonEditorProps) => {
-  return (
-    <div className="options-modal__editor">
-      <Editor
-        value={content}
-        onValueChange={(code) => setContent(code)}
-        highlight={(code) => hljs.highlight(code, { language: "json" }).value}
-        padding={16}
-        textareaClassName="options-modal__editor-textarea"
-      />
-    </div>
-  )
 }
 
 export const ImportFlowModal = ({ open, setOpen }: ImportFlowModalProps) => {
@@ -84,7 +61,11 @@ export const ImportFlowModal = ({ open, setOpen }: ImportFlowModalProps) => {
       loadingDescription={getLoadingDescription(loadingStatus)}
       onRequestSubmit={doImport}
     >
-      <FlowJsonEditor content={content} setContent={updateContent} />
+      <ModalCodeEditor
+        content={content}
+        setContent={updateContent}
+        language="json"
+      />
     </Modal>,
     document.body
   )

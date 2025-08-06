@@ -2,6 +2,7 @@
 
 exports[`diagram includes a router with child based matcher to EipFlow success 1`] = `
 {
+  "customEntities": {},
   "edges": [
     {
       "id": "ch-rn79OHQyAI-cGUxaVOQ7L",
@@ -96,8 +97,72 @@ exports[`diagram includes a router with child based matcher to EipFlow success 1
 }
 `;
 
+exports[`diagram with custom entities 1`] = `
+{
+  "customEntities": {
+    "customTransform": "<bean class="com.example.custom.xml.Transformer" />",
+  },
+  "edges": [
+    {
+      "id": "ch-in1-xmlToJson",
+      "source": "in1",
+      "target": "xmlToJson",
+      "type": "default",
+    },
+    {
+      "id": "ch-xmlToJson-out1",
+      "source": "xmlToJson",
+      "target": "out1",
+      "type": "default",
+    },
+  ],
+  "nodes": [
+    {
+      "attributes": {},
+      "children": [],
+      "connectionType": "source",
+      "description": undefined,
+      "eipId": {
+        "name": "inbound-channel-adapter",
+        "namespace": "integration",
+      },
+      "id": "in1",
+      "role": "endpoint",
+    },
+    {
+      "attributes": {
+        "method": "toJson",
+        "ref": "customTransform",
+      },
+      "children": [],
+      "connectionType": "passthru",
+      "description": undefined,
+      "eipId": {
+        "name": "transformer",
+        "namespace": "integration",
+      },
+      "id": "xmlToJson",
+      "role": "transformer",
+    },
+    {
+      "attributes": {},
+      "children": [],
+      "connectionType": "sink",
+      "description": undefined,
+      "eipId": {
+        "name": "outbound-channel-adapter",
+        "namespace": "integration",
+      },
+      "id": "out1",
+      "role": "endpoint",
+    },
+  ],
+}
+`;
+
 exports[`diagram with deep child nesting 1`] = `
 {
+  "customEntities": {},
   "edges": [],
   "nodes": [
     {
@@ -153,6 +218,7 @@ exports[`diagram with deep child nesting 1`] = `
 
 exports[`diagram with inbound-request-reply node 1`] = `
 {
+  "customEntities": {},
   "edges": [
     {
       "id": "ch-testIn-QvmTf6Jm4O",
@@ -216,6 +282,7 @@ exports[`diagram with inbound-request-reply node 1`] = `
 
 exports[`standard diagram to EipFlow success 1`] = `
 {
+  "customEntities": {},
   "edges": [
     {
       "id": "ch-inbound-test-router",

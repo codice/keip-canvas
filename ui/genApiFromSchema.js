@@ -10,7 +10,7 @@ import path from "node:path"
 // TODO: Use git tags instead of commit hashes
 // To use an updated source schema, change this to point to the desired version.
 
-const COMMIT_HASH = "9ccbe6e4f960451e36476572df05aa2bad375d4e"
+const COMMIT_HASH = "47b4b770e33f576da45ec1b5156d3b94d744d2ee"
 
 const SCHEMAS = ["eipComponentDef.schema.json", "eipFlow.schema.json"]
 

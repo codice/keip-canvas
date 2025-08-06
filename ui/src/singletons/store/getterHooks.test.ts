@@ -26,7 +26,7 @@ beforeEach(() => {
   })
 })
 
-test("serialized store includes nodes, edges, and eipNodeConfigs only", () => {
+test("serialized store includes a subset of AppStore", () => {
   const storeJson = renderAndUnwrapHook(useSerializedFlow)
   expect(storeJson).toMatchSnapshot()
 })

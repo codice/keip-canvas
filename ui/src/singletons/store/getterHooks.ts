@@ -29,6 +29,7 @@ export const useSerializedFlow = () =>
       nodes: state.nodes,
       edges: state.edges,
       eipConfigs: state.eipConfigs,
+      customEntities: state.customEntities,
       version: EXPORTED_FLOW_VERSION,
     }
     return JSON.stringify(flow)
@@ -62,3 +63,6 @@ export const useGetRouterDefaultEdgeMapping = (routerId: string) =>
         edge.data?.mapping.isDefaultMapping
     )
   )
+
+export const useGetCustomEntityIds = () =>
+  useAppStore(useShallow((state) => Object.keys(state.customEntities)))

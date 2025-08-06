@@ -8,4 +8,5 @@
 declare module "@carbon/themes" {
   export const interactive: string
   export const layer01: string
+  export const supportError: string
 }

@@ -240,6 +240,7 @@ export const importFlowFromObject = (flow: SerializedFlow) => {
       nodes: flow.nodes,
       edges: flow.edges,
       eipConfigs: flow.eipConfigs,
+      customEntities: flow.customEntities ?? {},
     }
   })
 }
@@ -269,6 +270,69 @@ export const toggleLayoutDensity = () =>
     return {
       nodes: nodes,
       layout: newLayout,
+    }
+  })
+
+type EntityUpdateResult =
+  | { success: true }
+  | { success: false; idError?: string; contentError?: string }
+
+export const updateCustomEntity = (
+  oldId: string | null,
+  newId: string,
+  content: string
+): EntityUpdateResult => {
+  const { customEntities } = useAppStore.getState()
+
+  if (!newId) {
+    return { success: false, idError: "An Entity ID is required" }
+  }
+
+  const isInPlaceUpdate = oldId === newId
+  const isDuplicateId = newId in customEntities
+
+  if (!isInPlaceUpdate && isDuplicateId) {
+    return { success: false, idError: "Entity ID must be unique" }
+  }
+
+  if (!isWellFormedXML(content)) {
+    return {
+      success: false,
+      contentError: "Content should be a valid XML snippet",
+    }
+  }
+
+  useAppStore.setState((state) => {
+    const updatedEntities = {
+      ...state.customEntities,
+      [newId]: content,
+    }
+
+    if (!isInPlaceUpdate && oldId) {
+      delete updatedEntities[oldId]
+    }
+
+    return {
+      customEntities: updatedEntities,
+    }
+  })
+
+  return { success: true }
+}
+
+export const removeCustomEntity = (entityId: string) =>
+  useAppStore.setState((state) => {
+    const entities = { ...state.customEntities }
+    delete entities[entityId]
+    return {
+      customEntities: entities,
+    }
+  })
+
+export const clearAllCustomEntities = () =>
+  useAppStore.setState(() => {
+    return {
+      customEntities: {},
     }
   })
 
@@ -375,4 +439,14 @@ const importDeprecatedFlow = (flow: SerializedFlow): Partial<AppStore> => {
     edges: flow.edges,
     eipConfigs,
   }
+}
+
+const isWellFormedXML = (content: string) => {
+  if (!content) {
+    return false
+  }
+
+  const xmlDoc = new DOMParser().parseFromString(content, "text/xml")
+  const errorNode = xmlDoc.querySelector("parsererror")
+  return errorNode === null
 }

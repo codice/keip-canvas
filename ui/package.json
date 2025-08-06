@@ -34,6 +34,7 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.3.1",
     "react-is": "^18.3.1",
+    "react-resizable-panels": "^3.0.4",
     "react-simple-code-editor": "^0.14.1",
     "zundo": "^2.3.0",
     "zustand": "^4.5.7"

@@ -14,12 +14,14 @@ import {
 } from "../../api/flow"
 import {
   useGetContentRouterKey,
+  useGetCustomEntityIds,
   useGetEipAttribute,
   useGetEnabledChildren,
   useGetNodeDescription,
   useGetSelectedChildNode,
 } from "./getterHooks"
 import { renderAndUnwrapHook, resetMockStore } from "./storeTestingUtils"
+import customEntitiesFlow from "./testdata/store-initializers/customEntitiesFlow.json"
 import nestedChildFlow from "./testdata/store-initializers/nestedChildFlow.json"
 import selectedNodeFlow from "./testdata/store-initializers/singleSelectedNodeFlow.json"
 import standardFlow from "./testdata/store-initializers/standardFlow.json"
@@ -27,6 +29,7 @@ import unspecifiedRouterFlow from "./testdata/store-initializers/unspecifiedRout
 
 import { EipId } from "../../api/generated/eipFlow"
 import {
+  clearAllCustomEntities,
   clearDiagramSelections,
   clearFlow,
   createDroppedNode,
@@ -34,10 +37,12 @@ import {
   disableChild,
   enableChild,
   importFlowFromJson,
+  removeCustomEntity,
   reorderEnabledChildren,
   switchNodeSelection,
   toggleLayoutDensity,
   updateContentRouterKey,
+  updateCustomEntity,
   updateDynamicEdgeMapping,
   updateEipAttribute,
   updateLayoutOrientation,
@@ -46,6 +51,7 @@ import {
   updateSelectedChildNode,
 } from "./appActions"
 import {
+  getCustomEntityContent,
   getEdgesView,
   getEipId,
   getLayoutView,
@@ -56,12 +62,14 @@ import validExportedFlow from "./testdata/exported-diagrams/validFlow.json?raw"
 
 vi.mock("zustand")
 
+// these ids reference objects in the imported flow diagrams
 const STANDARD_INBOUND_ADAPTER = "9KWCqlIyy7"
 const STANDARD_ROUTER = "LoiC2CFbLP"
 const STANDARD_FILTER = "SV43RVeijQ"
 const STANDARD_POLLER_CHILD = "mcyTryMPewJ"
 const STANDARD_TRANSACTIONAL_CHILD = "V1ls9ri4szs"
 const NESTED_CHILD_PARENT_ID = "FL5Tssm8tV"
+const CUSTOM_ENTITY_ID = "customTransform"
 
 beforeEach(() => {
   act(() => {
@@ -723,4 +731,128 @@ describe("Switch Node Selection", () => {
     expect(selectedNodes).toHaveLength(1)
     expect(selectedNodes[0].id).toEqual(STANDARD_ROUTER)
   })
+})
+
+describe("update custom entity", () => {
+  test("create a new entity -> success", () => {
+    const id = "e1"
+    const expectedContent = "<body>test</body>"
+    act(() => void updateCustomEntity(null, id, expectedContent))
+
+    const actualContent = getCustomEntityContent(id)
+    expect(expectedContent).toEqual(actualContent)
+
+    const entities = renderAndUnwrapHook(useGetCustomEntityIds)
+    expect(entities).toEqual([id])
+  })
+
+  test("update content for existing entity -> success", () => {
+    act(() => {
+      resetMockStore(customEntitiesFlow)
+    })
+
+    const updatedContent = "<body>test in-place update</body>"
+
+    act(
+      () =>
+        void updateCustomEntity(
+          CUSTOM_ENTITY_ID,
+          CUSTOM_ENTITY_ID,
+          updatedContent
+        )
+    )
+
+    expect(getCustomEntityContent(CUSTOM_ENTITY_ID)).toEqual(updatedContent)
+
+    const entities = renderAndUnwrapHook(useGetCustomEntityIds)
+    expect(entities).toEqual([CUSTOM_ENTITY_ID])
+  })
+
+  test("update an existing entity -> both id and content are updated, old id is removed", () => {
+    act(() => {
+      resetMockStore(customEntitiesFlow)
+    })
+
+    const oldId = CUSTOM_ENTITY_ID
+    const newId = "updated"
+    const updatedContent = "<body>test</body>"
+
+    act(() => void updateCustomEntity(oldId, newId, updatedContent))
+
+    expect(getCustomEntityContent(newId)).toEqual(updatedContent)
+    expect(getCustomEntityContent(oldId)).toBeUndefined()
+
+    const entities = renderAndUnwrapHook(useGetCustomEntityIds)
+    expect(entities).toEqual([newId])
+  })
+
+  test("create a new entity with empty id -> error", () => {
+    const expectedContent = "<body>test</body>"
+    const result = updateCustomEntity(null, "", expectedContent)
+
+    expect(result.success).toEqual(false)
+    result.success === false && expect(result.idError).toBeTruthy()
+    const entities = renderAndUnwrapHook(useGetCustomEntityIds)
+    expect(entities).toHaveLength(0)
+  })
+
+  test("create a new entity with duplicate id -> error", () => {
+    act(() => {
+      resetMockStore(customEntitiesFlow)
+    })
+
+    const expectedContent = "<body>test</body>"
+    const result = updateCustomEntity(null, CUSTOM_ENTITY_ID, expectedContent)
+
+    expect(result.success).toEqual(false)
+    result.success === false && expect(result.idError).toBeTruthy()
+    const entities = renderAndUnwrapHook(useGetCustomEntityIds)
+    expect(entities).toEqual([CUSTOM_ENTITY_ID])
+  })
+
+  test.each([[""], ["test"], ["<body>test<//body>"]])(
+    "create a new entity with invalid content -> error",
+    (content) => {
+      const result = updateCustomEntity(null, "newId", content)
+
+      expect(result.success).toEqual(false)
+      result.success === false && expect(result.contentError).toBeTruthy()
+      const entities = renderAndUnwrapHook(useGetCustomEntityIds)
+      expect(entities).toHaveLength(0)
+    }
+  )
+})
+
+describe("remove custom entity", () => {
+  beforeEach(() => {
+    act(() => {
+      resetMockStore(customEntitiesFlow)
+    })
+  })
+
+  test("remove an existing entity -> success", () => {
+    act(() => removeCustomEntity(CUSTOM_ENTITY_ID))
+    const entities = renderAndUnwrapHook(useGetCustomEntityIds)
+    expect(entities).toHaveLength(0)
+  })
+
+  test("remove an non-existing entity -> no error", () => {
+    act(() => removeCustomEntity("noId"))
+    const entities = renderAndUnwrapHook(useGetCustomEntityIds)
+    expect(entities).toEqual([CUSTOM_ENTITY_ID])
+  })
+})
+
+test("clear all custom entities", () => {
+  act(() => {
+    resetMockStore(customEntitiesFlow)
+  })
+
+  let entities = renderAndUnwrapHook(useGetCustomEntityIds)
+  expect(entities).toEqual([CUSTOM_ENTITY_ID])
+
+  act(clearAllCustomEntities)
+
+  entities = renderAndUnwrapHook(useGetCustomEntityIds)
+  expect(entities).toHaveLength(0)
 })

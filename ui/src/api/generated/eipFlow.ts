@@ -31,6 +31,12 @@ export type AttributeType = string | number | boolean;
 export interface EipFlow {
   nodes?: EipNode[];
   edges?: FlowEdge[];
+  /**
+   * Custom entities do not appear on the flow diagram, but can be referenced by flow node attributes.
+   */
+  customEntities?: {
+    [k: string]: string;
+  };
 }
 /**
  * An instance of an 'EipComponent' as a node in the flow diagram

@@ -10,11 +10,12 @@ export interface EipConfig {
 }
 
 export interface AppStore {
-  nodes: CustomNode[]
+  customEntities: Record<string, string>
   edges: CustomEdge[]
   eipConfigs: Record<string, EipConfig>
-  selectedChildNode: string[] | null
   layout: Layout
+  nodes: CustomNode[]
+  selectedChildNode: string[] | null
 }
 
 export interface SerializedFlow {
@@ -22,4 +23,6 @@ export interface SerializedFlow {
   edges: AppStore["edges"]
   eipConfigs: AppStore["eipConfigs"]
   version: string
+
+  customEntities?: AppStore["customEntities"]
 }

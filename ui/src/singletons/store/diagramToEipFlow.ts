@@ -100,7 +100,7 @@ const diagramToEipFlow = (state: AppStore): EipFlow => {
     }
   })
 
-  return { nodes, edges }
+  return { nodes, edges, customEntities: state.customEntities }
 }
 
 const getNodeId = (nodeId: string, nodeLookup: Map<string, CustomNode>) => {
