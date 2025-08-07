@@ -48,7 +48,6 @@ class LlmClient {
       maxRetries: 3,
       model: "keip-assistant",
       format: "json",
-      numCtx: 4096,
       temperature: 0,
     })
 
