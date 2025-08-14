@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/codice/keip-canvas/schemas/v0.2.0/eipFlow.schema.json",
+  "$id": "https://github.com/codice/keip-canvas/schemas/v0.3.0/eipFlow.schema.json",
   "title": "EipFlow",
   "description": "A representation of an EIP flow diagram as a collection of nodes and their corresponding edges",
   "type": "object",
@@ -15,6 +15,13 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/FlowEdge"
+      }
+    },
+    "customEntities": {
+      "description": "Custom entities do not appear on the flow diagram, but can be referenced by flow node attributes.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
       }
     }
   },
