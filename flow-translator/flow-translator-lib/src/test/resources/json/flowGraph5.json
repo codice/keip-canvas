@@ -1,0 +1,57 @@
+{
+  "nodes": [
+    {
+      "id": "in1",
+      "eipId": {
+        "namespace": "integration",
+        "name": "inbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "source",
+      "attributes": {},
+      "children": []
+    },
+    {
+      "id": "xmlToJson",
+      "eipId": {
+        "namespace": "integration",
+        "name": "transformer"
+      },
+      "role": "transformer",
+      "connectionType": "passthru",
+      "attributes": {
+        "ref": "customXmlMapper",
+        "method": "toJson"
+      },
+      "children": []
+    },
+    {
+      "id": "out1",
+      "eipId": {
+        "namespace": "integration",
+        "name": "outbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "sink",
+      "attributes": {},
+      "children": []
+    }
+  ],
+  "edges": [
+    {
+      "id": "ch-in1-xmlToJson",
+      "source": "in1",
+      "target": "xmlToJson",
+      "type": "default"
+    },
+    {
+      "id": "ch-xmlToJson-out1",
+      "source": "xmlToJson",
+      "target": "out1",
+      "type": "default"
+    }
+  ],
+  "customEntities": {
+    "customXmlMapper": "<bean class=\"com.example.custom.xml.JsonTransformer\" />"
+  }
+}

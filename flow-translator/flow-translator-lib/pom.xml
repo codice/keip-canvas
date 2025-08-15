@@ -6,7 +6,7 @@
 
     <groupId>org.codice.keip</groupId>
     <artifactId>flow-translator-lib</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
 
     <packaging>jar</packaging>
 
@@ -48,7 +48,7 @@
         <dependency>
             <groupId>org.codice.keip.schemas</groupId>
             <artifactId>validation</artifactId>
-            <version>0.2.0</version>
+            <version>0.3.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -139,17 +139,17 @@
                                         <limit>
                                             <counter>BRANCH</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.93</minimum>
+                                            <minimum>0.96</minimum>
                                         </limit>
                                         <limit>
                                             <counter>COMPLEXITY</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.93</minimum>
+                                            <minimum>0.94</minimum>
                                         </limit>
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.96</minimum>
+                                            <minimum>0.97</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

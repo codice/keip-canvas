@@ -30,7 +30,7 @@ public final class FlowTranslator {
    */
   public List<TransformationError> toXml(Flow flow, Writer outputXml) throws TransformerException {
     EipGraph graph = GuavaGraph.from(flow);
-    return graphTransformer.toXml(graph, outputXml);
+    return graphTransformer.toXml(graph, outputXml, flow.customEntities());
   }
 
   /**

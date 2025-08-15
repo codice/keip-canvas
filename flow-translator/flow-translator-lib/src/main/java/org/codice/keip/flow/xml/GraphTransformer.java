@@ -3,10 +3,12 @@ package org.codice.keip.flow.xml;
 import static javax.xml.XMLConstants.XML_NS_PREFIX;
 
 import com.ctc.wstx.stax.WstxEventFactory;
+import com.ctc.wstx.stax.WstxInputFactory;
 import com.ctc.wstx.stax.WstxOutputFactory;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -19,6 +21,7 @@ import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLEventWriter;
+import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
@@ -44,6 +47,7 @@ public abstract class GraphTransformer {
   private final Set<String> reservedPrefixes = collectReservedPrefixes();
 
   private final NodeTransformerFactory nodeTransformerFactory;
+  private final CustomEntityTransformer customEntityTransformer;
   // maps an eipNamespace to a NamespaceSpec
   private final Map<String, NamespaceSpec> registeredNamespaces;
 
@@ -51,6 +55,7 @@ public abstract class GraphTransformer {
       NodeTransformerFactory nodeTransformerFactory, Collection<NamespaceSpec> namespaceSpecs) {
     validatePrefixes(namespaceSpecs);
     this.nodeTransformerFactory = nodeTransformerFactory;
+    this.customEntityTransformer = new CustomEntityTransformer(initializeXMLInputFactory());
     this.registeredNamespaces = new HashMap<>();
     this.registeredNamespaces.put(defaultNamespace().eipNamespace(), defaultNamespace());
     requiredNamespaces().forEach(s -> this.registeredNamespaces.put(s.eipNamespace(), s));
@@ -81,12 +86,14 @@ public abstract class GraphTransformer {
    *
    * @param graph input graph
    * @param output where the output XML will be written to
+   * @param customEntities user-defined entities to be inlined in the output
    * @return An empty list for a successful transformation, otherwise a non-empty list of {@link
    *     TransformationError} is returned.
    * @throws TransformerException thrown if a critical error preventing the transformation is
    *     encountered
    */
-  public final List<TransformationError> toXml(EipGraph graph, Writer output)
+  public final List<TransformationError> toXml(
+      EipGraph graph, Writer output, Map<String, String> customEntities)
       throws TransformerException {
     List<TransformationError> errors = new ArrayList<>();
     try {
@@ -98,7 +105,9 @@ public abstract class GraphTransformer {
       StartElement root = createRootElement(graph);
       writer.add(root);
 
-      writeNodes(graph, writer, errors);
+      errors.addAll(customEntityTransformer.apply(customEntities, writer));
+
+      errors.addAll(writeNodes(graph, writer));
 
       writer.add(eventFactory.createEndElement(root.getName(), null));
 
@@ -110,6 +119,21 @@ public abstract class GraphTransformer {
       throw new TransformerException(e);
     }
     return errors;
+  }
+
+  /**
+   * Transform an {@link EipGraph} instance to an XML document
+   *
+   * @param graph input graph
+   * @param output where the output XML will be written to
+   * @return An empty list for a successful transformation, otherwise a non-empty list of {@link
+   *     TransformationError} is returned.
+   * @throws TransformerException thrown if a critical error preventing the transformation is
+   *     encountered
+   */
+  public final List<TransformationError> toXml(EipGraph graph, Writer output)
+      throws TransformerException {
+    return toXml(graph, output, Collections.emptyMap());
   }
 
   protected abstract NamespaceSpec defaultNamespace();
@@ -196,7 +220,9 @@ public abstract class GraphTransformer {
         .iterator();
   }
 
-  private void writeNodes(EipGraph graph, XMLEventWriter writer, List<TransformationError> errors) {
+  private List<TransformationError> writeNodes(EipGraph graph, XMLEventWriter writer) {
+    List<TransformationError> errors = new ArrayList<>();
+
     // Using a for-each loop rather than stream operations due to the checked exception.
     // If this approach proves inefficient, an alternative is to define our own ErrorListener
     // interface that throws runtime exceptions.
@@ -210,6 +236,7 @@ public abstract class GraphTransformer {
         errors.add(error);
       }
     }
+    return errors;
   }
 
   private void writeElement(XmlElement element, XMLEventWriter writer) {
@@ -257,5 +284,12 @@ public abstract class GraphTransformer {
             Stream.of(XML_NS_PREFIX, XSI_PREFIX, defaultNamespace().eipNamespace()),
             requiredPrefixes)
         .collect(Collectors.toUnmodifiableSet());
+  }
+
+  static XMLInputFactory initializeXMLInputFactory() {
+    XMLInputFactory factory = WstxInputFactory.newFactory();
+    factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+    factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+    return factory;
   }
 }

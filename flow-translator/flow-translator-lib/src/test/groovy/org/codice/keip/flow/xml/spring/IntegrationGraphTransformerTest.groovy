@@ -225,6 +225,39 @@ class IntegrationGraphTransformerTest extends Specification {
         outboundElem.getNextSibling() == null
     }
 
+    def "Transform single node graph with custom entities"() {
+        given:
+        EipNode node = Stub {
+            id() >> "test-id"
+            eipId() >> new EipId("jms", "inbound-channel-adapter")
+            role() >> Role.ENDPOINT
+            connectionType() >> ConnectionType.SOURCE
+            attributes() >> ["pub-sub-domain": "true"]
+            children() >> [new EipChild("poller", ["fixed-delay": 1000], null)]
+        }
+
+        graph.traverse() >> { _ -> Stream.of(node) }
+
+        when:
+        def errors = graphTransformer.toXml(graph, xmlOutput, generateCustomEntities())
+
+        then:
+        errors.isEmpty()
+        compareXml(xmlOutput.toString(), readTestXml("single-node-with-custom-entities.xml"))
+    }
+
+    def "Transform custom entities only"() {
+        given:
+        graph.traverse() >> { _ -> Stream.empty() }
+
+        when:
+        def errors = graphTransformer.toXml(graph, xmlOutput, generateCustomEntities())
+
+        then:
+        errors.isEmpty()
+        compareXml(xmlOutput.toString(), readTestXml("custom-entities-only.xml"))
+    }
+
     Optional<EdgeProps> createEdgeProps(String id) {
         return Optional.of(new EdgeProps(id))
     }
@@ -233,5 +266,10 @@ class IntegrationGraphTransformerTest extends Specification {
         def matches = new JAXPXPathEngine().selectNodes("/*",
                 Input.fromString(xml).build())
         return matches.toList()[0]
+    }
+
+    Map<String, String> generateCustomEntities() {
+        return ["e1": '<bean class="com.example.Test"><property name="limit" value="65536" /></bean>',
+                "e2": '<arbitrary>test</arbitrary>']
     }
 }

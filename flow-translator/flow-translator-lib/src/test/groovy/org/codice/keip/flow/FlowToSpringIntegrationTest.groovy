@@ -49,6 +49,7 @@ class FlowToSpringIntegrationTest extends Specification {
         "flowGraph2.json" | Path.of("end-to-end", "spring-integration-2.xml").toString()
         "flowGraph3.json" | Path.of("end-to-end", "spring-integration-3.xml").toString()
         "flowGraph4.json" | Path.of("end-to-end", "spring-integration-4.xml").toString()
+        "flowGraph5.json" | Path.of("end-to-end", "spring-integration-5.xml").toString()
     }
 
     def "Verify transformation error list is populated on node transformation error"() {

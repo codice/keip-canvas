@@ -98,5 +98,6 @@
       "target": "testIn",
       "type": "default"
     }
-  ]
+  ],
+  "customEntities": {}
 }
