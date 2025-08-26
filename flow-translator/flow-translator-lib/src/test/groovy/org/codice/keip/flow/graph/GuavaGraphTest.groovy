@@ -64,7 +64,7 @@ class GuavaGraphTest extends Specification {
 
     /**
      * 1 -> 2 -> 3
-     * 21 -> 22
+     * 4 -> 5
      */
     def "multiple flows"() {
         given:
@@ -234,6 +234,33 @@ class GuavaGraphTest extends Specification {
 
         then:
         graph.traverse().toList().size() == 8
+    }
+
+    /**
+     * 1 -> 2 -> 3
+     * 4 -> 5
+     */
+    def "multiple flows graph - convert to and from EIP Flow"() {
+        given:
+        def start1 = newNode("1")
+        def middle1 = newNode("2")
+        def end1 = newNode("3")
+
+        def start2 = newNode("4")
+        def end2 = newNode("5")
+
+        def edge1 = new FlowEdge("a", start1.id(), middle1.id())
+        def edge2 = new FlowEdge("b", middle1.id(), end1.id())
+        def edge3 = new FlowEdge("c", start2.id(), end2.id(), EdgeProps.EdgeType.DISCARD)
+
+        def flow = new Flow([start1, middle1, end1, start2, end2], [edge1, edge2, edge3])
+        def graph = GuavaGraph.from(flow)
+
+        when:
+        def resultFlow = graph.toFlow()
+
+        then:
+        resultFlow == flow
     }
 
     private static EipNode newNode(String id) {

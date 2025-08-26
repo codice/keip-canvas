@@ -7,6 +7,7 @@ import static org.codice.keip.flow.xml.spring.AttributeNames.INPUT_CHANNEL;
 import static org.codice.keip.flow.xml.spring.AttributeNames.OUTPUT_CHANNEL;
 import static org.codice.keip.flow.xml.spring.AttributeNames.REPLY_CHANNEL;
 import static org.codice.keip.flow.xml.spring.AttributeNames.REQUEST_CHANNEL;
+import static org.codice.keip.flow.xml.spring.ComponentIdentifiers.DIRECT_CHANNEL;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,7 +18,6 @@ import java.util.Set;
 import org.codice.keip.flow.model.EdgeProps;
 import org.codice.keip.flow.model.EdgeProps.EdgeType;
 import org.codice.keip.flow.model.EipGraph;
-import org.codice.keip.flow.model.EipId;
 import org.codice.keip.flow.model.EipNode;
 import org.codice.keip.flow.model.Role;
 import org.codice.keip.flow.xml.NodeTransformer;
@@ -29,8 +29,6 @@ import org.codice.keip.flow.xml.XmlElement;
  * responsible for creating the intermediate channels connecting the XmlElements.
  */
 public class DefaultNodeTransformer implements NodeTransformer {
-
-  static final EipId DIRECT_CHANNEL = new EipId(Namespaces.INTEGRATION.eipNamespace(), "channel");
 
   @Override
   public List<XmlElement> apply(EipNode node, EipGraph graph) {
@@ -220,7 +218,6 @@ public class DefaultNodeTransformer implements NodeTransformer {
       return attributes;
     }
 
-    // TODO: Might be used by other transformers. Consider extracting.
     private String getChannelId(EipNode source, EipNode target) {
       if (Role.CHANNEL.equals(source.role())) {
         return source.id();

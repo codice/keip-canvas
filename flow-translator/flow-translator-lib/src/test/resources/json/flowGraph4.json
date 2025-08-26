@@ -52,7 +52,9 @@
       },
       "role": "endpoint",
       "connectionType": "sink",
-      "attributes": {},
+      "attributes": {
+        "session-factory": "testFactory"
+      },
       "children": []
     },
     {
@@ -63,7 +65,10 @@
       },
       "role": "endpoint",
       "connectionType": "source",
-      "attributes": {},
+      "attributes": {
+        "local-directory": "/tmp/test",
+        "session-factory": "testFactory"
+      },
       "children": []
     }
   ],

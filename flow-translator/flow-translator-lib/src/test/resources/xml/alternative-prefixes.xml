@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:int="http://www.springframework.org/schema/integration"
+             xmlns:intjms="http://www.springframework.org/schema/integration/jms"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans
+           https://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/integration
+           https://www.springframework.org/schema/integration/spring-integration.xsd
+           http://www.springframework.org/schema/integration/jms
+           https://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd
+">
+
+    <beans:bean id="b1" lazy-init="true"/>
+
+    <int:inbound-channel-adapter id="messageGenerator"
+                                 channel="messageSource"
+                                 expression="'TestMessage'">
+        <int:poller fixed-rate="5000"/>
+    </int:inbound-channel-adapter>
+
+    <int:channel id="messageSource"/>
+
+    <intjms:outbound-channel-adapter id="jmsProducer" destination-name="test-target"
+                                     channel="messageSource"/>
+</beans:beans>

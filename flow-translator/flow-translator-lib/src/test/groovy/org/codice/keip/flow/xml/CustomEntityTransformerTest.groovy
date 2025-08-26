@@ -21,7 +21,7 @@ class CustomEntityTransformerTest extends Specification {
     def xmlWriter = initializeEventWriter()
 
     def entityTransformer = new CustomEntityTransformer(
-            GraphTransformer.initializeXMLInputFactory())
+            GraphXmlSerializer.initializeXMLInputFactory())
 
     def "Transform custom entities success"() {
         given:

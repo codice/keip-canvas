@@ -1,5 +1,6 @@
 package org.codice.keip.flow.xml.spring
 
+
 import org.codice.keip.flow.model.ConnectionType
 import org.codice.keip.flow.model.EdgeProps
 import org.codice.keip.flow.model.EipChild
@@ -20,7 +21,7 @@ import java.util.stream.Stream
 import static org.codice.keip.flow.xml.XmlComparisonUtil.compareXml
 import static org.codice.keip.flow.xml.XmlComparisonUtil.readTestXml
 
-class IntegrationGraphTransformerTest extends Specification {
+class IntegrationGraphXmlSerializerTest extends Specification {
 
     private static final List<NamespaceSpec> NAMESPACES = [new NamespaceSpec("jms", "http://www.springframework.org/schema/integration/jms", "https://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd")]
 
@@ -28,11 +29,11 @@ class IntegrationGraphTransformerTest extends Specification {
 
     def xmlOutput = new StringWriter()
 
-    def graphTransformer = new IntegrationGraphTransformer(NAMESPACES)
+    def graphSerializer = new IntegrationGraphXmlSerializer(NAMESPACES)
 
     def "Transform empty graph. Check root element"() {
         given:
-        def errors = graphTransformer.toXml(graph, xmlOutput)
+        def errors = graphSerializer.toXml(graph, xmlOutput)
 
         expect:
         errors.isEmpty()
@@ -53,7 +54,7 @@ class IntegrationGraphTransformerTest extends Specification {
         graph.traverse() >> { _ -> Stream.of(node) }
 
         when:
-        def errors = graphTransformer.toXml(graph, xmlOutput)
+        def errors = graphSerializer.toXml(graph, xmlOutput)
 
         then: "only referenced namespaces should be included (instead of all registered namespaces)"
         errors.isEmpty()
@@ -101,7 +102,7 @@ class IntegrationGraphTransformerTest extends Specification {
         graph.traverse() >> { _ -> Stream.of(inbound, transformer, outbound) }
 
         when:
-        def errors = graphTransformer.toXml(graph, xmlOutput)
+        def errors = graphSerializer.toXml(graph, xmlOutput)
 
         then:
         errors.isEmpty()
@@ -120,63 +121,26 @@ class IntegrationGraphTransformerTest extends Specification {
         graph.traverse() >> { _ -> Stream.of(node) }
 
         when:
-        graphTransformer.toXml(graph, xmlOutput)
+        graphSerializer.toXml(graph, xmlOutput)
 
         then:
         thrown(TransformerException)
     }
 
-    def "Initializing transformer with a reserved namespace prefix throws an exception"(String prefix) {
+    def "Initializing transformer with a reserved namespace prefix -> provided prefix is ignored and logged"(String prefix) {
         given:
         def namespaces = [new NamespaceSpec(prefix,
                 "http://www.example.com/schema/xml",
                 "https://www.example.com/schema/xml")]
 
         when:
-        new IntegrationGraphTransformer(namespaces)
+        new IntegrationGraphXmlSerializer(namespaces)
 
         then:
-        thrown(IllegalArgumentException)
+        noExceptionThrown()
 
         where:
         prefix << ["xml", "xsi", "beans", "integration"]
-    }
-
-    def "Registering custom node transformers resolves correctly"() {
-        given: "inbound adapter -> outbound adapter"
-        EipNode inbound = Stub {
-            id() >> "inbound"
-            eipId() >> new EipId("integration", "inbound-adapter")
-            role() >> Role.ENDPOINT
-            connectionType() >> ConnectionType.SOURCE
-        }
-
-        def outboundEipId = new EipId("integration", "outbound-adapter")
-        EipNode outbound = Stub {
-            id() >> "outbound"
-            eipId() >> outboundEipId
-            role() >> Role.ENDPOINT
-            connectionType() >> ConnectionType.SINK
-        }
-
-        graph.predecessors(inbound) >> []
-        graph.successors(inbound) >> [outbound]
-        graph.getEdgeProps(inbound, outbound) >> createEdgeProps("chan1")
-
-        graph.predecessors(outbound) >> [inbound]
-        graph.successors(outbound) >> []
-
-        graph.traverse() >> { _ -> Stream.of(inbound, outbound) }
-
-        NodeTransformer mockTransformer = Mock()
-
-        when:
-        graphTransformer.registerNodeTransformer(outboundEipId, mockTransformer)
-        def errors = graphTransformer.toXml(graph, xmlOutput)
-
-        then:
-        errors.isEmpty()
-        1 * mockTransformer.apply(outbound, graph) >> []
     }
 
     def "NodeTransformer throws exception -> add exception to error list and move on to next node"() {
@@ -205,16 +169,12 @@ class IntegrationGraphTransformerTest extends Specification {
 
         graph.traverse() >> { _ -> Stream.of(inbound, outbound) }
 
-        NodeTransformer mockTransformer = Mock()
-
         when:
-        graphTransformer.registerNodeTransformer(inboundEipId, mockTransformer)
+        def graphTransformer = new IntegrationGraphXmlSerializer(
+                NAMESPACES, buildExceptionalTransformer(inbound))
         def errors = graphTransformer.toXml(graph, xmlOutput)
 
         then:
-        1 * mockTransformer.apply(inbound,
-                graph) >> { throw new RuntimeException("inbound transformer error") }
-
         errors.size() == 1
         errors[0].source() == "inbound"
 
@@ -229,17 +189,17 @@ class IntegrationGraphTransformerTest extends Specification {
         given:
         EipNode node = Stub {
             id() >> "test-id"
-            eipId() >> new EipId("jms", "inbound-channel-adapter")
+            eipId() >> new EipId("integration", "inbound-channel-adapter")
             role() >> Role.ENDPOINT
             connectionType() >> ConnectionType.SOURCE
-            attributes() >> ["pub-sub-domain": "true"]
+            attributes() >> ["auto-startup": "false"]
             children() >> [new EipChild("poller", ["fixed-delay": 1000], null)]
         }
 
         graph.traverse() >> { _ -> Stream.of(node) }
 
         when:
-        def errors = graphTransformer.toXml(graph, xmlOutput, generateCustomEntities())
+        def errors = graphSerializer.toXml(graph, xmlOutput, generateCustomEntities())
 
         then:
         errors.isEmpty()
@@ -251,7 +211,7 @@ class IntegrationGraphTransformerTest extends Specification {
         graph.traverse() >> { _ -> Stream.empty() }
 
         when:
-        def errors = graphTransformer.toXml(graph, xmlOutput, generateCustomEntities())
+        def errors = graphSerializer.toXml(graph, xmlOutput, generateCustomEntities())
 
         then:
         errors.isEmpty()
@@ -270,6 +230,15 @@ class IntegrationGraphTransformerTest extends Specification {
 
     Map<String, String> generateCustomEntities() {
         return ["e1": '<bean class="com.example.Test"><property name="limit" value="65536" /></bean>',
-                "e2": '<arbitrary>test</arbitrary>']
+                "e2": '<bean id="e123" lazy-init="true"/>']
+    }
+
+    NodeTransformer buildExceptionalTransformer(EipNode errorTrigger) {
+        return (node, graph) -> {
+            if (node == errorTrigger) {
+                throw new RuntimeException("${node.id()} transformer error")
+            }
+            return new DefaultNodeTransformer().apply(node, graph)
+        }
     }
 }

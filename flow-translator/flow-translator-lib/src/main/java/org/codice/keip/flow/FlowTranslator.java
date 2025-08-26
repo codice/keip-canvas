@@ -1,46 +1,93 @@
 package org.codice.keip.flow;
 
+import java.io.InputStream;
 import java.io.Writer;
 import java.util.List;
 import javax.xml.transform.TransformerException;
 import org.codice.keip.flow.error.TransformationError;
 import org.codice.keip.flow.graph.GuavaGraph;
 import org.codice.keip.flow.model.EipGraph;
-import org.codice.keip.flow.model.EipId;
 import org.codice.keip.flow.model.Flow;
-import org.codice.keip.flow.xml.GraphTransformer;
-import org.codice.keip.flow.xml.NodeTransformer;
+import org.codice.keip.flow.xml.GraphXmlParser;
+import org.codice.keip.flow.xml.GraphXmlParser.XmlParseResult;
+import org.codice.keip.flow.xml.GraphXmlSerializer;
 
-/** Transforms an EIP {@link Flow} to an XML document. */
+/**
+ * Translates between an EIP {@link Flow} and its XML representations.
+ *
+ * <p>This class acts as a bridge between the flow model and the XML format used to implement the
+ * patterns. It relies on:
+ *
+ * <ul>
+ *   <li>{@link GraphXmlSerializer} to serialize a flow into XML.
+ *   <li>{@link GraphXmlParser} to parse XML into a flow.
+ * </ul>
+ *
+ * <h3>Thread Safety</h3>
+ *
+ * <p>Both {@link GraphXmlSerializer} and {@link GraphXmlParser} are thread-safe. As a result,
+ * {@code FlowTranslator} is also thread-safe and can be safely reused across threads without
+ * external synchronization.
+ */
 public final class FlowTranslator {
 
-  private final GraphTransformer graphTransformer;
+  private final GraphXmlSerializer graphXmlSerializer;
+  private final GraphXmlParser graphXmlParser;
 
-  public FlowTranslator(GraphTransformer graphTransformer) {
-    this.graphTransformer = graphTransformer;
+  public FlowTranslator(GraphXmlSerializer graphXmlSerializer, GraphXmlParser graphXmlParser) {
+    this.graphXmlSerializer = graphXmlSerializer;
+    this.graphXmlParser = graphXmlParser;
+  }
+
+  public FlowTranslator(GraphXmlSerializer graphXmlSerializer) {
+    this.graphXmlSerializer = graphXmlSerializer;
+    this.graphXmlParser = null;
+  }
+
+  public FlowTranslator(GraphXmlParser graphXmlParser) {
+    this.graphXmlParser = graphXmlParser;
+    this.graphXmlSerializer = null;
   }
 
   /**
-   * @param flow The flow input to transform.
-   * @param outputXml The result of the transformation.
+   * Converts a {@link Flow} into its XML representation.
+   *
+   * @param flow The flow input to serialize
+   * @param outputXml The result of the transformation
    * @return a collection of transformation error messages. An empty collection is returned for a
    *     successful transformation.
    * @throws TransformerException thrown only if an unrecoverable error occurs, otherwise errors are
    *     collected and returned once transformation is complete.
+   * @throws UnsupportedOperationException if this instance was not constructed with a {@link
+   *     GraphXmlSerializer}
    */
   public List<TransformationError> toXml(Flow flow, Writer outputXml) throws TransformerException {
+    if (this.graphXmlSerializer == null) {
+      throw new UnsupportedOperationException(
+          "A GraphXmlSerializer must be initialized before calling 'toXml'");
+    }
+
     EipGraph graph = GuavaGraph.from(flow);
-    return graphTransformer.toXml(graph, outputXml, flow.customEntities());
+    return graphXmlSerializer.toXml(graph, outputXml, flow.customEntities());
   }
 
   /**
-   * Register a custom {@link NodeTransformer}
+   * Parses an XML document into a {@link Flow}.
    *
-   * @param id EipId of the target node
-   * @param transformer responsible for transforming the target node to an {@link
-   *     org.codice.keip.flow.xml.XmlElement}
+   * @param xml the XML input stream to parse
+   * @return the parsed {@link Flow} object
+   * @throws TransformerException if a parsing or transformation error occurs
+   * @throws UnsupportedOperationException if this instance was not constructed with a {@link
+   *     GraphXmlParser}
    */
-  public void registerNodeTransformer(EipId id, NodeTransformer transformer) {
-    this.graphTransformer.registerNodeTransformer(id, transformer);
+  public Flow fromXml(InputStream xml) throws TransformerException {
+    if (this.graphXmlParser == null) {
+      throw new UnsupportedOperationException(
+          "A GraphXmlParser must be initialized before calling 'fromXml'");
+    }
+
+    XmlParseResult result = graphXmlParser.fromXml(xml);
+    Flow flow = result.graph().toFlow();
+    return new Flow(flow.nodes(), flow.edges(), result.customEntities());
   }
 }
