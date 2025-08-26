@@ -4,21 +4,30 @@ import java.util.HashMap;
 import java.util.Map;
 import org.codice.keip.flow.model.EipId;
 
+// TODO: Rename
 public class NodeTransformerFactory {
 
   private final Map<EipId, NodeTransformer> transformerRegistry = new HashMap<>();
 
-  private final NodeTransformer defaultTransformer;
+  private final NodeTransformer defaultNodeTransformer;
 
-  public NodeTransformerFactory(NodeTransformer defaultTransformer) {
-    this.defaultTransformer = defaultTransformer;
+  private final XmlTransformer defaultXmlTransformer;
+
+  public NodeTransformerFactory(
+      NodeTransformer defaultNodeTransformer, XmlTransformer defaultXmlTransformer) {
+    this.defaultNodeTransformer = defaultNodeTransformer;
+    this.defaultXmlTransformer = defaultXmlTransformer;
   }
 
-  public void register(EipId id, NodeTransformer transformer) {
+  public void registerNodeTransformer(EipId id, NodeTransformer transformer) {
     this.transformerRegistry.put(id, transformer);
   }
 
-  public NodeTransformer getTransformer(EipId id) {
-    return transformerRegistry.getOrDefault(id, defaultTransformer);
+  public NodeTransformer getNodeTransformer(EipId id) {
+    return transformerRegistry.getOrDefault(id, defaultNodeTransformer);
+  }
+
+  public XmlTransformer getXmlTransformer() {
+    return defaultXmlTransformer;
   }
 }

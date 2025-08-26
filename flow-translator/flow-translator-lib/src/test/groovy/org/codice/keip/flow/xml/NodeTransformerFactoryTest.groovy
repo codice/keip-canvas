@@ -13,7 +13,7 @@ class NodeTransformerFactoryTest extends Specification {
         def factory = new NodeTransformerFactory(defaultTransformer)
 
         then:
-        def transformer = factory.getTransformer(new EipId("test", "one"))
+        def transformer = factory.getNodeTransformer(new EipId("test", "one"))
         transformer.is(defaultTransformer)
     }
 
@@ -24,13 +24,13 @@ class NodeTransformerFactoryTest extends Specification {
 
         when:
         def factory = new NodeTransformerFactory(defaultTransformer)
-        factory.register(new EipId("custom", "comp"), customTransformer)
+        factory.registerNodeTransformer(new EipId("custom", "comp"), customTransformer)
 
         then:
-        def first = factory.getTransformer(new EipId("test", "one"))
+        def first = factory.getNodeTransformer(new EipId("test", "one"))
         first.is(defaultTransformer)
 
-        def second = factory.getTransformer(new EipId("custom", "comp"))
+        def second = factory.getNodeTransformer(new EipId("custom", "comp"))
         second.is(customTransformer)
     }
 }

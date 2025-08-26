@@ -1,5 +1,7 @@
 package org.codice.keip.flow.xml.spring
 
+import com.ctc.wstx.msv.W3CMultiSchemaFactory
+import org.codehaus.stax2.validation.XMLValidationSchema
 import org.codice.keip.flow.model.ConnectionType
 import org.codice.keip.flow.model.EdgeProps
 import org.codice.keip.flow.model.EipChild
@@ -14,7 +16,10 @@ import org.xmlunit.builder.Input
 import org.xmlunit.xpath.JAXPXPathEngine
 import spock.lang.Specification
 
+import javax.xml.transform.Source
 import javax.xml.transform.TransformerException
+import javax.xml.transform.stream.StreamSource
+import java.nio.file.Path
 import java.util.stream.Stream
 
 import static org.codice.keip.flow.xml.XmlComparisonUtil.compareXml
@@ -28,7 +33,7 @@ class IntegrationGraphTransformerTest extends Specification {
 
     def xmlOutput = new StringWriter()
 
-    def graphTransformer = new IntegrationGraphTransformer(NAMESPACES)
+    def graphTransformer = IntegrationGraphTransformer.createDefaultInstance(NAMESPACES)
 
     def "Transform empty graph. Check root element"() {
         given:
@@ -133,7 +138,7 @@ class IntegrationGraphTransformerTest extends Specification {
                 "https://www.example.com/schema/xml")]
 
         when:
-        new IntegrationGraphTransformer(namespaces)
+        IntegrationGraphTransformer.createDefaultInstance(namespaces)
 
         then:
         thrown(IllegalArgumentException)
@@ -171,7 +176,10 @@ class IntegrationGraphTransformerTest extends Specification {
         NodeTransformer mockTransformer = Mock()
 
         when:
-        graphTransformer.registerNodeTransformer(outboundEipId, mockTransformer)
+        def graphTransformer =
+                IntegrationGraphTransformer.createInstance(NAMESPACES,
+                        (factory) ->
+                                factory.registerNodeTransformer(outboundEipId, mockTransformer))
         def errors = graphTransformer.toXml(graph, xmlOutput)
 
         then:
@@ -208,7 +216,10 @@ class IntegrationGraphTransformerTest extends Specification {
         NodeTransformer mockTransformer = Mock()
 
         when:
-        graphTransformer.registerNodeTransformer(inboundEipId, mockTransformer)
+        def graphTransformer =
+                IntegrationGraphTransformer.createInstance(NAMESPACES,
+                        (factory) ->
+                                factory.registerNodeTransformer(inboundEipId, mockTransformer))
         def errors = graphTransformer.toXml(graph, xmlOutput)
 
         then:
@@ -258,6 +269,20 @@ class IntegrationGraphTransformerTest extends Specification {
         compareXml(xmlOutput.toString(), readTestXml("custom-entities-only.xml"))
     }
 
+    def "test xsd validation"(String xmlFilePath) {
+        given:
+        Reader xml = readTestXml(xmlFilePath).newReader()
+
+        when:
+        graphTransformer.fromXml(xml, createValidationSchema())
+
+        then:
+        noExceptionThrown()
+
+        where:
+        xmlFilePath << ["default-namespaces.xml", "nested-children.xml"]
+    }
+
     Optional<EdgeProps> createEdgeProps(String id) {
         return Optional.of(new EdgeProps(id))
     }
@@ -271,5 +296,28 @@ class IntegrationGraphTransformerTest extends Specification {
     Map<String, String> generateCustomEntities() {
         return ["e1": '<bean class="com.example.Test"><property name="limit" value="65536" /></bean>',
                 "e2": '<arbitrary>test</arbitrary>']
+    }
+
+    XMLValidationSchema createValidationSchema() {
+        String baseUri = "classpath:/schemas/dummy"
+
+        LinkedHashMap<String, Source> schemas = [
+                "http://www.springframework.org/schema/beans"      : getXsd("spring-beans.xsd"),
+                "http://www.springframework.org/schema/tool"       : getXsd("spring-tool.xsd"),
+                "http://www.springframework.org/schema/integration":
+                        getXsd("spring-integration-5.2.xsd")]
+
+        return new W3CMultiSchemaFactory().createSchema(baseUri, schemas)
+    }
+
+    // TODO: Fetch schemas from dependency JAR instead
+    StreamSource getXsd(String filename) {
+        String xsdPath = Path.of("schemas", filename).toString();
+        StreamSource s = new StreamSource(getClass().getClassLoader().getResourceAsStream(xsdPath));
+        s.setSystemId(
+                Objects
+                        .requireNonNull(getClass().getClassLoader().getResource(xsdPath))
+                        .toExternalForm());
+        return s;
     }
 }

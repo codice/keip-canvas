@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:integration="http://www.springframework.org/schema/integration"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           https://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/integration
+           https://www.springframework.org/schema/integration/spring-integration.xsd
+">
+
+    <integration:inbound-channel-adapter id="messageGenerator"
+                                         channel="messageSource"
+                                         expression="'TestMessage'">
+        <integration:poller fixed-rate="5000"/>
+    </integration:inbound-channel-adapter>
+
+    <integration:channel id="messageSource"/>
+
+    <integration:transformer id="appender"
+                             input-channel="messageSource"
+                             output-channel="transformerOut"
+                             expression="payload + ' processed'"/>
+
+    <integration:channel id="transformerOut"/>
+
+    <integration:logging-channel-adapter id="testLogger" channel="transformerOut"/>
+
+</beans>

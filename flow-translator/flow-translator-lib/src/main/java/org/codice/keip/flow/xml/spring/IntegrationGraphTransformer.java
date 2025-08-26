@@ -2,6 +2,7 @@ package org.codice.keip.flow.xml.spring;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.Consumer;
 import javax.xml.namespace.QName;
 import org.codice.keip.flow.xml.GraphTransformer;
 import org.codice.keip.flow.xml.NamespaceSpec;
@@ -9,8 +10,25 @@ import org.codice.keip.flow.xml.NodeTransformerFactory;
 
 public final class IntegrationGraphTransformer extends GraphTransformer {
 
-  public IntegrationGraphTransformer(Collection<NamespaceSpec> namespaceSpecs) {
-    super(new NodeTransformerFactory(new DefaultNodeTransformer()), namespaceSpecs);
+  private IntegrationGraphTransformer(
+      Collection<NamespaceSpec> namespaceSpecs, NodeTransformerFactory factory) {
+    super(factory, namespaceSpecs);
+  }
+
+  public static IntegrationGraphTransformer createDefaultInstance(
+      Collection<NamespaceSpec> namespaceSpecs) {
+    NodeTransformerFactory defaultFactory =
+        new NodeTransformerFactory(new DefaultNodeTransformer(), new DefaultXmlTransformer());
+    return new IntegrationGraphTransformer(namespaceSpecs, defaultFactory);
+  }
+
+  public static IntegrationGraphTransformer createInstance(
+      Collection<NamespaceSpec> namespaceSpecs,
+      Consumer<NodeTransformerFactory> factoryCustomizer) {
+    NodeTransformerFactory factory =
+        new NodeTransformerFactory(new DefaultNodeTransformer(), new DefaultXmlTransformer());
+    factoryCustomizer.accept(factory);
+    return new IntegrationGraphTransformer(namespaceSpecs, factory);
   }
 
   @Override

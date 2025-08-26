@@ -29,11 +29,12 @@ class FlowToSpringIntegrationTest extends Specification {
                       .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                       .build();
 
-    def flowTranslator = new FlowTranslator(new IntegrationGraphTransformer(NAMESPACES))
-
     def "End-to-end basic flow to spring-integration xml"(String flowFile, String xmlFile) {
         given:
         def flow = MAPPER.readValue(getFlowJson(flowFile), Flow.class)
+
+        def graphTransformer = IntegrationGraphTransformer.createDefaultInstance(NAMESPACES)
+        def flowTranslator = new FlowTranslator(graphTransformer)
 
         when:
         def output = new StringWriter()
@@ -60,9 +61,13 @@ class FlowToSpringIntegrationTest extends Specification {
             apply(_, _) >> { throw new RuntimeException("faulty transformer") }
         }
 
-
         def adapterId = new EipId("integration", "inbound-channel-adapter")
-        flowTranslator.registerNodeTransformer(adapterId, exceptionalTransformer)
+
+        def graphTransformer =
+                IntegrationGraphTransformer.createInstance(NAMESPACES,
+                        (factory) ->
+                                factory.registerNodeTransformer(adapterId, exceptionalTransformer))
+        def flowTranslator = new FlowTranslator(graphTransformer)
 
         when:
         def output = new StringWriter()

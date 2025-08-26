@@ -6,10 +6,8 @@ import javax.xml.transform.TransformerException;
 import org.codice.keip.flow.error.TransformationError;
 import org.codice.keip.flow.graph.GuavaGraph;
 import org.codice.keip.flow.model.EipGraph;
-import org.codice.keip.flow.model.EipId;
 import org.codice.keip.flow.model.Flow;
 import org.codice.keip.flow.xml.GraphTransformer;
-import org.codice.keip.flow.xml.NodeTransformer;
 
 /** Transforms an EIP {@link Flow} to an XML document. */
 public final class FlowTranslator {
@@ -31,16 +29,5 @@ public final class FlowTranslator {
   public List<TransformationError> toXml(Flow flow, Writer outputXml) throws TransformerException {
     EipGraph graph = GuavaGraph.from(flow);
     return graphTransformer.toXml(graph, outputXml, flow.customEntities());
-  }
-
-  /**
-   * Register a custom {@link NodeTransformer}
-   *
-   * @param id EipId of the target node
-   * @param transformer responsible for transforming the target node to an {@link
-   *     org.codice.keip.flow.xml.XmlElement}
-   */
-  public void registerNodeTransformer(EipId id, NodeTransformer transformer) {
-    this.graphTransformer.registerNodeTransformer(id, transformer);
   }
 }

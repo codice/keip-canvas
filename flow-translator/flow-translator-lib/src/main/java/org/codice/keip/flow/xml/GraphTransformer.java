@@ -5,12 +5,14 @@ import static javax.xml.XMLConstants.XML_NS_PREFIX;
 import com.ctc.wstx.stax.WstxEventFactory;
 import com.ctc.wstx.stax.WstxInputFactory;
 import com.ctc.wstx.stax.WstxOutputFactory;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,10 +26,13 @@ import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.transform.TransformerException;
+import org.codehaus.stax2.XMLStreamReader2;
+import org.codehaus.stax2.validation.XMLValidationSchema;
 import org.codice.keip.flow.error.TransformationError;
 import org.codice.keip.flow.model.EipGraph;
 import org.codice.keip.flow.model.EipId;
@@ -44,12 +49,15 @@ public abstract class GraphTransformer {
 
   private final XMLEventFactory eventFactory = WstxEventFactory.newFactory();
   private final XMLOutputFactory outputFactory = WstxOutputFactory.newFactory();
+  private final XMLInputFactory inputFactory = initializeXMLInputFactory();
   private final Set<String> reservedPrefixes = collectReservedPrefixes();
 
   private final NodeTransformerFactory nodeTransformerFactory;
   private final CustomEntityTransformer customEntityTransformer;
   // maps an eipNamespace to a NamespaceSpec
   private final Map<String, NamespaceSpec> registeredNamespaces;
+
+  private final Map<String, String> xmlToEipNamespaceMap;
 
   protected GraphTransformer(
       NodeTransformerFactory nodeTransformerFactory, Collection<NamespaceSpec> namespaceSpecs) {
@@ -60,6 +68,10 @@ public abstract class GraphTransformer {
     this.registeredNamespaces.put(defaultNamespace().eipNamespace(), defaultNamespace());
     requiredNamespaces().forEach(s -> this.registeredNamespaces.put(s.eipNamespace(), s));
     namespaceSpecs.forEach(s -> this.registeredNamespaces.put(s.eipNamespace(), s));
+
+    this.xmlToEipNamespaceMap =
+        registeredNamespaces.values().stream()
+            .collect(Collectors.toMap(NamespaceSpec::xmlNamespace, NamespaceSpec::eipNamespace));
   }
 
   private void validatePrefixes(Collection<NamespaceSpec> namespaceSpecs) {
@@ -69,16 +81,6 @@ public abstract class GraphTransformer {
             String.format("'%s' is a reserved namespace prefix", ns.eipNamespace()));
       }
     }
-  }
-
-  /**
-   * Register a custom {@link NodeTransformer}
-   *
-   * @param id target node
-   * @param transformer responsible for transforming the target node to an {@link XmlElement}
-   */
-  public final void registerNodeTransformer(EipId id, NodeTransformer transformer) {
-    this.nodeTransformerFactory.register(id, transformer);
   }
 
   /**
@@ -136,6 +138,77 @@ public abstract class GraphTransformer {
     return toXml(graph, output, Collections.emptyMap());
   }
 
+  public final XmlTranslationOutput fromXml(Reader xml, XMLValidationSchema schema)
+      throws TransformerException {
+    try {
+      // XmlEventReader does not support validation while parsing. Use XmlStreamReader instead.
+      XMLStreamReader2 streamReader = (XMLStreamReader2) inputFactory.createXMLStreamReader(xml);
+      if (schema != null) {
+        streamReader.validateAgainst(schema);
+      }
+
+      XMLStreamReader reader = inputFactory.createFilteredReader(streamReader, this::elementFilter);
+
+      XmlTransformer xmlTransformer = nodeTransformerFactory.getXmlTransformer();
+      List<XmlElement> elements = new ArrayList<>();
+
+      while (reader.hasNext()) {
+        reader.next();
+        if (reader.isStartElement()) {
+          // TODO: Validate id attribute
+          XmlElement element = createElement(reader);
+          parseChildren(reader, element, 1);
+          elements.add(element);
+        }
+      }
+    } catch (XMLStreamException e) {
+      throw new TransformerException(e);
+    }
+
+    return null;
+  }
+
+  private void parseChildren(XMLStreamReader reader, XmlElement parent, int depth)
+      throws TransformerException, XMLStreamException {
+
+    while (reader.hasNext() && depth > 0) {
+      reader.next();
+      if (reader.isStartElement()) {
+        XmlElement currElement = createElement(reader);
+        if (parent != null) {
+          parent.children().add(currElement);
+        }
+        parseChildren(reader, currElement, depth + 1);
+        return;
+      }
+      if (reader.isEndElement()) {
+        parseChildren(reader, parent, depth - 1);
+        return;
+      }
+    }
+  }
+
+  private XmlElement createElement(XMLStreamReader reader) throws TransformerException {
+    String prefix = xmlToEipNamespaceMap.get(reader.getNamespaceURI());
+    if (prefix == null) {
+      throw new TransformerException(
+          String.format("Unregistered namespace: %s", reader.getNamespaceURI()));
+    }
+
+    XmlElement element =
+        new XmlElement(prefix, reader.getLocalName(), new LinkedHashMap<>(), new ArrayList<>());
+
+    for (int i = 0; i < reader.getAttributeCount(); i++) {
+      element.attributes().put(reader.getAttributeLocalName(i), reader.getAttributeValue(i));
+    }
+
+    return element;
+  }
+
+  private boolean elementFilter(XMLStreamReader reader) {
+    return reader.isStartElement() || reader.isEndElement();
+  }
+
   protected abstract NamespaceSpec defaultNamespace();
 
   protected abstract Set<NamespaceSpec> requiredNamespaces();
@@ -143,7 +216,7 @@ public abstract class GraphTransformer {
   protected abstract QName rootElement();
 
   private NodeTransformer getNodeTransformer(EipId id) {
-    return this.nodeTransformerFactory.getTransformer(id);
+    return this.nodeTransformerFactory.getNodeTransformer(id);
   }
 
   private StartElement createRootElement(EipGraph graph) {
