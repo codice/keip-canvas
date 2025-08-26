@@ -1,5 +1,7 @@
 package org.codice.keip.flow.xml;
 
+import static org.codice.keip.flow.xml.spring.AttributeNames.ID;
+
 import com.ctc.wstx.stax.WstxEventFactory;
 import java.io.StringReader;
 import java.util.ArrayDeque;
@@ -35,8 +37,8 @@ final class CustomEntityTransformer {
   }
 
   /**
-   * Validates that the XML content for all custom entities is well-formed and an 'id' attribute to
-   * the content's root element matching its key in the customEntities Map.
+   * Validates that the XML content for all custom entities is well-formed and an 'id' attribute is
+   * added to the content's root element matching its key in the customEntities Map.
    *
    * @param customEntities user-defined map of entityId to content
    * @param writer where the transformed content XML will be written to
@@ -86,12 +88,12 @@ final class CustomEntityTransformer {
 
   private XMLEvent addIdAttributeToEntityRoot(StartElement root, String entityId) {
     List<Attribute> updatedAttrs = new ArrayList<>();
-    updatedAttrs.add(eventFactory.createAttribute("id", entityId));
+    updatedAttrs.add(eventFactory.createAttribute(ID, entityId));
 
     Iterator<Attribute> attrs = root.getAttributes();
     while (attrs.hasNext()) {
       var attr = attrs.next();
-      if (!"id".equals(attr.getName().getLocalPart())) {
+      if (!ID.equals(attr.getName().getLocalPart())) {
         updatedAttrs.add(attr);
       }
     }

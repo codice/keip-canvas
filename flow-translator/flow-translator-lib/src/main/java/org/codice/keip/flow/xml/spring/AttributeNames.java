@@ -8,4 +8,5 @@ public class AttributeNames {
   public static final String DISCARD_CHANNEL = "discard-channel";
   public static final String REQUEST_CHANNEL = "request-channel";
   public static final String REPLY_CHANNEL = "reply-channel";
+  public static final String DEFAULT_OUTPUT_CHANNEL_NAME = "default-output-channel";
 }

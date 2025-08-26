@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:integration="http://www.springframework.org/schema/integration"
@@ -7,9 +7,7 @@
            http://www.springframework.org/schema/integration
            https://www.springframework.org/schema/integration/spring-integration.xsd
 ">
-    <bean id="e1" class="com.example.Test">
-        <property name="limit" value="65536"/>
-    </bean>
 
-    <bean id="e2" lazy-init="true"/>
+    <integration:fake-filter id="abc"/>
+
 </beans>

@@ -9,16 +9,24 @@
 
     <integration:channel id="ch-httpIn-ftpOut"/>
 
-    <ftp:outbound-channel-adapter id="ftpOut" channel="ch-httpIn-ftpOut"/>
+    <ftp:outbound-channel-adapter id="ftpOut"
+                                  channel="ch-httpIn-ftpOut"
+                                  session-factory="testFactory"/>
 
-    <ftp:inbound-channel-adapter id="ftpToReply" channel="testIn-reply-channel"/>
+    <ftp:inbound-channel-adapter id="ftpToReply"
+                                 channel="testIn-reply-channel"
+                                 local-directory="/tmp/test"
+                                 session-factory="testFactory"/>
 
     <integration:channel id="testIn-reply-channel"/>
 
-    <http:inbound-gateway id="testIn" reply-channel="testIn-reply-channel" request-channel="ch-testIn-updatePayload"/>
+    <http:inbound-gateway id="testIn"
+                          reply-channel="testIn-reply-channel"
+                          request-channel="ch-testIn-updatePayload"/>
 
     <integration:channel id="ch-testIn-updatePayload"/>
 
-    <integration:transformer id="updatePayload" input-channel="ch-testIn-updatePayload"
+    <integration:transformer id="updatePayload"
+                             input-channel="ch-testIn-updatePayload"
                              output-channel="testIn-reply-channel"/>
 </beans>

@@ -30,55 +30,65 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.transform.TransformerException;
 import org.codice.keip.flow.error.TransformationError;
 import org.codice.keip.flow.model.EipGraph;
-import org.codice.keip.flow.model.EipId;
 import org.codice.keip.flow.model.EipNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Transforms an intermediate {@link EipGraph} representation to an XML document. This base class
  * takes care of the general transformation process, to create XML targeting specific platforms,
  * extend this class and register specialized {@link NodeTransformer}s.
  */
-public abstract class GraphTransformer {
+public abstract class GraphXmlSerializer {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(GraphXmlSerializer.class);
   private static final String XSI_PREFIX = "xsi";
 
   private final XMLEventFactory eventFactory = WstxEventFactory.newFactory();
   private final XMLOutputFactory outputFactory = WstxOutputFactory.newFactory();
+  private final XmlElementWriter elementWriter = new XmlElementWriter(eventFactory);
   private final Set<String> reservedPrefixes = collectReservedPrefixes();
 
-  private final NodeTransformerFactory nodeTransformerFactory;
   private final CustomEntityTransformer customEntityTransformer;
+
   // maps an eipNamespace to a NamespaceSpec
   private final Map<String, NamespaceSpec> registeredNamespaces;
 
-  protected GraphTransformer(
-      NodeTransformerFactory nodeTransformerFactory, Collection<NamespaceSpec> namespaceSpecs) {
-    validatePrefixes(namespaceSpecs);
-    this.nodeTransformerFactory = nodeTransformerFactory;
+  protected GraphXmlSerializer(Collection<NamespaceSpec> namespaceSpecs) {
+    Collection<NamespaceSpec> filteredNamespaces = excludeReservedNamespaces(namespaceSpecs);
     this.customEntityTransformer = new CustomEntityTransformer(initializeXMLInputFactory());
-    this.registeredNamespaces = new HashMap<>();
-    this.registeredNamespaces.put(defaultNamespace().eipNamespace(), defaultNamespace());
-    requiredNamespaces().forEach(s -> this.registeredNamespaces.put(s.eipNamespace(), s));
-    namespaceSpecs.forEach(s -> this.registeredNamespaces.put(s.eipNamespace(), s));
+    this.registeredNamespaces = buildRegisteredNamespaceMap(filteredNamespaces);
   }
 
-  private void validatePrefixes(Collection<NamespaceSpec> namespaceSpecs) {
+  protected abstract NamespaceSpec defaultNamespace();
+
+  protected abstract Set<NamespaceSpec> requiredNamespaces();
+
+  protected abstract QName rootElement();
+
+  protected abstract NodeTransformer getNodeTransformer();
+
+  private Map<String, NamespaceSpec> buildRegisteredNamespaceMap(
+      Collection<NamespaceSpec> namespaceSpecs) {
+    Map<String, NamespaceSpec> map = new HashMap<>();
+    map.put(defaultNamespace().eipNamespace(), defaultNamespace());
+    requiredNamespaces().forEach(s -> map.put(s.eipNamespace(), s));
+    namespaceSpecs.forEach(s -> map.put(s.eipNamespace(), s));
+    return Collections.unmodifiableMap(map);
+  }
+
+  private List<NamespaceSpec> excludeReservedNamespaces(Collection<NamespaceSpec> namespaceSpecs) {
+    List<NamespaceSpec> filtered = new ArrayList<>();
     for (NamespaceSpec ns : namespaceSpecs) {
       if (this.reservedPrefixes.contains(ns.eipNamespace())) {
-        throw new IllegalArgumentException(
-            String.format("'%s' is a reserved namespace prefix", ns.eipNamespace()));
+        LOGGER.warn(
+            "'{}' is a reserved namespace prefix. The provided namespace entry will be ignored",
+            ns.eipNamespace());
+      } else {
+        filtered.add(ns);
       }
     }
-  }
-
-  /**
-   * Register a custom {@link NodeTransformer}
-   *
-   * @param id target node
-   * @param transformer responsible for transforming the target node to an {@link XmlElement}
-   */
-  public final void registerNodeTransformer(EipId id, NodeTransformer transformer) {
-    this.nodeTransformerFactory.register(id, transformer);
+    return filtered;
   }
 
   /**
@@ -134,16 +144,6 @@ public abstract class GraphTransformer {
   public final List<TransformationError> toXml(EipGraph graph, Writer output)
       throws TransformerException {
     return toXml(graph, output, Collections.emptyMap());
-  }
-
-  protected abstract NamespaceSpec defaultNamespace();
-
-  protected abstract Set<NamespaceSpec> requiredNamespaces();
-
-  protected abstract QName rootElement();
-
-  private NodeTransformer getNodeTransformer(EipId id) {
-    return this.nodeTransformerFactory.getTransformer(id);
   }
 
   private StartElement createRootElement(EipGraph graph) {
@@ -228,37 +228,14 @@ public abstract class GraphTransformer {
     // interface that throws runtime exceptions.
     for (EipNode node : graph.traverse().toList()) {
       try {
-        NodeTransformer transformer = getNodeTransformer(node.eipId());
-        List<XmlElement> elements = transformer.apply(node, graph);
-        elements.forEach(e -> writeElement(e, writer));
+        List<XmlElement> elements = getNodeTransformer().apply(node, graph);
+        elements.forEach(e -> elementWriter.write(e, writer));
       } catch (RuntimeException e) {
         TransformationError error = new TransformationError(node.id(), new TransformerException(e));
         errors.add(error);
       }
     }
     return errors;
-  }
-
-  private void writeElement(XmlElement element, XMLEventWriter writer) {
-    try {
-      writer.add(
-          this.eventFactory.createStartElement(
-              element.prefix(),
-              getXmlNamespace(element.prefix()),
-              element.localName(),
-              attributeIterator(element.attributes()),
-              null));
-
-      for (XmlElement c : element.children()) {
-        writeElement(c, writer);
-      }
-
-      writer.add(
-          this.eventFactory.createEndElement(
-              element.prefix(), getXmlNamespace(element.prefix()), element.localName()));
-    } catch (XMLStreamException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private String getXmlNamespace(String eipNamespace) {
@@ -269,12 +246,6 @@ public abstract class GraphTransformer {
   private String getSchemaLocation(String eipNamespace) {
     NamespaceSpec spec = this.registeredNamespaces.get(eipNamespace);
     return spec == null ? null : spec.schemaLocation();
-  }
-
-  private Iterator<Attribute> attributeIterator(Map<String, Object> attributes) {
-    return attributes.entrySet().stream()
-        .map(e -> this.eventFactory.createAttribute(e.getKey(), e.getValue().toString()))
-        .iterator();
   }
 
   private Set<String> collectReservedPrefixes() {
