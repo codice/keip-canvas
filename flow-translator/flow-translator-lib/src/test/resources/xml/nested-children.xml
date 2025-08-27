@@ -16,6 +16,8 @@
                 <integration:ref bean="adviceRef"/>
             </integration:advice-chain>
         </integration:poller>
+
+        <integration:expression key="testExp"/>
     </integration:inbound-channel-adapter>
 
     <integration:channel id="messageSource"/>

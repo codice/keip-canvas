@@ -2,6 +2,7 @@ package org.codice.keip.flow.xml.spring
 
 import com.ctc.wstx.msv.W3CMultiSchemaFactory
 import org.codehaus.stax2.validation.XMLValidationSchema
+import org.codice.keip.flow.ComponentRegistry
 import org.codice.keip.flow.model.ConnectionType
 import org.codice.keip.flow.model.EdgeProps
 import org.codice.keip.flow.model.EipChild
@@ -273,8 +274,13 @@ class IntegrationGraphTransformerTest extends Specification {
         given:
         Reader xml = readTestXml(xmlFilePath).newReader()
 
+        ComponentRegistry registry = Stub() {
+            getConnectionType(_ as EipId) >> ConnectionType.PASSTHRU
+            getRole(_ as EipId) >> Role.ENDPOINT
+        }
+
         when:
-        graphTransformer.fromXml(xml, createValidationSchema())
+        graphTransformer.fromXml(xml, createValidationSchema(), registry)
 
         then:
         noExceptionThrown()

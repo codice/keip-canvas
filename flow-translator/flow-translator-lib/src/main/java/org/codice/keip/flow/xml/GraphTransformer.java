@@ -7,9 +7,11 @@ import com.ctc.wstx.stax.WstxInputFactory;
 import com.ctc.wstx.stax.WstxOutputFactory;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -33,7 +35,10 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.transform.TransformerException;
 import org.codehaus.stax2.XMLStreamReader2;
 import org.codehaus.stax2.validation.XMLValidationSchema;
+import org.codice.keip.flow.ComponentRegistry;
 import org.codice.keip.flow.error.TransformationError;
+import org.codice.keip.flow.graph.GuavaGraph;
+import org.codice.keip.flow.graph.GuavaGraph.Builder;
 import org.codice.keip.flow.model.EipGraph;
 import org.codice.keip.flow.model.EipId;
 import org.codice.keip.flow.model.EipNode;
@@ -138,54 +143,64 @@ public abstract class GraphTransformer {
     return toXml(graph, output, Collections.emptyMap());
   }
 
-  public final XmlTranslationOutput fromXml(Reader xml, XMLValidationSchema schema)
+  // TODO: Preserve node descriptions
+  // TODO: Consider deprecating the label field on the EipNode (use id only)
+  // TODO: Should schema and registry be passed in ctor instead?
+  public final XmlTranslationOutput fromXml(
+      Reader xml, XMLValidationSchema schema, ComponentRegistry registry)
       throws TransformerException {
+    List<EipNode> nodes = new ArrayList<>();
+    List<TransformationError> errors = new ArrayList<>();
+
     try {
-      // XmlEventReader does not support validation while parsing. Use XmlStreamReader instead.
+      // XmlEventReader does not support validation while parsing. Using XmlStreamReader instead.
       XMLStreamReader2 streamReader = (XMLStreamReader2) inputFactory.createXMLStreamReader(xml);
       if (schema != null) {
         streamReader.validateAgainst(schema);
       }
 
       XMLStreamReader reader = inputFactory.createFilteredReader(streamReader, this::elementFilter);
-
       XmlTransformer xmlTransformer = nodeTransformerFactory.getXmlTransformer();
-      List<XmlElement> elements = new ArrayList<>();
 
       while (reader.hasNext()) {
-        reader.next();
-        if (reader.isStartElement()) {
-          // TODO: Validate id attribute
-          XmlElement element = createElement(reader);
-          parseChildren(reader, element, 1);
-          elements.add(element);
-        }
+        // TODO: keep parsing even after an error?
+        XmlElement element = parseElement(reader);
+        nodes.add(xmlTransformer.apply(element, registry));
       }
-    } catch (XMLStreamException e) {
+    } catch (XMLStreamException | RuntimeException e) {
       throw new TransformerException(e);
     }
 
-    return null;
+    // TODO: Normalize graph (replace direct channels with edges)
+    Builder graphBuilder = GuavaGraph.newBuilder();
+    nodes.forEach(graphBuilder::addNode);
+
+    return new XmlTranslationOutput(graphBuilder.build(), errors);
   }
 
-  private void parseChildren(XMLStreamReader reader, XmlElement parent, int depth)
+  private XmlElement parseElement(XMLStreamReader reader)
       throws TransformerException, XMLStreamException {
+    Deque<XmlElement> parentStack = new ArrayDeque<>();
 
-    while (reader.hasNext() && depth > 0) {
-      reader.next();
+    XmlElement top = null;
+    while (reader.hasNext()) {
       if (reader.isStartElement()) {
-        XmlElement currElement = createElement(reader);
-        if (parent != null) {
-          parent.children().add(currElement);
+        XmlElement current = createElement(reader);
+        if (!parentStack.isEmpty()) {
+          parentStack.peek().children().add(current);
         }
-        parseChildren(reader, currElement, depth + 1);
-        return;
+        parentStack.push(current);
+      } else if (reader.isEndElement()) {
+        top = parentStack.pop();
       }
-      if (reader.isEndElement()) {
-        parseChildren(reader, parent, depth - 1);
-        return;
+
+      reader.next();
+      if (parentStack.isEmpty()) {
+        break;
       }
     }
+
+    return top;
   }
 
   private XmlElement createElement(XMLStreamReader reader) throws TransformerException {
@@ -206,6 +221,11 @@ public abstract class GraphTransformer {
   }
 
   private boolean elementFilter(XMLStreamReader reader) {
+    // skip root element
+    if (reader.hasName() && reader.getName().equals(rootElement())) {
+      return false;
+    }
+
     return reader.isStartElement() || reader.isEndElement();
   }
 
