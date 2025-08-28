@@ -18,7 +18,7 @@ public class DefaultXmlTransformer implements XmlTransformer {
 
   @Override
   public EipNode apply(XmlElement element, ComponentRegistry registry) throws TransformerException {
-    validateElement(element);
+    validateElement(element, registry);
 
     EipId eipId = new EipId(element.prefix(), element.localName());
     Map<String, Object> filteredAttrs = new LinkedHashMap<>(element.attributes());
@@ -42,12 +42,20 @@ public class DefaultXmlTransformer implements XmlTransformer {
     return new EipChild(element.localName(), element.attributes(), children);
   }
 
-  private void validateElement(XmlElement element) throws TransformerException {
+  private void validateElement(XmlElement element, ComponentRegistry registry)
+      throws TransformerException {
     if (!element.attributes().containsKey(ID)) {
       throw new TransformerException(
           String.format(
               "%s:%s element does not have an 'id' attribute",
               element.prefix(), element.localName()));
+    }
+
+    EipId id = new EipId(element.prefix(), element.localName());
+    if (!registry.isRegistered(id)) {
+      throw new TransformerException(
+          String.format(
+              "%s:%s is not a supported EIP Component", element.prefix(), element.localName()));
     }
   }
 }

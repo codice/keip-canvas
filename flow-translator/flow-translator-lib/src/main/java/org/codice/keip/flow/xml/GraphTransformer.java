@@ -38,10 +38,10 @@ import org.codehaus.stax2.validation.XMLValidationSchema;
 import org.codice.keip.flow.ComponentRegistry;
 import org.codice.keip.flow.error.TransformationError;
 import org.codice.keip.flow.graph.GuavaGraph;
-import org.codice.keip.flow.graph.GuavaGraph.Builder;
 import org.codice.keip.flow.model.EipGraph;
 import org.codice.keip.flow.model.EipId;
 import org.codice.keip.flow.model.EipNode;
+import org.codice.keip.flow.xml.spring.ChannelEdgeExtractor;
 
 /**
  * Transforms an intermediate {@link EipGraph} representation to an XML document. This base class
@@ -172,10 +172,9 @@ public abstract class GraphTransformer {
     }
 
     // TODO: Normalize graph (replace direct channels with edges)
-    Builder graphBuilder = GuavaGraph.newBuilder();
-    nodes.forEach(graphBuilder::addNode);
+    GuavaGraph graph = (new ChannelEdgeExtractor()).buildGraph(nodes);
 
-    return new XmlTranslationOutput(graphBuilder.build(), errors);
+    return new XmlTranslationOutput(graph, errors);
   }
 
   private XmlElement parseElement(XMLStreamReader reader)

@@ -1,6 +1,7 @@
 package org.codice.keip.flow.model;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,6 +26,14 @@ public record EipNode(
       return Collections.emptyMap();
     }
     return Collections.unmodifiableMap(attributes);
+  }
+
+  // TODO: Use builder instead?
+  public Map<String, Object> mutableAttributes() {
+    if (attributes == null) {
+      return new LinkedHashMap<>();
+    }
+    return attributes;
   }
 
   @Override
