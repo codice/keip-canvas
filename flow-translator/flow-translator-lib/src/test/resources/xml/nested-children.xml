@@ -22,13 +22,18 @@
 
     <integration:channel id="messageSource"/>
 
-    <integration:transformer id="appender"
-                             input-channel="messageSource"
-                             output-channel="transformerOut"
-                             expression="payload + ' processed'"/>
+    <integration:channel id="resultChannel"/>
 
-    <integration:channel id="transformerOut"/>
+    <integration:filter id="checkPayload"
+                        expression="payload == 'error'"
+                        input-channel="messageSource"
+                        output-channel="resultChannel"
+                        discard-channel="logChannel"/>
 
-    <integration:logging-channel-adapter id="testLogger" channel="transformerOut"/>
+    <integration:outbound-channel-adapter id="resultSender" channel="resultChannel"/>
+
+    <integration:logging-channel-adapter id="testLogger" channel="logChannel"/>
+
+    <integration:channel id="logChannel"/>
 
 </beans>

@@ -172,7 +172,7 @@ public abstract class GraphTransformer {
     }
 
     // TODO: Normalize graph (replace direct channels with edges)
-    GuavaGraph graph = (new ChannelEdgeExtractor()).buildGraph(nodes);
+    GuavaGraph graph = new ChannelEdgeExtractor(nodes).buildGraph();
 
     return new XmlTranslationOutput(graph, errors);
   }

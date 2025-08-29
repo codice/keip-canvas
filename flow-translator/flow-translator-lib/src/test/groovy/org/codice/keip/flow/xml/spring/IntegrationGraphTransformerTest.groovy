@@ -25,12 +25,15 @@ import java.util.stream.Stream
 
 import static org.codice.keip.flow.xml.XmlComparisonUtil.compareXml
 import static org.codice.keip.flow.xml.XmlComparisonUtil.readTestXml
+import static org.codice.keip.flow.xml.spring.Namespaces.INTEGRATION
 
 class IntegrationGraphTransformerTest extends Specification {
 
     private static final List<NamespaceSpec> NAMESPACES = [new NamespaceSpec("jms", "http://www.springframework.org/schema/integration/jms", "https://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd")]
 
     EipGraph graph = Stub()
+
+    ComponentRegistry componentRegistry = buildRegistryStub()
 
     def xmlOutput = new StringWriter()
 
@@ -274,13 +277,8 @@ class IntegrationGraphTransformerTest extends Specification {
         given:
         Reader xml = readTestXml(xmlFilePath).newReader()
 
-        ComponentRegistry registry = Stub() {
-            getConnectionType(_ as EipId) >> ConnectionType.PASSTHRU
-            getRole(_ as EipId) >> Role.ENDPOINT
-        }
-
         when:
-        graphTransformer.fromXml(xml, createValidationSchema(), registry)
+        graphTransformer.fromXml(xml, createValidationSchema(), componentRegistry)
 
         then:
         noExceptionThrown()
@@ -325,5 +323,34 @@ class IntegrationGraphTransformerTest extends Specification {
                         .requireNonNull(getClass().getClassLoader().getResource(xsdPath))
                         .toExternalForm());
         return s;
+    }
+
+    ComponentRegistry buildRegistryStub() {
+        ComponentRegistry registry = Stub() {
+            isRegistered(_ as EipId) >> true
+
+            getConnectionType(_ as EipId) >> {
+                EipId id ->
+                    switch (id) {
+                        case new EipId(INTEGRATION.eipNamespace(), "inbound-channel-adapter") ->
+                            ConnectionType.SOURCE
+                        case new EipId(INTEGRATION.eipNamespace(), "logging-channel-adapter") ->
+                            ConnectionType.SINK
+                        case new EipId(INTEGRATION.eipNamespace(), "outbound-channel-adapter") ->
+                            ConnectionType.SINK
+                        case new EipId(INTEGRATION.eipNamespace(), "filter") ->
+                            ConnectionType.TEE
+                        default -> ConnectionType.PASSTHRU
+                    }
+            }
+
+            getRole(_ as EipId) >> {
+                EipId id ->
+                    (id.equals(new EipId(INTEGRATION.eipNamespace(), "channel"))) ?
+                            Role.CHANNEL : Role.ENDPOINT
+            }
+        }
+
+        return registry
     }
 }
