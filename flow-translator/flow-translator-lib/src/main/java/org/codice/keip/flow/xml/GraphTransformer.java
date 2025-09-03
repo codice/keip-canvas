@@ -146,6 +146,7 @@ public abstract class GraphTransformer {
   // TODO: Preserve node descriptions
   // TODO: Consider deprecating the label field on the EipNode (use id only)
   // TODO: Should schema and registry be passed in ctor instead?
+  // TODO: handle custom entities
   public final XmlTranslationOutput fromXml(
       Reader xml, XMLValidationSchema schema, ComponentRegistry registry)
       throws TransformerException {

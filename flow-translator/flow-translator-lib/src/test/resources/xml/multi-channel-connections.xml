@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:integration="http://www.springframework.org/schema/integration"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           https://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/integration
+           https://www.springframework.org/schema/integration/spring-integration.xsd
+">
+
+    <integration:channel id="multiOut"/>
+
+    <integration:channel id="multiIn"/>
+
+    <integration:inbound-channel-adapter id="messageGenerator" channel="multiOut"/>
+
+    <integration:outbound-channel-adapter id="adapterOut" channel="multiOut"/>
+
+    <integration:logging-channel-adapter id="testLogger1" channel="multiOut"/>
+
+    <integration:inbound-channel-adapter id="in1" channel="multiIn"/>
+
+    <integration:inbound-channel-adapter id="in2" channel="multiIn"/>
+
+    <integration:logging-channel-adapter id="testLogger2" channel="multiIn"/>
+
+</beans>

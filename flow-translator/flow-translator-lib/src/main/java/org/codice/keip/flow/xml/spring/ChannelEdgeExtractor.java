@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.xml.transform.TransformerException;
 import org.codice.keip.flow.graph.GuavaGraph;
 import org.codice.keip.flow.model.ConnectionType;
 import org.codice.keip.flow.model.EdgeProps;
@@ -22,6 +23,7 @@ import org.codice.keip.flow.model.EdgeProps.EdgeType;
 import org.codice.keip.flow.model.EipNode;
 
 // TODO: Javadoc
+// TODO: interface?
 // Assumption: EipNodes must have a unique id
 public class ChannelEdgeExtractor {
 
@@ -44,9 +46,7 @@ public class ChannelEdgeExtractor {
     this.graphBuilder = GuavaGraph.newBuilder();
   }
 
-  // TODO: Handle multiple input/outputs to channel
-  // TODO: Test out-of-order XML
-  public GuavaGraph buildGraph() {
+  public GuavaGraph buildGraph() throws TransformerException {
     for (EipNode node : nodes) {
       if (isDirectChannel(node)) {
         channelConnections.putIfAbsent(node.id(), new ChannelConnections());
@@ -59,7 +59,10 @@ public class ChannelEdgeExtractor {
       graphBuilder.addNode(node);
     }
 
-    channelConnections.forEach(this::addChannelAsGraphEdge);
+    for (Entry<String, ChannelConnections> entry : channelConnections.entrySet()) {
+      addChannelAsGraphEdge(entry.getKey(), entry.getValue());
+    }
+
     return graphBuilder.build();
   }
 
@@ -79,10 +82,10 @@ public class ChannelEdgeExtractor {
     return channelAttributes;
   }
 
-  private void addChannelAsGraphEdge(String channelId, ChannelConnections connections) {
+  private void addChannelAsGraphEdge(String channelId, ChannelConnections connections)
+      throws TransformerException {
     if (connections.incoming.isEmpty() || connections.outgoing.isEmpty()) {
-      // TODO: handle disconnected edge
-      return;
+      throw new TransformerException(String.format("disconnected channel: '%s'", channelId));
     }
 
     // if channel has multiple inputs or outputs -> include as a standalone node in the graph
@@ -90,6 +93,7 @@ public class ChannelEdgeExtractor {
       graphBuilder.addNode(channelNodes.get(channelId));
       connections.incoming().forEach(conn -> addGraphEdge("", conn, new Connection(channelId)));
       connections.outgoing().forEach(conn -> addGraphEdge("", new Connection(channelId), conn));
+      return;
     }
 
     addGraphEdge(channelId, connections.incoming().getFirst(), connections.outgoing().getLast());

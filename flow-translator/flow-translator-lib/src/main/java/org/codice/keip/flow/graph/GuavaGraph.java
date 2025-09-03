@@ -5,7 +5,9 @@ import com.google.common.graph.Graphs;
 import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.Traverser;
 import com.google.common.graph.ValueGraphBuilder;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -14,6 +16,7 @@ import org.codice.keip.flow.model.EdgeProps;
 import org.codice.keip.flow.model.EipGraph;
 import org.codice.keip.flow.model.EipNode;
 import org.codice.keip.flow.model.Flow;
+import org.codice.keip.flow.model.FlowEdge;
 
 // Guava Graph API is still marked as beta
 @SuppressWarnings("UnstableApiUsage")
@@ -59,9 +62,26 @@ public class GuavaGraph implements EipGraph {
     return this.graph.edgeValue(source, target);
   }
 
-  // TODO: Add to EipGraph interface?
   public Flow toFlow() {
-    return null;
+    List<EipNode> nodes = new ArrayList<>();
+    List<FlowEdge> edges = new ArrayList<>();
+
+    traverse()
+        .forEach(
+            node -> {
+              nodes.add(node);
+              successors(node).stream()
+                  .map(target -> graphToFlowEdge(node, target))
+                  .forEach(edges::add);
+            });
+
+    return new Flow(nodes, edges);
+  }
+
+  // TODO: Handle error if EdgeProps are not found?
+  private FlowEdge graphToFlowEdge(EipNode source, EipNode target) {
+    EdgeProps ep = getEdgeProps(source, target).orElseThrow();
+    return new FlowEdge(ep.id(), source.id(), target.id(), ep.type());
   }
 
   /** Finds the nodes in the graph that have no incoming edges (indicating the start of a flow). */

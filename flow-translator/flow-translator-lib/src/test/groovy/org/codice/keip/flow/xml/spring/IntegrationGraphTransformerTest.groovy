@@ -284,7 +284,7 @@ class IntegrationGraphTransformerTest extends Specification {
         noExceptionThrown()
 
         where:
-        xmlFilePath << ["default-namespaces.xml", "nested-children.xml"]
+        xmlFilePath << ["multi-channel-connections.xml", "default-namespaces.xml", "nested-children.xml"]
     }
 
     Optional<EdgeProps> createEdgeProps(String id) {
