@@ -19,41 +19,47 @@ import org.codehaus.stax2.XMLStreamReader2;
 import org.codehaus.stax2.validation.XMLValidationSchema;
 import org.codice.keip.flow.ComponentRegistry;
 import org.codice.keip.flow.error.TransformationError;
-import org.codice.keip.flow.graph.GuavaGraph;
+import org.codice.keip.flow.model.EipGraph;
 import org.codice.keip.flow.model.EipNode;
-import org.codice.keip.flow.xml.spring.ChannelEdgeExtractor;
 
 public abstract class GraphXmlParser {
 
   private final XMLInputFactory inputFactory = initializeXMLInputFactory();
-
   private final Map<String, String> xmlToEipNamespaceMap;
 
-  public GraphXmlParser(Collection<NamespaceSpec> namespaceSpecs) {
+  private final ComponentRegistry registry;
+
+  private XMLValidationSchema validationSchema;
+
+  public GraphXmlParser(Collection<NamespaceSpec> namespaceSpecs, ComponentRegistry registry) {
     this.xmlToEipNamespaceMap =
         namespaceSpecs.stream()
             .collect(Collectors.toMap(NamespaceSpec::xmlNamespace, NamespaceSpec::eipNamespace));
+    this.registry = registry;
+  }
+
+  public void setValidationSchema(XMLValidationSchema validationSchema) {
+    this.validationSchema = validationSchema;
   }
 
   protected abstract QName rootElement();
 
   protected abstract XmlElementTransformer getXmlElementTransformer();
 
+  protected abstract GraphEdgeBuilder graphEdgeBuilder();
+
   // TODO: Preserve node descriptions
   // TODO: Consider deprecating the label field on the EipNode (use id only)
-  // TODO: Should schema and registry be passed in ctor instead?
   // TODO: handle custom entities
-  public final XmlTranslationOutput fromXml(
-      Reader xml, XMLValidationSchema schema, ComponentRegistry registry)
-      throws TransformerException {
+  public final TranslationResult<EipGraph> fromXml(Reader xml) throws TransformerException {
     List<EipNode> nodes = new ArrayList<>();
     List<TransformationError> errors = new ArrayList<>();
 
     try {
       // XmlEventReader does not support validation while parsing. Using XmlStreamReader instead.
       XMLStreamReader2 streamReader = (XMLStreamReader2) inputFactory.createXMLStreamReader(xml);
-      if (schema != null) {
-        streamReader.validateAgainst(schema);
+      if (validationSchema != null) {
+        streamReader.validateAgainst(validationSchema);
       }
 
       XMLStreamReader reader = inputFactory.createFilteredReader(streamReader, this::elementFilter);
@@ -68,10 +74,8 @@ public abstract class GraphXmlParser {
       throw new TransformerException(e);
     }
 
-    // TODO: Normalize graph (replace direct channels with edges)
-    GuavaGraph graph = new ChannelEdgeExtractor(nodes).buildGraph();
-
-    return new XmlTranslationOutput(graph, errors);
+    EipGraph graph = graphEdgeBuilder().toGraph(nodes);
+    return new TranslationResult<>(graph, errors);
   }
 
   private XmlElement parseElement(XMLStreamReader reader)

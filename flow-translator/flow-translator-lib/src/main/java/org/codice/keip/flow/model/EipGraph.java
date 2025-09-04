@@ -12,4 +12,6 @@ public interface EipGraph {
   Set<EipNode> successors(EipNode node);
 
   Optional<EdgeProps> getEdgeProps(EipNode source, EipNode target);
+
+  Flow toFlow();
 }

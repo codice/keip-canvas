@@ -16,6 +16,7 @@ import java.nio.file.Path
 import static org.codice.keip.flow.xml.XmlComparisonUtil.readTestXml
 import static org.codice.keip.flow.xml.spring.Namespaces.INTEGRATION
 
+// TODO: Test with invalid xml against schema
 class IntegrationGraphXmlParserTest extends Specification {
 
     private static final List<NamespaceSpec> NAMESPACES = [
@@ -25,14 +26,15 @@ class IntegrationGraphXmlParserTest extends Specification {
 
     ComponentRegistry componentRegistry = buildRegistryStub()
 
-    def xmlParser = new IntegrationGraphXmlParser(NAMESPACES)
+    def xmlParser = new IntegrationGraphXmlParser(NAMESPACES, componentRegistry)
 
     def "test xsd validation"(String xmlFilePath) {
         given:
         Reader xml = readTestXml(xmlFilePath).newReader()
 
         when:
-        xmlParser.fromXml(xml, createValidationSchema(), componentRegistry)
+        xmlParser.fromXml(xml)
+        xmlParser.setValidationSchema(createValidationSchema())
 
         then:
         noExceptionThrown()

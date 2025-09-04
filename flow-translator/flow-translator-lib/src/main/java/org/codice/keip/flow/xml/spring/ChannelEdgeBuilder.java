@@ -22,10 +22,11 @@ import org.codice.keip.flow.model.EdgeProps;
 import org.codice.keip.flow.model.EdgeProps.EdgeType;
 import org.codice.keip.flow.model.EipNode;
 
-// TODO: Javadoc
-// TODO: interface?
-// Assumption: EipNodes must have a unique id
-public class ChannelEdgeExtractor {
+/**
+ * Converts direct channel nodes that have exactly one input and one output connection into a
+ * corresponding edge in the graph.
+ */
+class ChannelEdgeBuilder {
 
   private final Collection<EipNode> nodes;
 
@@ -39,14 +40,14 @@ public class ChannelEdgeExtractor {
       Set.of(
           CHANNEL, INPUT_CHANNEL, OUTPUT_CHANNEL, DISCARD_CHANNEL, REQUEST_CHANNEL, REPLY_CHANNEL);
 
-  public ChannelEdgeExtractor(Collection<EipNode> nodes) {
+  ChannelEdgeBuilder(Collection<EipNode> nodes) {
     this.nodes = nodes;
     this.channelConnections = new HashMap<>();
     this.channelNodes = new HashMap<>();
     this.graphBuilder = GuavaGraph.newBuilder();
   }
 
-  public GuavaGraph buildGraph() throws TransformerException {
+  GuavaGraph buildGraph() throws TransformerException {
     for (EipNode node : nodes) {
       if (isDirectChannel(node)) {
         channelConnections.putIfAbsent(node.id(), new ChannelConnections());
@@ -148,7 +149,7 @@ public class ChannelEdgeExtractor {
   }
 
   private record Connection(String node, EdgeType type) {
-    public Connection(String node) {
+    private Connection(String node) {
       this(node, EdgeType.DEFAULT);
     }
   }

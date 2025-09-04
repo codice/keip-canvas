@@ -1,5 +1,6 @@
 package org.codice.keip.flow;
 
+import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
 import javax.xml.transform.TransformerException;
@@ -7,15 +8,29 @@ import org.codice.keip.flow.error.TransformationError;
 import org.codice.keip.flow.graph.GuavaGraph;
 import org.codice.keip.flow.model.EipGraph;
 import org.codice.keip.flow.model.Flow;
+import org.codice.keip.flow.xml.GraphXmlParser;
 import org.codice.keip.flow.xml.GraphXmlSerializer;
+import org.codice.keip.flow.xml.TranslationResult;
 
 /** Transforms an EIP {@link Flow} to an XML document. */
 public final class FlowTranslator {
 
   private final GraphXmlSerializer graphXmlSerializer;
+  private final GraphXmlParser graphXmlParser;
+
+  public FlowTranslator(GraphXmlSerializer graphXmlSerializer, GraphXmlParser graphXmlParser) {
+    this.graphXmlSerializer = graphXmlSerializer;
+    this.graphXmlParser = graphXmlParser;
+  }
 
   public FlowTranslator(GraphXmlSerializer graphXmlSerializer) {
     this.graphXmlSerializer = graphXmlSerializer;
+    this.graphXmlParser = null;
+  }
+
+  public FlowTranslator(GraphXmlParser graphXmlParser) {
+    this.graphXmlParser = graphXmlParser;
+    this.graphXmlSerializer = null;
   }
 
   /**
@@ -27,7 +42,22 @@ public final class FlowTranslator {
    *     collected and returned once transformation is complete.
    */
   public List<TransformationError> toXml(Flow flow, Writer outputXml) throws TransformerException {
+    if (this.graphXmlSerializer == null) {
+      throw new UnsupportedOperationException(
+          "A GraphXmlSerializer must be initialized before calling 'toXml'");
+    }
+
     EipGraph graph = GuavaGraph.from(flow);
     return graphXmlSerializer.toXml(graph, outputXml, flow.customEntities());
+  }
+
+  public TranslationResult<Flow> fromXml(Reader xml) throws TransformerException {
+    if (this.graphXmlParser == null) {
+      throw new UnsupportedOperationException(
+          "A GraphXmlParser must be initialized before calling 'fromXml'");
+    }
+
+    TranslationResult<EipGraph> graphResult = graphXmlParser.fromXml(xml);
+    return new TranslationResult<>(graphResult.result().toFlow(), graphResult.errors());
   }
 }
