@@ -7,15 +7,15 @@ import org.codice.keip.flow.error.TransformationError;
 import org.codice.keip.flow.graph.GuavaGraph;
 import org.codice.keip.flow.model.EipGraph;
 import org.codice.keip.flow.model.Flow;
-import org.codice.keip.flow.xml.GraphTransformer;
+import org.codice.keip.flow.xml.GraphXmlSerializer;
 
 /** Transforms an EIP {@link Flow} to an XML document. */
 public final class FlowTranslator {
 
-  private final GraphTransformer graphTransformer;
+  private final GraphXmlSerializer graphXmlSerializer;
 
-  public FlowTranslator(GraphTransformer graphTransformer) {
-    this.graphTransformer = graphTransformer;
+  public FlowTranslator(GraphXmlSerializer graphXmlSerializer) {
+    this.graphXmlSerializer = graphXmlSerializer;
   }
 
   /**
@@ -28,6 +28,6 @@ public final class FlowTranslator {
    */
   public List<TransformationError> toXml(Flow flow, Writer outputXml) throws TransformerException {
     EipGraph graph = GuavaGraph.from(flow);
-    return graphTransformer.toXml(graph, outputXml, flow.customEntities());
+    return graphXmlSerializer.toXml(graph, outputXml, flow.customEntities());
   }
 }

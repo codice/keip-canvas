@@ -5,16 +5,12 @@ import static javax.xml.XMLConstants.XML_NS_PREFIX;
 import com.ctc.wstx.stax.WstxEventFactory;
 import com.ctc.wstx.stax.WstxInputFactory;
 import com.ctc.wstx.stax.WstxOutputFactory;
-import java.io.Reader;
 import java.io.Writer;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,55 +24,38 @@ import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.transform.TransformerException;
-import org.codehaus.stax2.XMLStreamReader2;
-import org.codehaus.stax2.validation.XMLValidationSchema;
-import org.codice.keip.flow.ComponentRegistry;
 import org.codice.keip.flow.error.TransformationError;
-import org.codice.keip.flow.graph.GuavaGraph;
 import org.codice.keip.flow.model.EipGraph;
-import org.codice.keip.flow.model.EipId;
 import org.codice.keip.flow.model.EipNode;
-import org.codice.keip.flow.xml.spring.ChannelEdgeExtractor;
 
 /**
  * Transforms an intermediate {@link EipGraph} representation to an XML document. This base class
  * takes care of the general transformation process, to create XML targeting specific platforms,
  * extend this class and register specialized {@link NodeTransformer}s.
  */
-public abstract class GraphTransformer {
+public abstract class GraphXmlSerializer {
 
   private static final String XSI_PREFIX = "xsi";
 
   private final XMLEventFactory eventFactory = WstxEventFactory.newFactory();
   private final XMLOutputFactory outputFactory = WstxOutputFactory.newFactory();
-  private final XMLInputFactory inputFactory = initializeXMLInputFactory();
   private final Set<String> reservedPrefixes = collectReservedPrefixes();
 
-  private final NodeTransformerFactory nodeTransformerFactory;
   private final CustomEntityTransformer customEntityTransformer;
   // maps an eipNamespace to a NamespaceSpec
   private final Map<String, NamespaceSpec> registeredNamespaces;
 
-  private final Map<String, String> xmlToEipNamespaceMap;
-
-  protected GraphTransformer(
-      NodeTransformerFactory nodeTransformerFactory, Collection<NamespaceSpec> namespaceSpecs) {
+  protected GraphXmlSerializer(Collection<NamespaceSpec> namespaceSpecs) {
     validatePrefixes(namespaceSpecs);
-    this.nodeTransformerFactory = nodeTransformerFactory;
     this.customEntityTransformer = new CustomEntityTransformer(initializeXMLInputFactory());
     this.registeredNamespaces = new HashMap<>();
     this.registeredNamespaces.put(defaultNamespace().eipNamespace(), defaultNamespace());
     requiredNamespaces().forEach(s -> this.registeredNamespaces.put(s.eipNamespace(), s));
     namespaceSpecs.forEach(s -> this.registeredNamespaces.put(s.eipNamespace(), s));
-
-    this.xmlToEipNamespaceMap =
-        registeredNamespaces.values().stream()
-            .collect(Collectors.toMap(NamespaceSpec::xmlNamespace, NamespaceSpec::eipNamespace));
   }
 
   private void validatePrefixes(Collection<NamespaceSpec> namespaceSpecs) {
@@ -143,101 +122,13 @@ public abstract class GraphTransformer {
     return toXml(graph, output, Collections.emptyMap());
   }
 
-  // TODO: Preserve node descriptions
-  // TODO: Consider deprecating the label field on the EipNode (use id only)
-  // TODO: Should schema and registry be passed in ctor instead?
-  // TODO: handle custom entities
-  public final XmlTranslationOutput fromXml(
-      Reader xml, XMLValidationSchema schema, ComponentRegistry registry)
-      throws TransformerException {
-    List<EipNode> nodes = new ArrayList<>();
-    List<TransformationError> errors = new ArrayList<>();
-
-    try {
-      // XmlEventReader does not support validation while parsing. Using XmlStreamReader instead.
-      XMLStreamReader2 streamReader = (XMLStreamReader2) inputFactory.createXMLStreamReader(xml);
-      if (schema != null) {
-        streamReader.validateAgainst(schema);
-      }
-
-      XMLStreamReader reader = inputFactory.createFilteredReader(streamReader, this::elementFilter);
-      XmlTransformer xmlTransformer = nodeTransformerFactory.getXmlTransformer();
-
-      while (reader.hasNext()) {
-        // TODO: keep parsing even after an error?
-        XmlElement element = parseElement(reader);
-        nodes.add(xmlTransformer.apply(element, registry));
-      }
-    } catch (XMLStreamException | RuntimeException e) {
-      throw new TransformerException(e);
-    }
-
-    // TODO: Normalize graph (replace direct channels with edges)
-    GuavaGraph graph = new ChannelEdgeExtractor(nodes).buildGraph();
-
-    return new XmlTranslationOutput(graph, errors);
-  }
-
-  private XmlElement parseElement(XMLStreamReader reader)
-      throws TransformerException, XMLStreamException {
-    Deque<XmlElement> parentStack = new ArrayDeque<>();
-
-    XmlElement top = null;
-    while (reader.hasNext()) {
-      if (reader.isStartElement()) {
-        XmlElement current = createElement(reader);
-        if (!parentStack.isEmpty()) {
-          parentStack.peek().children().add(current);
-        }
-        parentStack.push(current);
-      } else if (reader.isEndElement()) {
-        top = parentStack.pop();
-      }
-
-      reader.next();
-      if (parentStack.isEmpty()) {
-        break;
-      }
-    }
-
-    return top;
-  }
-
-  private XmlElement createElement(XMLStreamReader reader) throws TransformerException {
-    String prefix = xmlToEipNamespaceMap.get(reader.getNamespaceURI());
-    if (prefix == null) {
-      throw new TransformerException(
-          String.format("Unregistered namespace: %s", reader.getNamespaceURI()));
-    }
-
-    XmlElement element =
-        new XmlElement(prefix, reader.getLocalName(), new LinkedHashMap<>(), new ArrayList<>());
-
-    for (int i = 0; i < reader.getAttributeCount(); i++) {
-      element.attributes().put(reader.getAttributeLocalName(i), reader.getAttributeValue(i));
-    }
-
-    return element;
-  }
-
-  private boolean elementFilter(XMLStreamReader reader) {
-    // skip root element
-    if (reader.hasName() && reader.getName().equals(rootElement())) {
-      return false;
-    }
-
-    return reader.isStartElement() || reader.isEndElement();
-  }
-
   protected abstract NamespaceSpec defaultNamespace();
 
   protected abstract Set<NamespaceSpec> requiredNamespaces();
 
   protected abstract QName rootElement();
 
-  private NodeTransformer getNodeTransformer(EipId id) {
-    return this.nodeTransformerFactory.getNodeTransformer(id);
-  }
+  protected abstract NodeTransformer getNodeTransformer();
 
   private StartElement createRootElement(EipGraph graph) {
     List<String> eipNamespaces = collectEipNamespaces(graph);
@@ -321,8 +212,7 @@ public abstract class GraphTransformer {
     // interface that throws runtime exceptions.
     for (EipNode node : graph.traverse().toList()) {
       try {
-        NodeTransformer transformer = getNodeTransformer(node.eipId());
-        List<XmlElement> elements = transformer.apply(node, graph);
+        List<XmlElement> elements = getNodeTransformer().apply(node, graph);
         elements.forEach(e -> writeElement(e, writer));
       } catch (RuntimeException e) {
         TransformationError error = new TransformationError(node.id(), new TransformerException(e));
@@ -379,6 +269,7 @@ public abstract class GraphTransformer {
         .collect(Collectors.toUnmodifiableSet());
   }
 
+  // TODO: duplication
   static XMLInputFactory initializeXMLInputFactory() {
     XMLInputFactory factory = WstxInputFactory.newFactory();
     factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);

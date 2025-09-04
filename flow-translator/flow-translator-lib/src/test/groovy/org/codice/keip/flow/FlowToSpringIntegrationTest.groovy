@@ -7,7 +7,8 @@ import org.codice.keip.flow.model.EipId
 import org.codice.keip.flow.model.Flow
 import org.codice.keip.flow.xml.NamespaceSpec
 import org.codice.keip.flow.xml.NodeTransformer
-import org.codice.keip.flow.xml.spring.IntegrationGraphTransformer
+import org.codice.keip.flow.xml.spring.DefaultNodeTransformer
+import org.codice.keip.flow.xml.spring.IntegrationGraphXmlSerializer
 import spock.lang.Specification
 
 import java.nio.file.Path
@@ -33,8 +34,7 @@ class FlowToSpringIntegrationTest extends Specification {
         given:
         def flow = MAPPER.readValue(getFlowJson(flowFile), Flow.class)
 
-        def graphTransformer = IntegrationGraphTransformer.createDefaultInstance(NAMESPACES)
-        def flowTranslator = new FlowTranslator(graphTransformer)
+        def flowTranslator = new FlowTranslator(new IntegrationGraphXmlSerializer(NAMESPACES))
 
         when:
         def output = new StringWriter()
@@ -57,16 +57,10 @@ class FlowToSpringIntegrationTest extends Specification {
         given:
         def flow = MAPPER.readValue(getFlowJson("flowGraph1.json"), Flow.class)
 
-        NodeTransformer exceptionalTransformer = Stub() {
-            apply(_, _) >> { throw new RuntimeException("faulty transformer") }
-        }
-
         def adapterId = new EipId("integration", "inbound-channel-adapter")
 
-        def graphTransformer =
-                IntegrationGraphTransformer.createInstance(NAMESPACES,
-                        (factory) ->
-                                factory.registerNodeTransformer(adapterId, exceptionalTransformer))
+        def graphTransformer = new IntegrationGraphXmlSerializer(
+                NAMESPACES, buildExceptionalTransformer(adapterId))
         def flowTranslator = new FlowTranslator(graphTransformer)
 
         when:
@@ -83,5 +77,14 @@ class FlowToSpringIntegrationTest extends Specification {
                                           .getClassLoader()
                                           .getResource(path.toString())
                                           .newReader()
+    }
+
+    NodeTransformer buildExceptionalTransformer(EipId errorTrigger) {
+        return (node, graph) -> {
+            if (node.eipId() == errorTrigger) {
+                throw new RuntimeException("${node.id()} transformer error")
+            }
+            return new DefaultNodeTransformer().apply(node, graph)
+        }
     }
 }

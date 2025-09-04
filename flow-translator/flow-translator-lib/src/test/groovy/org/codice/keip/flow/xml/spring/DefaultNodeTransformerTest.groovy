@@ -16,7 +16,7 @@ import static org.codice.keip.flow.xml.spring.AttributeNames.INPUT_CHANNEL
 import static org.codice.keip.flow.xml.spring.AttributeNames.OUTPUT_CHANNEL
 import static org.codice.keip.flow.xml.spring.AttributeNames.REPLY_CHANNEL
 import static org.codice.keip.flow.xml.spring.AttributeNames.REQUEST_CHANNEL
-import static org.codice.keip.flow.xml.spring.DefaultNodeTransformer.DIRECT_CHANNEL
+import static org.codice.keip.flow.xml.spring.ComponentIdentifiers.DIRECT_CHANNEL
 
 class DefaultNodeTransformerTest extends Specification {
 

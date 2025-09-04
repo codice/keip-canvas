@@ -1,8 +1,6 @@
 package org.codice.keip.flow.xml.spring
 
-import com.ctc.wstx.msv.W3CMultiSchemaFactory
-import org.codehaus.stax2.validation.XMLValidationSchema
-import org.codice.keip.flow.ComponentRegistry
+
 import org.codice.keip.flow.model.ConnectionType
 import org.codice.keip.flow.model.EdgeProps
 import org.codice.keip.flow.model.EipChild
@@ -17,27 +15,21 @@ import org.xmlunit.builder.Input
 import org.xmlunit.xpath.JAXPXPathEngine
 import spock.lang.Specification
 
-import javax.xml.transform.Source
 import javax.xml.transform.TransformerException
-import javax.xml.transform.stream.StreamSource
-import java.nio.file.Path
 import java.util.stream.Stream
 
 import static org.codice.keip.flow.xml.XmlComparisonUtil.compareXml
 import static org.codice.keip.flow.xml.XmlComparisonUtil.readTestXml
-import static org.codice.keip.flow.xml.spring.Namespaces.INTEGRATION
 
-class IntegrationGraphTransformerTest extends Specification {
+class IntegrationGraphXmlSerializerTest extends Specification {
 
     private static final List<NamespaceSpec> NAMESPACES = [new NamespaceSpec("jms", "http://www.springframework.org/schema/integration/jms", "https://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd")]
 
     EipGraph graph = Stub()
 
-    ComponentRegistry componentRegistry = buildRegistryStub()
-
     def xmlOutput = new StringWriter()
 
-    def graphTransformer = IntegrationGraphTransformer.createDefaultInstance(NAMESPACES)
+    def graphTransformer = new IntegrationGraphXmlSerializer(NAMESPACES)
 
     def "Transform empty graph. Check root element"() {
         given:
@@ -142,53 +134,13 @@ class IntegrationGraphTransformerTest extends Specification {
                 "https://www.example.com/schema/xml")]
 
         when:
-        IntegrationGraphTransformer.createDefaultInstance(namespaces)
+        new IntegrationGraphXmlSerializer(namespaces)
 
         then:
         thrown(IllegalArgumentException)
 
         where:
         prefix << ["xml", "xsi", "beans", "integration"]
-    }
-
-    def "Registering custom node transformers resolves correctly"() {
-        given: "inbound adapter -> outbound adapter"
-        EipNode inbound = Stub {
-            id() >> "inbound"
-            eipId() >> new EipId("integration", "inbound-adapter")
-            role() >> Role.ENDPOINT
-            connectionType() >> ConnectionType.SOURCE
-        }
-
-        def outboundEipId = new EipId("integration", "outbound-adapter")
-        EipNode outbound = Stub {
-            id() >> "outbound"
-            eipId() >> outboundEipId
-            role() >> Role.ENDPOINT
-            connectionType() >> ConnectionType.SINK
-        }
-
-        graph.predecessors(inbound) >> []
-        graph.successors(inbound) >> [outbound]
-        graph.getEdgeProps(inbound, outbound) >> createEdgeProps("chan1")
-
-        graph.predecessors(outbound) >> [inbound]
-        graph.successors(outbound) >> []
-
-        graph.traverse() >> { _ -> Stream.of(inbound, outbound) }
-
-        NodeTransformer mockTransformer = Mock()
-
-        when:
-        def graphTransformer =
-                IntegrationGraphTransformer.createInstance(NAMESPACES,
-                        (factory) ->
-                                factory.registerNodeTransformer(outboundEipId, mockTransformer))
-        def errors = graphTransformer.toXml(graph, xmlOutput)
-
-        then:
-        errors.isEmpty()
-        1 * mockTransformer.apply(outbound, graph) >> []
     }
 
     def "NodeTransformer throws exception -> add exception to error list and move on to next node"() {
@@ -217,19 +169,12 @@ class IntegrationGraphTransformerTest extends Specification {
 
         graph.traverse() >> { _ -> Stream.of(inbound, outbound) }
 
-        NodeTransformer mockTransformer = Mock()
-
         when:
-        def graphTransformer =
-                IntegrationGraphTransformer.createInstance(NAMESPACES,
-                        (factory) ->
-                                factory.registerNodeTransformer(inboundEipId, mockTransformer))
+        def graphTransformer = new IntegrationGraphXmlSerializer(
+                NAMESPACES, buildExceptionalTransformer(inbound))
         def errors = graphTransformer.toXml(graph, xmlOutput)
 
         then:
-        1 * mockTransformer.apply(inbound,
-                graph) >> { throw new RuntimeException("inbound transformer error") }
-
         errors.size() == 1
         errors[0].source() == "inbound"
 
@@ -273,20 +218,6 @@ class IntegrationGraphTransformerTest extends Specification {
         compareXml(xmlOutput.toString(), readTestXml("custom-entities-only.xml"))
     }
 
-    def "test xsd validation"(String xmlFilePath) {
-        given:
-        Reader xml = readTestXml(xmlFilePath).newReader()
-
-        when:
-        graphTransformer.fromXml(xml, createValidationSchema(), componentRegistry)
-
-        then:
-        noExceptionThrown()
-
-        where:
-        xmlFilePath << ["multi-channel-connections.xml", "default-namespaces.xml", "nested-children.xml"]
-    }
-
     Optional<EdgeProps> createEdgeProps(String id) {
         return Optional.of(new EdgeProps(id))
     }
@@ -302,55 +233,12 @@ class IntegrationGraphTransformerTest extends Specification {
                 "e2": '<arbitrary>test</arbitrary>']
     }
 
-    XMLValidationSchema createValidationSchema() {
-        String baseUri = "classpath:/schemas/dummy"
-
-        LinkedHashMap<String, Source> schemas = [
-                "http://www.springframework.org/schema/beans"      : getXsd("spring-beans.xsd"),
-                "http://www.springframework.org/schema/tool"       : getXsd("spring-tool.xsd"),
-                "http://www.springframework.org/schema/integration":
-                        getXsd("spring-integration-5.2.xsd")]
-
-        return new W3CMultiSchemaFactory().createSchema(baseUri, schemas)
-    }
-
-    // TODO: Fetch schemas from dependency JAR instead
-    StreamSource getXsd(String filename) {
-        String xsdPath = Path.of("schemas", filename).toString();
-        StreamSource s = new StreamSource(getClass().getClassLoader().getResourceAsStream(xsdPath));
-        s.setSystemId(
-                Objects
-                        .requireNonNull(getClass().getClassLoader().getResource(xsdPath))
-                        .toExternalForm());
-        return s;
-    }
-
-    ComponentRegistry buildRegistryStub() {
-        ComponentRegistry registry = Stub() {
-            isRegistered(_ as EipId) >> true
-
-            getConnectionType(_ as EipId) >> {
-                EipId id ->
-                    switch (id) {
-                        case new EipId(INTEGRATION.eipNamespace(), "inbound-channel-adapter") ->
-                            ConnectionType.SOURCE
-                        case new EipId(INTEGRATION.eipNamespace(), "logging-channel-adapter") ->
-                            ConnectionType.SINK
-                        case new EipId(INTEGRATION.eipNamespace(), "outbound-channel-adapter") ->
-                            ConnectionType.SINK
-                        case new EipId(INTEGRATION.eipNamespace(), "filter") ->
-                            ConnectionType.TEE
-                        default -> ConnectionType.PASSTHRU
-                    }
+    NodeTransformer buildExceptionalTransformer(EipNode errorTrigger) {
+        return (node, graph) -> {
+            if (node == errorTrigger) {
+                throw new RuntimeException("${node.id()} transformer error")
             }
-
-            getRole(_ as EipId) >> {
-                EipId id ->
-                    (id.equals(new EipId(INTEGRATION.eipNamespace(), "channel"))) ?
-                            Role.CHANNEL : Role.ENDPOINT
-            }
+            return new DefaultNodeTransformer().apply(node, graph)
         }
-
-        return registry
     }
 }

@@ -11,10 +11,10 @@ import org.codice.keip.flow.model.EipChild;
 import org.codice.keip.flow.model.EipId;
 import org.codice.keip.flow.model.EipNode;
 import org.codice.keip.flow.xml.XmlElement;
-import org.codice.keip.flow.xml.XmlTransformer;
+import org.codice.keip.flow.xml.XmlElementTransformer;
 
 /** A default implementation for generating an {@link EipNode} from an {@link XmlElement} */
-public class DefaultXmlTransformer implements XmlTransformer {
+public class DefaultXmlElementTransformer implements XmlElementTransformer {
 
   @Override
   public EipNode apply(XmlElement element, ComponentRegistry registry) throws TransformerException {

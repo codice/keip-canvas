@@ -30,18 +30,15 @@ To use, add as a dependency in `pom.xml`:
 ```java
 import org.codice.keip.flow.FlowTranslator;
 import org.codice.keip.flow.error.TransformationError;
-import org.codice.keip.flow.xml.GraphTransformer;
-import org.codice.keip.flow.xml.spring.IntegrationGraphTransformer;
+import org.codice.keip.flow.xml.GraphXmlSerializer;
+import org.codice.keip.flow.xml.spring.IntegrationGraphXmlSerializer;
 
-// Specify a translation target by initializing a GraphTransformer implementation
+// Specify a translation target by initializing a GraphXmlSerializer implementation
 // e.g. for Spring Integration XML:
-GraphTransformer intTransformer = new IntegrationGraphTransformer(namespaceSpecs);
+GraphXmlSerializer serializer = new IntegrationGraphXmlSerializer(namespaceSpecs);
 
-// Initialize top-level translator and pass in target transformer
-FlowTranslator translator = new FlowTranslator(intTransformer);
-
-// Optionally, register custom node transformers
-translator.registerNodeTransformer(id, nodeTransformer);
+// Initialize top-level translator
+FlowTranslator translator = new FlowTranslator(serializer);
 
 // Translate flow to xml
 List<TransformationError> errors = translator.toXml(flow, output);

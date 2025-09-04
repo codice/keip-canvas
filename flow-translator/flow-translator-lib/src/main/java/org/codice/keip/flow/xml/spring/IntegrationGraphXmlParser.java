@@ -1,0 +1,33 @@
+package org.codice.keip.flow.xml.spring;
+
+import java.util.Collection;
+import javax.xml.namespace.QName;
+import org.codice.keip.flow.xml.GraphXmlParser;
+import org.codice.keip.flow.xml.NamespaceSpec;
+import org.codice.keip.flow.xml.XmlElementTransformer;
+
+public class IntegrationGraphXmlParser extends GraphXmlParser {
+
+  private final XmlElementTransformer xmlElementTransformer;
+
+  public IntegrationGraphXmlParser(Collection<NamespaceSpec> namespaceSpecs) {
+    super(namespaceSpecs);
+    xmlElementTransformer = new DefaultXmlElementTransformer();
+  }
+
+  public IntegrationGraphXmlParser(
+      Collection<NamespaceSpec> namespaceSpecs, XmlElementTransformer customTransformer) {
+    super(namespaceSpecs);
+    xmlElementTransformer = customTransformer;
+  }
+
+  @Override
+  protected QName rootElement() {
+    return new QName(Namespaces.BEANS.xmlNamespace(), Namespaces.BEANS.eipNamespace());
+  }
+
+  @Override
+  protected XmlElementTransformer getXmlElementTransformer() {
+    return xmlElementTransformer;
+  }
+}
