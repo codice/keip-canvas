@@ -1,0 +1,67 @@
+schemas:
+  - alias: "file"
+    namespace: "http://www.springframework.org/schema/integration/file"
+    location: "classpath:patched-si-xsds/spring-integration-file-5.2.xsd"
+    excludedElements:
+      - "locker"
+      - "nio-locker"
+
+  - alias: "ftp"
+    namespace: "http://www.springframework.org/schema/integration/ftp"
+    location: "https://www.springframework.org/schema/integration/ftp/spring-integration-ftp-5.2.xsd"
+
+  - alias: "groovy"
+    namespace: "http://www.springframework.org/schema/integration/groovy"
+    location: "https://www.springframework.org/schema/integration/groovy/spring-integration-groovy-5.2.xsd"
+
+  - alias: "http"
+    namespace: "http://www.springframework.org/schema/integration/http"
+    location: "https://www.springframework.org/schema/integration/http/spring-integration-http-5.2.xsd"
+
+  - alias: "integration"
+    namespace: "http://www.springframework.org/schema/integration"
+    location: "https://www.springframework.org/schema/integration/spring-integration-5.2.xsd"
+    excludedElements:
+      - "application-event-multicaster"
+      - "chain"
+      - "converter"
+      - "selector-chain"
+      - "spel-property-accessors"
+
+  - alias: "jms"
+    namespace: "http://www.springframework.org/schema/integration/jms"
+    location: "https://www.springframework.org/schema/integration/jms/spring-integration-jms-5.2.xsd"
+
+  - alias: "kafka"
+    namespace: "http://www.springframework.org/schema/integration/kafka"
+    location: "https://www.springframework.org/schema/integration/kafka/spring-integration-kafka-3.1.xsd"
+
+  - alias: "mqtt"
+    namespace: "http://www.springframework.org/schema/integration/mqtt"
+    location: "https://www.springframework.org/schema/integration/mqtt/spring-integration-mqtt-5.2.xsd"
+
+  - alias: "sftp"
+    namespace: "http://www.springframework.org/schema/integration/sftp"
+    location: "https://www.springframework.org/schema/integration/sftp/spring-integration-sftp-5.2.xsd"
+
+  - alias: "tcp-udp"
+    namespace: "http://www.springframework.org/schema/integration/ip"
+    location: "https://www.springframework.org/schema/integration/ip/spring-integration-ip-5.2.xsd"
+
+  - alias: "web-services"
+    namespace: "http://www.springframework.org/schema/integration/ws"
+    location: "https://www.springframework.org/schema/integration/ws/spring-integration-ws-5.2.xsd"
+
+  - alias: "xml"
+    namespace: "http://www.springframework.org/schema/integration/xml"
+    location: "https://www.springframework.org/schema/integration/xml/spring-integration-xml-5.2.xsd"
+
+# schemaLocations provided here will override any schemaLocations provided in <xsd:import> elements
+# for the listed namespaces
+importedSchemaLocations:
+  - namespace: "http://www.springframework.org/schema/integration"
+    location: "https://www.springframework.org/schema/integration/spring-integration-5.2.xsd"
+  - namespace: "http://www.springframework.org/schema/beans"
+    location: "https://www.springframework.org/schema/beans/spring-beans-4.3.xsd"
+  - namespace: "http://www.springframework.org/schema/tool"
+    location: "https://www.springframework.org/schema/tool/spring-tool-4.3.xsd"

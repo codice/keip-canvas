@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.codice.keip.xsd</groupId>
+        <artifactId>xsd-parser</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <artifactId>eip-schema-definitions</artifactId>
+    <version>0.1.0</version>
+
+    <packaging>jar</packaging>
+
+    <properties>
+        <generated.resources.dir>${project.build.directory}/generated-resources</generated.resources.dir>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.codice.keip.xsd</groupId>
+            <artifactId>si-xsd-parser-cli</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>runParser</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>${generated.resources.dir}</directory>
+                        <includes>
+                            <include>**/*</include>
+                        </includes>
+                    </resource>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <includes>
+                            <include>**/*</include>
+                        </includes>
+                    </resource>
+                </resources>
+
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.5.1</version>
+                        <executions>
+                            <execution>
+                                <id>generate-eip-component-schema</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <mainClass>org.codice.keip.xsd.XsdParserApplication</mainClass>
+                                    <addOutputToClasspath>true</addOutputToClasspath>
+                                    <addResourcesToClasspath>true</addResourcesToClasspath>
+                                    <blockSystemExit>true</blockSystemExit>
+                                    <arguments>
+                                        <argument>--source</argument>
+                                        <argument>${project.basedir}/xsd-sources.yaml</argument>
+                                        <argument>--output</argument>
+                                        <argument>
+                                            ${generated.resources.dir}/springIntegrationEipComponents.json
+                                        </argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

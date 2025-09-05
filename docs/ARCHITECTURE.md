@@ -27,7 +27,7 @@ The project is organized as a monorepo with the following subprojects:
 
 Models the JSON objects that are passed between the different modules to promote data consistency across the project.
 
-### [XSD Parser](../si-xsd-parser/README.md)
+### [XSD Parser](../xsd-parser/README.md)
 
 Fetches XML Schema Definitions (XSD) and parses them into a catalog of EIP Components.
 The resulting component definitions are then used by the Canvas UI to populate the draggable node menu and provide the
