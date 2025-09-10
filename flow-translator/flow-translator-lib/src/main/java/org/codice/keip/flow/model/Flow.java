@@ -8,14 +8,13 @@ import java.util.Map;
 // Should match the EipFlow schema defined at:
 // <project-root>/keip-canvas/schemas/model/json/eipFlow.schema.json
 public record Flow(List<EipNode> nodes, List<FlowEdge> edges, Map<String, String> customEntities) {
-  public Flow(List<EipNode> nodes, List<FlowEdge> edges) {
-    this(nodes, edges, Collections.emptyMap());
+  public Flow {
+    if (customEntities == null) {
+      customEntities = Collections.emptyMap();
+    }
   }
 
-  public Map<String, String> customEntities() {
-    if (customEntities == null) {
-      return Collections.emptyMap();
-    }
-    return Collections.unmodifiableMap(customEntities);
+  public Flow(List<EipNode> nodes, List<FlowEdge> edges) {
+    this(nodes, edges, null);
   }
 }

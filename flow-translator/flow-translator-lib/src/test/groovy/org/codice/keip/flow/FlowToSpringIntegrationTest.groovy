@@ -8,21 +8,27 @@ import org.codice.keip.flow.model.Flow
 import org.codice.keip.flow.xml.NamespaceSpec
 import org.codice.keip.flow.xml.NodeTransformer
 import org.codice.keip.flow.xml.spring.DefaultNodeTransformer
+import org.codice.keip.flow.xml.spring.IntegrationGraphXmlParser
 import org.codice.keip.flow.xml.spring.IntegrationGraphXmlSerializer
 import spock.lang.Specification
 
 import java.nio.file.Path
 
+import static ComponentRegistryIO.readComponentDefinitionJson
 import static org.codice.keip.flow.xml.XmlComparisonUtil.compareXml
 import static org.codice.keip.flow.xml.XmlComparisonUtil.readTestXml
 
 // TODO: Validate against spring integration XSDs
 class FlowToSpringIntegrationTest extends Specification {
-    private static final List<NamespaceSpec> NAMESPACES = [
+    private static final List<NamespaceSpec> NAMESPACES_SERIALIZER = [
             new NamespaceSpec("jms", "http://www.springframework.org/schema/integration/jms", "https://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd"),
             new NamespaceSpec("http", "http://www.springframework.org/schema/integration/http", "https://www.springframework.org/schema/integration/http/spring-integration-http.xsd"),
             new NamespaceSpec("ftp", "http://www.springframework.org/schema/integration/ftp", "https://www.springframework.org/schema/integration/ftp/spring-integration-ftp.xsd")
     ]
+
+    private static final List<NamespaceSpec> NAMESPACES_PARSER = [
+            new NamespaceSpec("integration", "http://www.springframework.org/schema/integration", "https://www.springframework.org/schema/integration/spring-integration.xsd"),
+            *NAMESPACES_SERIALIZER]
 
     private static final JsonMapper MAPPER =
             JsonMapper.builder()
@@ -34,7 +40,8 @@ class FlowToSpringIntegrationTest extends Specification {
         given:
         def flow = MAPPER.readValue(getFlowJson(flowFile), Flow.class)
 
-        def flowTranslator = new FlowTranslator(new IntegrationGraphXmlSerializer(NAMESPACES))
+        def flowTranslator = new FlowTranslator(new IntegrationGraphXmlSerializer(
+                NAMESPACES_SERIALIZER))
 
         when:
         def output = new StringWriter()
@@ -60,7 +67,7 @@ class FlowToSpringIntegrationTest extends Specification {
         def adapterId = new EipId("integration", "inbound-channel-adapter")
 
         def graphTransformer = new IntegrationGraphXmlSerializer(
-                NAMESPACES, buildExceptionalTransformer(adapterId))
+                NAMESPACES_SERIALIZER, buildExceptionalTransformer(adapterId))
         def flowTranslator = new FlowTranslator(graphTransformer)
 
         when:
@@ -69,6 +76,31 @@ class FlowToSpringIntegrationTest extends Specification {
 
         then:
         errors.size() == 1
+    }
+
+    def "End-to-end spring-integration xml to Flow"(String flowFile, String xmlFile) {
+        given:
+        def xml = readTestXml(xmlFile).newReader()
+        def componentRegistry = ComponentRegistry.fromJson(readComponentDefinitionJson())
+        def flowTranslator = new FlowTranslator(new IntegrationGraphXmlParser(
+                NAMESPACES_PARSER, componentRegistry))
+
+        when:
+        def output = flowTranslator.fromXml(xml)
+
+        then:
+        output.errors().isEmpty()
+
+        def expectedFlow = MAPPER.readValue(getFlowJson(flowFile), Flow.class)
+        compareFlows(output.result(), expectedFlow)
+
+        where:
+        flowFile          | xmlFile
+        "flowGraph1.json" | Path.of("end-to-end", "spring-integration-1.xml").toString()
+        "flowGraph2.json" | Path.of("end-to-end", "spring-integration-2.xml").toString()
+        "flowGraph3.json" | Path.of("end-to-end", "spring-integration-3.xml").toString()
+        "flowGraph4.json" | Path.of("end-to-end", "spring-integration-4.xml").toString()
+        "flowGraph5.json" | Path.of("end-to-end", "spring-integration-5.xml").toString()
     }
 
     static BufferedReader getFlowJson(String filename) {
@@ -86,5 +118,12 @@ class FlowToSpringIntegrationTest extends Specification {
             }
             return new DefaultNodeTransformer().apply(node, graph)
         }
+    }
+
+    // order insensitive comparison
+    boolean compareFlows(Flow first, Flow second) {
+        return first.nodes().toSorted() == second.nodes().toSorted() &&
+                first.edges().toSorted() == second.edges().toSorted() &&
+                first.customEntities() == second.customEntities()
     }
 }

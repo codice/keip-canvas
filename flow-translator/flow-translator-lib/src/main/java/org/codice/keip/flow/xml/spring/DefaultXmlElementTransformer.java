@@ -31,8 +31,8 @@ public class DefaultXmlElementTransformer implements XmlElementTransformer {
         eipId,
         null,
         null,
-        registry.getRole(eipId),
-        registry.getConnectionType(eipId),
+        registry.getRole(eipId).orElseThrow(),
+        registry.getConnectionType(eipId).orElseThrow(),
         filteredAttrs,
         children);
   }
