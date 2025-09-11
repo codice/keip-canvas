@@ -9,6 +9,7 @@ import org.codice.keip.flow.graph.GuavaGraph;
 import org.codice.keip.flow.model.EipGraph;
 import org.codice.keip.flow.model.Flow;
 import org.codice.keip.flow.xml.GraphXmlParser;
+import org.codice.keip.flow.xml.GraphXmlParser.XmlParseResult;
 import org.codice.keip.flow.xml.GraphXmlSerializer;
 import org.codice.keip.flow.xml.TranslationResult;
 
@@ -57,7 +58,9 @@ public final class FlowTranslator {
           "A GraphXmlParser must be initialized before calling 'fromXml'");
     }
 
-    TranslationResult<EipGraph> graphResult = graphXmlParser.fromXml(xml);
-    return new TranslationResult<>(graphResult.result().toFlow(), graphResult.errors());
+    XmlParseResult result = graphXmlParser.fromXml(xml);
+    Flow flow = result.graph().toFlow();
+    flow = new Flow(flow.nodes(), flow.edges(), result.customEntities());
+    return new TranslationResult<>(flow, result.errors());
   }
 }

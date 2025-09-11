@@ -5,6 +5,11 @@
 
     <bean id="customXmlMapper" class="com.example.custom.xml.JsonTransformer"/>
 
+    <bean id="parentEnt" class="com.example.Test">
+        <constructor-arg name="validate" value="true"/>
+        <property name="limit" value="65536"/>
+    </bean>
+
     <integration:inbound-channel-adapter id="in1" channel="ch-in1-xmlToJson"/>
 
     <integration:channel id="ch-in1-xmlToJson"/>

@@ -43,19 +43,35 @@ public abstract class GraphXmlSerializer {
 
   private final XMLEventFactory eventFactory = WstxEventFactory.newFactory();
   private final XMLOutputFactory outputFactory = WstxOutputFactory.newFactory();
+  private final XmlElementWriter elementWriter = new XmlElementWriter(eventFactory);
   private final Set<String> reservedPrefixes = collectReservedPrefixes();
 
   private final CustomEntityTransformer customEntityTransformer;
+
   // maps an eipNamespace to a NamespaceSpec
   private final Map<String, NamespaceSpec> registeredNamespaces;
 
   protected GraphXmlSerializer(Collection<NamespaceSpec> namespaceSpecs) {
     validatePrefixes(namespaceSpecs);
     this.customEntityTransformer = new CustomEntityTransformer(initializeXMLInputFactory());
-    this.registeredNamespaces = new HashMap<>();
-    this.registeredNamespaces.put(defaultNamespace().eipNamespace(), defaultNamespace());
-    requiredNamespaces().forEach(s -> this.registeredNamespaces.put(s.eipNamespace(), s));
-    namespaceSpecs.forEach(s -> this.registeredNamespaces.put(s.eipNamespace(), s));
+    this.registeredNamespaces = buildRegisteredNamespaceMap(namespaceSpecs);
+  }
+
+  protected abstract NamespaceSpec defaultNamespace();
+
+  protected abstract Set<NamespaceSpec> requiredNamespaces();
+
+  protected abstract QName rootElement();
+
+  protected abstract NodeTransformer getNodeTransformer();
+
+  private Map<String, NamespaceSpec> buildRegisteredNamespaceMap(
+      Collection<NamespaceSpec> namespaceSpecs) {
+    Map<String, NamespaceSpec> map = new HashMap<>();
+    map.put(defaultNamespace().eipNamespace(), defaultNamespace());
+    requiredNamespaces().forEach(s -> map.put(s.eipNamespace(), s));
+    namespaceSpecs.forEach(s -> map.put(s.eipNamespace(), s));
+    return Collections.unmodifiableMap(map);
   }
 
   private void validatePrefixes(Collection<NamespaceSpec> namespaceSpecs) {
@@ -121,14 +137,6 @@ public abstract class GraphXmlSerializer {
       throws TransformerException {
     return toXml(graph, output, Collections.emptyMap());
   }
-
-  protected abstract NamespaceSpec defaultNamespace();
-
-  protected abstract Set<NamespaceSpec> requiredNamespaces();
-
-  protected abstract QName rootElement();
-
-  protected abstract NodeTransformer getNodeTransformer();
 
   private StartElement createRootElement(EipGraph graph) {
     List<String> eipNamespaces = collectEipNamespaces(graph);
@@ -213,35 +221,13 @@ public abstract class GraphXmlSerializer {
     for (EipNode node : graph.traverse().toList()) {
       try {
         List<XmlElement> elements = getNodeTransformer().apply(node, graph);
-        elements.forEach(e -> writeElement(e, writer));
+        elements.forEach(e -> elementWriter.write(e, writer));
       } catch (RuntimeException e) {
         TransformationError error = new TransformationError(node.id(), new TransformerException(e));
         errors.add(error);
       }
     }
     return errors;
-  }
-
-  private void writeElement(XmlElement element, XMLEventWriter writer) {
-    try {
-      writer.add(
-          this.eventFactory.createStartElement(
-              element.prefix(),
-              getXmlNamespace(element.prefix()),
-              element.localName(),
-              attributeIterator(element.attributes()),
-              null));
-
-      for (XmlElement c : element.children()) {
-        writeElement(c, writer);
-      }
-
-      writer.add(
-          this.eventFactory.createEndElement(
-              element.prefix(), getXmlNamespace(element.prefix()), element.localName()));
-    } catch (XMLStreamException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private String getXmlNamespace(String eipNamespace) {
@@ -252,12 +238,6 @@ public abstract class GraphXmlSerializer {
   private String getSchemaLocation(String eipNamespace) {
     NamespaceSpec spec = this.registeredNamespaces.get(eipNamespace);
     return spec == null ? null : spec.schemaLocation();
-  }
-
-  private Iterator<Attribute> attributeIterator(Map<String, Object> attributes) {
-    return attributes.entrySet().stream()
-        .map(e -> this.eventFactory.createAttribute(e.getKey(), e.getValue().toString()))
-        .iterator();
   }
 
   private Set<String> collectReservedPrefixes() {

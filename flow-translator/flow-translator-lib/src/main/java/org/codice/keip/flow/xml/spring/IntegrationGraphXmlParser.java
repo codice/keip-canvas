@@ -1,6 +1,7 @@
 package org.codice.keip.flow.xml.spring;
 
 import java.util.Collection;
+import java.util.Set;
 import javax.xml.namespace.QName;
 import org.codice.keip.flow.ComponentRegistry;
 import org.codice.keip.flow.model.EipNode;
@@ -12,6 +13,9 @@ import org.codice.keip.flow.xml.XmlElementTransformer;
 public class IntegrationGraphXmlParser extends GraphXmlParser {
 
   private final XmlElementTransformer xmlElementTransformer;
+
+  private static final Set<String> CUSTOM_ENTITY_NAMESPACES =
+      Set.of(Namespaces.BEANS.xmlNamespace());
 
   public IntegrationGraphXmlParser(
       Collection<NamespaceSpec> namespaceSpecs, ComponentRegistry registry) {
@@ -30,6 +34,11 @@ public class IntegrationGraphXmlParser extends GraphXmlParser {
   @Override
   protected QName rootElement() {
     return new QName(Namespaces.BEANS.xmlNamespace(), Namespaces.BEANS.eipNamespace());
+  }
+
+  @Override
+  protected boolean isCustomEntity(QName name) {
+    return CUSTOM_ENTITY_NAMESPACES.contains(name.getNamespaceURI());
   }
 
   @Override

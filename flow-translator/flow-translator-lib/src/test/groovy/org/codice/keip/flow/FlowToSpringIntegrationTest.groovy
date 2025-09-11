@@ -92,6 +92,7 @@ class FlowToSpringIntegrationTest extends Specification {
         output.errors().isEmpty()
 
         def expectedFlow = MAPPER.readValue(getFlowJson(flowFile), Flow.class)
+
         compareFlows(output.result(), expectedFlow)
 
         where:
