@@ -1,6 +1,7 @@
 package org.codice.keip.flow.xml.spring;
 
 import static org.codice.keip.flow.xml.spring.AttributeNames.CHANNEL;
+import static org.codice.keip.flow.xml.spring.AttributeNames.DEFAULT_OUTPUT_CHANNEL_NAME;
 import static org.codice.keip.flow.xml.spring.AttributeNames.DISCARD_CHANNEL;
 import static org.codice.keip.flow.xml.spring.AttributeNames.INPUT_CHANNEL;
 import static org.codice.keip.flow.xml.spring.AttributeNames.OUTPUT_CHANNEL;
@@ -25,8 +26,24 @@ import org.codice.keip.flow.model.EipNode;
 /**
  * Converts direct channel nodes that have exactly one input and one output connection into a
  * corresponding edge in the graph.
+ *
+ * <p>NOTE: references to incoming and outgoing connections in this class are from the perspective
+ * of the channel. In other words, incoming connection -> flowing into channel, outgoing connection
+ * -> flowing out of channel.
  */
 class ChannelEdgeBuilder {
+
+  private static final Set<String> CHANNEL_ATTRIBUTES =
+      Set.of(
+          CHANNEL,
+          INPUT_CHANNEL,
+          OUTPUT_CHANNEL,
+          DISCARD_CHANNEL,
+          REQUEST_CHANNEL,
+          REPLY_CHANNEL,
+          DEFAULT_OUTPUT_CHANNEL_NAME);
+
+  private static final Set<String> CHANNEL_ROUTING_CHILDREN = Set.of("mapping", "recipient");
 
   private final Collection<EipNode> nodes;
 
@@ -36,10 +53,6 @@ class ChannelEdgeBuilder {
 
   private final GuavaGraph.Builder graphBuilder;
 
-  private static final Set<String> CHANNEL_ATTRIBUTES =
-      Set.of(
-          CHANNEL, INPUT_CHANNEL, OUTPUT_CHANNEL, DISCARD_CHANNEL, REQUEST_CHANNEL, REPLY_CHANNEL);
-
   ChannelEdgeBuilder(Collection<EipNode> nodes) {
     this.nodes = nodes;
     this.channelConnections = new HashMap<>();
@@ -47,6 +60,7 @@ class ChannelEdgeBuilder {
     this.graphBuilder = GuavaGraph.newBuilder();
   }
 
+  // TODO: Support partial errors by returning a "TranslationResult" record
   GuavaGraph buildGraph() throws TransformerException {
     for (EipNode node : nodes) {
       if (isDirectChannel(node)) {
@@ -55,7 +69,8 @@ class ChannelEdgeBuilder {
         continue;
       }
 
-      List<String> channelAttributes = collectChannelAttributes(node);
+      List<String> channelAttributes = processChannelAttributes(node);
+      processContentBasedRouters(node);
       channelAttributes.forEach(node.mutableAttributes()::remove);
       graphBuilder.addNode(node);
     }
@@ -67,20 +82,40 @@ class ChannelEdgeBuilder {
     return graphBuilder.build();
   }
 
-  private List<String> collectChannelAttributes(EipNode node) {
+  private List<String> processChannelAttributes(EipNode node) {
     List<String> channelAttributes = new ArrayList<>();
     for (Entry<String, Object> attr : node.attributes().entrySet()) {
       if (CHANNEL_ATTRIBUTES.contains(attr.getKey())) {
         channelAttributes.add(attr.getKey());
-        channelConnections.putIfAbsent(attr.getValue().toString(), new ChannelConnections());
-        addChannelConnection(
-            attr,
-            node.id(),
-            node.connectionType(),
-            channelConnections.get(attr.getValue().toString()));
+        ChannelConnections connections =
+            channelConnections.computeIfAbsent(
+                attr.getValue().toString(), k -> new ChannelConnections());
+        addChannelConnection(attr, node.id(), node.connectionType(), connections);
       }
     }
     return channelAttributes;
+  }
+
+  private void processContentBasedRouters(EipNode node) throws TransformerException {
+    if (!node.connectionType().equals(ConnectionType.CONTENT_BASED_ROUTER)) {
+      return;
+    }
+
+    for (var child : node.children()) {
+      if (CHANNEL_ROUTING_CHILDREN.contains(child.name())) {
+        Object channel = child.attributes().get(CHANNEL);
+        if (channel == null) {
+          throw new TransformerException(
+              String.format(
+                  "Unable to process node (%s): 'mapping' or 'recipient' children must have a 'channel' attribute",
+                  node.id()));
+        }
+
+        channelConnections
+            .computeIfAbsent(channel.toString(), k -> new ChannelConnections())
+            .addIncoming(new Connection(node.id()));
+      }
+    }
   }
 
   private void addChannelAsGraphEdge(String channelId, ChannelConnections connections)
@@ -113,34 +148,54 @@ class ChannelEdgeBuilder {
       ChannelConnections connections) {
 
     switch (attr.getKey()) {
-      case DISCARD_CHANNEL, OUTPUT_CHANNEL, REPLY_CHANNEL ->
-          addIncomingConnection(attr, nodeId, connections); // flowing into channel
-      case INPUT_CHANNEL, REQUEST_CHANNEL ->
-          addOutgoingConnection(nodeId, connections); // flowing out of channel
-      case CHANNEL -> disambiguateChannelConnection(nodeId, connections, connectionType);
+      case OUTPUT_CHANNEL, DEFAULT_OUTPUT_CHANNEL_NAME ->
+          addIncomingConnection(nodeId, connections);
+      case DISCARD_CHANNEL -> connections.addIncoming(new Connection(nodeId, EdgeType.DISCARD));
+      case INPUT_CHANNEL -> addOutgoingConnection(nodeId, connections);
+      case REQUEST_CHANNEL -> disambiguateRequestConnection(nodeId, connectionType, connections);
+      case REPLY_CHANNEL -> disambiguateReplyConnection(nodeId, connectionType, connections);
+      case CHANNEL -> disambiguateChannelConnection(nodeId, connectionType, connections);
       default ->
           throw new RuntimeException(
               String.format("unknown channel connection attribute: '%s'", attr.getKey()));
     }
   }
 
-  private void addIncomingConnection(
-      Entry<String, Object> attr, String nodeId, ChannelConnections connections) {
-    EdgeType type = attr.getKey().equals(DISCARD_CHANNEL) ? EdgeType.DISCARD : EdgeType.DEFAULT;
-    connections.addIncoming(new Connection(nodeId, type));
+  // flowing into channel
+  private void addIncomingConnection(String nodeId, ChannelConnections connections) {
+    connections.addIncoming(new Connection(nodeId));
   }
 
+  // flowing out of channel
   private void addOutgoingConnection(String nodeId, ChannelConnections connections) {
     connections.addOutgoing(new Connection(nodeId));
   }
 
   private void disambiguateChannelConnection(
-      String nodeId, ChannelConnections connections, ConnectionType connectionType) {
+      String nodeId, ConnectionType connectionType, ChannelConnections connections) {
     boolean isSourceNode = ConnectionType.SOURCE.equals(connectionType);
     if (isSourceNode) {
       connections.addIncoming(new Connection(nodeId));
     } else {
       connections.addOutgoing(new Connection(nodeId));
+    }
+  }
+
+  private void disambiguateRequestConnection(
+      String nodeId, ConnectionType connectionType, ChannelConnections connections) {
+    if (ConnectionType.REQUEST_REPLY.equals(connectionType)) {
+      addOutgoingConnection(nodeId, connections);
+    } else if (ConnectionType.INBOUND_REQUEST_REPLY.equals(connectionType)) {
+      addIncomingConnection(nodeId, connections);
+    }
+  }
+
+  private void disambiguateReplyConnection(
+      String nodeId, ConnectionType connectionType, ChannelConnections connections) {
+    if (ConnectionType.REQUEST_REPLY.equals(connectionType)) {
+      addIncomingConnection(nodeId, connections);
+    } else if (ConnectionType.INBOUND_REQUEST_REPLY.equals(connectionType)) {
+      addOutgoingConnection(nodeId, connections);
     }
   }
 
@@ -172,6 +227,6 @@ class ChannelEdgeBuilder {
     if (channelId != null && !channelId.isBlank()) {
       return channelId;
     }
-    return sourceId + "-" + targetId;
+    return String.format("ch-%s-%s", sourceId, targetId);
   }
 }
