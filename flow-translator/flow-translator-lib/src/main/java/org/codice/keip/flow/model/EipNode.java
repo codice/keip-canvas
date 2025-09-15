@@ -1,15 +1,16 @@
 package org.codice.keip.flow.model;
 
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-// Represents a specific instantiation of an EIP component in the graph (e.g. a message filter or
-// router). Ids must be unique across the flow graph.
-
-// TODO: Should FlowType and Role be stored elsewhere (e.g. a registry) and looked up with eipId
+/**
+ * Represents a specific instantiation of an EIP component in the graph (e.g. a message filter or
+ * router). Ids must be unique across the flow graph.
+ *
+ * <p>Equality and hash code functions are defined using the 'id' field only.
+ */
 public record EipNode(
     String id,
     EipId eipId,
@@ -28,12 +29,8 @@ public record EipNode(
     return Collections.unmodifiableMap(attributes);
   }
 
-  // TODO: Use builder instead?
-  public Map<String, Object> mutableAttributes() {
-    if (attributes == null) {
-      return new LinkedHashMap<>();
-    }
-    return attributes;
+  public EipNode withAttributes(Map<String, Object> attrs) {
+    return new EipNode(id, eipId, label, description, role, connectionType, attrs, children);
   }
 
   @Override
@@ -42,6 +39,10 @@ public record EipNode(
       return Collections.emptyList();
     }
     return Collections.unmodifiableList(children);
+  }
+
+  public EipNode withChildren(List<EipChild> childList) {
+    return new EipNode(id, eipId, label, description, role, connectionType, attributes, childList);
   }
 
   @Override

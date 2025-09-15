@@ -78,6 +78,7 @@ class FlowToSpringIntegrationTest extends Specification {
         errors.size() == 1
     }
 
+    // TODO: Incorporate "spring-integration-6.xml" test xml
     def "End-to-end spring-integration xml to Flow"(String flowFile, String xmlFile) {
         given:
         def xml = readTestXml(xmlFile).newReader()

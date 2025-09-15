@@ -12,16 +12,19 @@ import static org.codice.keip.flow.xml.spring.ComponentIdentifiers.DIRECT_CHANNE
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.xml.transform.TransformerException;
 import org.codice.keip.flow.graph.GuavaGraph;
 import org.codice.keip.flow.model.ConnectionType;
 import org.codice.keip.flow.model.EdgeProps;
 import org.codice.keip.flow.model.EdgeProps.EdgeType;
 import org.codice.keip.flow.model.EipNode;
+import org.codice.keip.flow.model.Role;
 
 /**
  * Converts direct channel nodes that have exactly one input and one output connection into a
@@ -63,16 +66,16 @@ class ChannelEdgeBuilder {
   // TODO: Support partial errors by returning a "TranslationResult" record
   GuavaGraph buildGraph() throws TransformerException {
     for (EipNode node : nodes) {
-      if (isDirectChannel(node)) {
+      if (Role.CHANNEL.equals(node.role())) {
         channelConnections.putIfAbsent(node.id(), new ChannelConnections());
         channelNodes.put(node.id(), node);
         continue;
       }
 
-      List<String> channelAttributes = processChannelAttributes(node);
+      Set<String> channelAttrNames = processChannelAttributes(node);
       processContentBasedRouters(node);
-      channelAttributes.forEach(node.mutableAttributes()::remove);
-      graphBuilder.addNode(node);
+      Map<String, Object> filtered = filterChannelAttributes(node.attributes(), channelAttrNames);
+      graphBuilder.addNode(node.withAttributes(filtered));
     }
 
     for (Entry<String, ChannelConnections> entry : channelConnections.entrySet()) {
@@ -82,8 +85,8 @@ class ChannelEdgeBuilder {
     return graphBuilder.build();
   }
 
-  private List<String> processChannelAttributes(EipNode node) {
-    List<String> channelAttributes = new ArrayList<>();
+  private Set<String> processChannelAttributes(EipNode node) {
+    Set<String> channelAttributes = new HashSet<>();
     for (Entry<String, Object> attr : node.attributes().entrySet()) {
       if (CHANNEL_ATTRIBUTES.contains(attr.getKey())) {
         channelAttributes.add(attr.getKey());
@@ -124,15 +127,20 @@ class ChannelEdgeBuilder {
       throw new TransformerException(String.format("disconnected channel: '%s'", channelId));
     }
 
-    // if channel has multiple inputs or outputs -> include as a standalone node in the graph
-    if (connections.incoming.size() > 1 || connections.outgoing.size() > 1) {
+    if (!channelNodes.containsKey(channelId)) {
+      throw new TransformerException(
+          String.format("No channel node found with id: '%s'", channelId));
+    }
+
+    EipNode chanNode = channelNodes.get(channelId);
+    if (isStandaloneChannelNode(chanNode, connections)) {
       graphBuilder.addNode(channelNodes.get(channelId));
-      connections.incoming().forEach(conn -> addGraphEdge("", conn, new Connection(channelId)));
-      connections.outgoing().forEach(conn -> addGraphEdge("", new Connection(channelId), conn));
+      connections.incoming().forEach(conn -> addGraphEdge(null, conn, new Connection(channelId)));
+      connections.outgoing().forEach(conn -> addGraphEdge(null, new Connection(channelId), conn));
       return;
     }
 
-    addGraphEdge(channelId, connections.incoming().getFirst(), connections.outgoing().getLast());
+    addGraphEdge(channelId, connections.incoming().getFirst(), connections.outgoing().getFirst());
   }
 
   private void addGraphEdge(String channelId, Connection incoming, Connection outgoing) {
@@ -147,6 +155,8 @@ class ChannelEdgeBuilder {
       ConnectionType connectionType,
       ChannelConnections connections) {
 
+    // TODO: Replace channel attributes set with an enum to ensure an exhaustive check (without
+    // default case)
     switch (attr.getKey()) {
       case OUTPUT_CHANNEL, DEFAULT_OUTPUT_CHANNEL_NAME ->
           addIncomingConnection(nodeId, connections);
@@ -199,8 +209,27 @@ class ChannelEdgeBuilder {
     }
   }
 
-  private boolean isDirectChannel(EipNode node) {
-    return node.eipId().equals(DIRECT_CHANNEL) && node.children().isEmpty();
+  // if channel has multiple inputs or outputs -> include as a standalone node in the graph
+
+  /**
+   * A channel is treated as a standalone node if any of the following conditions are met:
+   *
+   * <ul>
+   *   <li>The channel type is NOT a direct channel (e.g. pub-sub, queue, etc.)
+   *   <li>The channel has multiple incoming connections
+   *   <li>The channel has multiple outgoing connections
+   * </ul>
+   */
+  private boolean isStandaloneChannelNode(EipNode node, ChannelConnections connections) {
+    boolean isDirectChannel = node.eipId().equals(DIRECT_CHANNEL) && node.children().isEmpty();
+    return !isDirectChannel || connections.incoming.size() > 1 || connections.outgoing.size() > 1;
+  }
+
+  private Map<String, Object> filterChannelAttributes(
+      Map<String, Object> attrs, Set<String> channelAttrNames) {
+    return attrs.entrySet().stream()
+        .filter(entry -> !channelAttrNames.contains(entry.getKey()))
+        .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
   }
 
   private record Connection(String node, EdgeType type) {
