@@ -1,6 +1,6 @@
 package org.codice.keip.flow;
 
-import java.io.Reader;
+import java.io.InputStream;
 import java.io.Writer;
 import java.util.List;
 import javax.xml.transform.TransformerException;
@@ -52,7 +52,7 @@ public final class FlowTranslator {
     return graphXmlSerializer.toXml(graph, outputXml, flow.customEntities());
   }
 
-  public TranslationResult<Flow> fromXml(Reader xml) throws TransformerException {
+  public TranslationResult<Flow> fromXml(InputStream xml) throws TransformerException {
     if (this.graphXmlParser == null) {
       throw new UnsupportedOperationException(
           "A GraphXmlParser must be initialized before calling 'fromXml'");

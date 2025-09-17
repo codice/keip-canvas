@@ -1,19 +1,25 @@
 package org.codice.keip.flow.xml.spring
 
-import com.ctc.wstx.msv.W3CMultiSchemaFactory
-import org.codehaus.stax2.validation.XMLValidationSchema
 import org.codice.keip.flow.ComponentRegistry
 import org.codice.keip.flow.xml.NamespaceSpec
+import org.springframework.beans.factory.xml.PluggableSchemaResolver
+import org.springframework.core.io.Resource
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.springframework.core.io.support.ResourcePatternResolver
+import org.xml.sax.InputSource
 import spock.lang.Specification
 
+import javax.xml.XMLConstants
 import javax.xml.transform.Source
 import javax.xml.transform.stream.StreamSource
-import java.nio.file.Path
+import javax.xml.validation.Schema
+import javax.xml.validation.SchemaFactory
 
 import static org.codice.keip.flow.ComponentRegistryIO.readComponentDefinitionJson
 import static org.codice.keip.flow.xml.XmlComparisonUtil.readTestXml
 
 // TODO: Test with invalid xml against schema
+// TODO: Test with different qname prefixes
 class IntegrationGraphXmlParserTest extends Specification {
 
     private static final List<NamespaceSpec> NAMESPACES = [
@@ -27,11 +33,11 @@ class IntegrationGraphXmlParserTest extends Specification {
 
     def "test xsd validation"(String xmlFilePath) {
         given:
-        Reader xml = readTestXml(xmlFilePath).newReader()
+        InputStream xml = readTestXml(xmlFilePath)
+        xmlParser.setValidationSchema(integrationSchemas())
 
         when:
         xmlParser.fromXml(xml)
-        xmlParser.setValidationSchema(createValidationSchema())
 
         then:
         noExceptionThrown()
@@ -40,26 +46,43 @@ class IntegrationGraphXmlParserTest extends Specification {
         xmlFilePath << ["multi-channel-connections.xml", "default-namespaces.xml", "nested-children.xml"]
     }
 
-    XMLValidationSchema createValidationSchema() {
-        String baseUri = "classpath:/schemas/dummy"
+    private static Schema integrationSchemas() throws Exception {
+        PluggableSchemaResolver resolver = new PluggableSchemaResolver(getClass().getClassLoader());
 
-        LinkedHashMap<String, Source> schemas = [
-                "http://www.springframework.org/schema/beans"      : getXsd("spring-beans.xsd"),
-                "http://www.springframework.org/schema/tool"       : getXsd("spring-tool.xsd"),
-                "http://www.springframework.org/schema/integration":
-                        getXsd("spring-integration-5.2.xsd")]
+        Set<String> integrationSchemas = discoverIntegrationSchemas();
+        List<Source> sources = new ArrayList<>();
+        for (String schemaLocation : integrationSchemas) {
+            InputSource inputSource = resolver.resolveEntity(null, schemaLocation);
+            if (inputSource != null) {
+                sources.add(new StreamSource(inputSource.getByteStream()));
+            }
+        }
 
-        return new W3CMultiSchemaFactory().createSchema(baseUri, schemas)
+        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        Source[] srcArr = sources.toArray(new Source[0]);
+        return schemaFactory.newSchema(srcArr);
     }
 
-    // TODO: Fetch schemas from dependency JAR instead
-    StreamSource getXsd(String filename) {
-        String xsdPath = Path.of("schemas", filename).toString()
-        StreamSource s = new StreamSource(getClass().getClassLoader().getResourceAsStream(xsdPath))
-        s.setSystemId(
-                Objects
-                        .requireNonNull(getClass().getClassLoader().getResource(xsdPath))
-                        .toExternalForm())
-        return s
+    private static Set<String> discoverIntegrationSchemas() throws IOException {
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        Resource[] resources = resolver.getResources("classpath*:META-INF/spring.schemas");
+
+        List<String> initUrls =
+                List.of("http://www.springframework.org/schema/beans/spring-beans.xsd",
+                        "https://www.springframework.org/schema/beans/spring-beans.xsd",
+                        "http://www.springframework.org/schema/tool/spring-tool.xsd",
+                        "https://www.springframework.org/schema/tool/spring-tool.xsd")
+
+        Set<String> schemas = new LinkedHashSet<>(initUrls);
+        for (Resource resource : resources) {
+            if (!resource.URI.toString().contains("integration")) {
+                continue;
+            }
+            Properties props = new Properties();
+            props.load(resource.getInputStream());
+            schemas.addAll(props.stringPropertyNames())
+        }
+
+        return schemas;
     }
 }

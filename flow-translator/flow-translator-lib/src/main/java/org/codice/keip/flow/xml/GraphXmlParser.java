@@ -3,37 +3,42 @@ package org.codice.keip.flow.xml;
 import static org.codice.keip.flow.xml.spring.AttributeNames.ID;
 
 import com.ctc.wstx.stax.WstxEventFactory;
-import com.ctc.wstx.stax.WstxInputFactory;
 import com.ctc.wstx.stax.WstxOutputFactory;
-import java.io.Reader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLEventWriter;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.TransformerException;
-import org.codehaus.stax2.XMLStreamReader2;
-import org.codehaus.stax2.validation.XMLValidationSchema;
+import javax.xml.validation.Schema;
 import org.codice.keip.flow.ComponentRegistry;
 import org.codice.keip.flow.error.TransformationError;
 import org.codice.keip.flow.model.EipGraph;
 import org.codice.keip.flow.model.EipNode;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 // TODO: Javadoc
 public abstract class GraphXmlParser {
 
-  private final XMLInputFactory inputFactory = initializeXMLInputFactory();
   private final XMLOutputFactory outputFactory = WstxOutputFactory.newFactory();
   private final XmlElementWriter elementWriter =
       new XmlElementWriter(WstxEventFactory.newFactory());
@@ -42,7 +47,7 @@ public abstract class GraphXmlParser {
 
   private final ComponentRegistry registry;
 
-  private XMLValidationSchema validationSchema;
+  private Schema validationSchema;
 
   public GraphXmlParser(Collection<NamespaceSpec> namespaceSpecs, ComponentRegistry registry) {
     this.xmlToEipNamespaceMap =
@@ -51,11 +56,9 @@ public abstract class GraphXmlParser {
     this.registry = registry;
   }
 
-  public void setValidationSchema(XMLValidationSchema validationSchema) {
+  public void setValidationSchema(Schema validationSchema) {
     this.validationSchema = validationSchema;
   }
-
-  protected abstract QName rootElement();
 
   protected abstract boolean isCustomEntity(QName name);
 
@@ -68,30 +71,28 @@ public abstract class GraphXmlParser {
 
   // TODO: Preserve node descriptions
   // TODO: Consider deprecating the label field on the EipNode (use id only)
-  public final XmlParseResult fromXml(Reader xml) throws TransformerException {
+
+  // TODO: add note on dom vs stax
+  public final XmlParseResult fromXml(InputStream xml) throws TransformerException {
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    if (validationSchema != null) {
+      factory.setSchema(validationSchema);
+    }
+
     List<EipNode> nodes = new ArrayList<>();
-    List<TransformationError> errors = new ArrayList<>();
+    List<TransformationError> errors;
 
     try {
-      // XmlEventReader does not support validation while parsing. Using XmlStreamReader instead.
-      XMLStreamReader2 streamReader = (XMLStreamReader2) inputFactory.createXMLStreamReader(xml);
-      if (validationSchema != null) {
-        streamReader.validateAgainst(validationSchema);
-      }
-
-      XMLStreamReader reader = inputFactory.createFilteredReader(streamReader, this::elementFilter);
-      XmlElementTransformer xmlElementTransformer = getXmlElementTransformer();
-
-      while (reader.hasNext()) {
-        // TODO: keep parsing even after an error?
-        XmlElement element = parseElement(reader);
-        if (isCustomEntity(element.qname())) {
-          addCustomEntity(element);
-        } else {
-          nodes.add(xmlElementTransformer.apply(element, registry));
-        }
-      }
-    } catch (XMLStreamException | RuntimeException e) {
+      DocumentBuilder builder = factory.newDocumentBuilder();
+      builder.setErrorHandler(new ParsingErrorHandler());
+      Document doc = builder.parse(xml);
+      errors = parseTopLevelElements(doc.getDocumentElement(), nodes);
+    } catch (SAXException e) {
+      throw new TransformerException("Failed to validate input xml", e);
+    } catch (ParserConfigurationException | IOException e) {
+      throw new TransformerException("Failed to parse input xml", e);
+    } catch (RuntimeException e) {
       throw new TransformerException(e);
     }
 
@@ -99,57 +100,81 @@ public abstract class GraphXmlParser {
     return new XmlParseResult(graph, customEntities, errors);
   }
 
-  private XmlElement parseElement(XMLStreamReader reader)
-      throws TransformerException, XMLStreamException {
-    Deque<XmlElement> parentStack = new ArrayDeque<>();
-
-    XmlElement top = null;
-    while (reader.hasNext()) {
-      if (reader.isStartElement()) {
-        XmlElement current = createElement(reader);
-        if (!parentStack.isEmpty()) {
-          parentStack.peek().children().add(current);
-        }
-        parentStack.push(current);
-      } else if (reader.isEndElement()) {
-        top = parentStack.pop();
+  // Walks the through each top-level node, transforms into an EipNode, and adds it to the provided
+  // 'nodes' list.
+  private List<TransformationError> parseTopLevelElements(Element root, List<EipNode> nodes) {
+    List<TransformationError> errors = new ArrayList<>();
+    Node child = root.getFirstChild();
+    while (child != null) {
+      TransformationError error = handleXmlNode(child, nodes);
+      if (error != null) {
+        errors.add(error);
       }
-
-      reader.next();
-      if (parentStack.isEmpty()) {
-        break;
-      }
+      child = child.getNextSibling();
     }
-
-    return top;
+    return errors;
   }
 
-  private XmlElement createElement(XMLStreamReader reader) throws TransformerException {
-    String prefix = getPrefix(reader);
-    XmlElement element =
-        new XmlElement(
-            new QName(reader.getNamespaceURI(), reader.getLocalName(), prefix),
-            new LinkedHashMap<>(),
-            new ArrayList<>());
-
-    for (int i = 0; i < reader.getAttributeCount(); i++) {
-      element.attributes().put(reader.getAttributeLocalName(i), reader.getAttributeValue(i));
+  // Parses the full tree for the provided node into an XmlElement. If the element is a custom
+  // entity, save it to the 'customEntities' map, otherwise transform to an EipNode and add to
+  // 'nodes' list.
+  private TransformationError handleXmlNode(Node node, List<EipNode> nodes) {
+    try {
+      if (node.getNodeType() == Node.ELEMENT_NODE) {
+        XmlElement element = parseElement((Element) node);
+        if (isCustomEntity(element.qname())) {
+          addCustomEntity(element);
+        } else {
+          nodes.add(getXmlElementTransformer().apply(element, registry));
+        }
+      }
+    } catch (XMLStreamException | TransformerException e) {
+      return new TransformationError(
+          String.format("%s:%s", node.getPrefix(), node.getLocalName()), e);
     }
+    return null;
+  }
 
+  private XmlElement parseElement(Element node) throws TransformerException {
+    XmlElement parentElement = createXmlElement(node);
+    Node child = node.getFirstChild();
+    while (child != null) {
+      if (child.getNodeType() == Node.ELEMENT_NODE) {
+        XmlElement childElement = parseElement((Element) child);
+        parentElement.children().add(childElement);
+      }
+      child = child.getNextSibling();
+    }
+    return parentElement;
+  }
+
+  private XmlElement createXmlElement(Element node) throws TransformerException {
+    QName name = new QName(node.getNamespaceURI(), node.getLocalName(), getEipPrefix(node));
+    XmlElement element = new XmlElement(name, new LinkedHashMap<>(), new ArrayList<>());
+    NamedNodeMap attrs = node.getAttributes();
+    for (int i = 0; i < attrs.getLength(); i++) {
+      Attr attr = (Attr) attrs.item(i);
+      element.attributes().put(attr.getName(), attr.getValue());
+    }
     return element;
   }
 
-  private String getPrefix(XMLStreamReader reader) throws TransformerException {
-    if (isCustomEntity(reader.getName())) {
+  private String getEipPrefix(Element e) throws TransformerException {
+    if (isCustomEntity(toQName(e))) {
       return "";
     }
 
-    String prefix = xmlToEipNamespaceMap.get(reader.getNamespaceURI());
+    String prefix = xmlToEipNamespaceMap.get(e.getNamespaceURI());
     if (prefix == null) {
       throw new TransformerException(
-          String.format("Unregistered namespace: %s", reader.getNamespaceURI()));
+          String.format("Unregistered namespace: %s", e.getNamespaceURI()));
     }
     return prefix;
+  }
+
+  private QName toQName(Element e) {
+    String prefix = e.getPrefix() == null ? "" : e.getPrefix();
+    return new QName(e.getNamespaceURI(), e.getLocalName(), prefix);
   }
 
   private void addCustomEntity(XmlElement element) throws TransformerException, XMLStreamException {
@@ -174,19 +199,18 @@ public abstract class GraphXmlParser {
     return id;
   }
 
-  private boolean elementFilter(XMLStreamReader reader) {
-    // skip root element
-    if (reader.hasName() && reader.getName().equals(rootElement())) {
-      return false;
+  private static class ParsingErrorHandler implements ErrorHandler {
+    @Override
+    public void warning(SAXParseException exception) {}
+
+    @Override
+    public void error(SAXParseException exception) throws SAXException {
+      throw exception;
     }
 
-    return reader.isStartElement() || reader.isEndElement();
-  }
-
-  private static XMLInputFactory initializeXMLInputFactory() {
-    XMLInputFactory factory = WstxInputFactory.newFactory();
-    factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-    factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-    return factory;
+    @Override
+    public void fatalError(SAXParseException exception) throws SAXException {
+      throw exception;
+    }
   }
 }

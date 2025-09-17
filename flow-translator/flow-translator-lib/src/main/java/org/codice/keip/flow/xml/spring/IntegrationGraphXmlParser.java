@@ -32,11 +32,6 @@ public class IntegrationGraphXmlParser extends GraphXmlParser {
   }
 
   @Override
-  protected QName rootElement() {
-    return new QName(Namespaces.BEANS.xmlNamespace(), Namespaces.BEANS.eipNamespace());
-  }
-
-  @Override
   protected boolean isCustomEntity(QName name) {
     return CUSTOM_ENTITY_NAMESPACES.contains(name.getNamespaceURI());
   }
