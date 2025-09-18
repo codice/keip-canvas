@@ -24,7 +24,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
 import javax.xml.validation.Schema;
 import org.codice.keip.flow.ComponentRegistry;
-import org.codice.keip.flow.error.TransformationError;
 import org.codice.keip.flow.model.EipGraph;
 import org.codice.keip.flow.model.EipNode;
 import org.w3c.dom.Attr;
@@ -42,7 +41,6 @@ public abstract class GraphXmlParser {
   private final XMLOutputFactory outputFactory = WstxOutputFactory.newFactory();
   private final XmlElementWriter elementWriter =
       new XmlElementWriter(WstxEventFactory.newFactory());
-  private final Map<String, String> customEntities = new LinkedHashMap<>();
   private final Map<String, String> xmlToEipNamespaceMap;
 
   private final ComponentRegistry registry;
@@ -66,8 +64,7 @@ public abstract class GraphXmlParser {
 
   protected abstract GraphEdgeBuilder graphEdgeBuilder();
 
-  public record XmlParseResult(
-      EipGraph graph, Map<String, String> customEntities, List<TransformationError> errors) {}
+  public record XmlParseResult(EipGraph graph, Map<String, String> customEntities) {}
 
   // TODO: Preserve node descriptions
   // TODO: Consider deprecating the label field on the EipNode (use id only)
@@ -80,59 +77,53 @@ public abstract class GraphXmlParser {
       factory.setSchema(validationSchema);
     }
 
-    List<EipNode> nodes = new ArrayList<>();
-    List<TransformationError> errors;
+    final List<EipNode> nodes;
+    final Map<String, String> customEntities = new LinkedHashMap<>();
 
     try {
       DocumentBuilder builder = factory.newDocumentBuilder();
       builder.setErrorHandler(new ParsingErrorHandler());
       Document doc = builder.parse(xml);
-      errors = parseTopLevelElements(doc.getDocumentElement(), nodes);
+      nodes = parseTopLevelElements(doc.getDocumentElement(), customEntities);
     } catch (SAXException e) {
       throw new TransformerException("Failed to validate input xml", e);
     } catch (ParserConfigurationException | IOException e) {
       throw new TransformerException("Failed to parse input xml", e);
-    } catch (RuntimeException e) {
+    } catch (RuntimeException | XMLStreamException e) {
       throw new TransformerException(e);
     }
 
     EipGraph graph = graphEdgeBuilder().toGraph(nodes);
-    return new XmlParseResult(graph, customEntities, errors);
+    return new XmlParseResult(graph, customEntities);
   }
 
-  // Walks the through each top-level node, transforms into an EipNode, and adds it to the provided
+  // Walks the through each top-level node, transforms into an EipNode, and adds it to the returned
   // 'nodes' list.
-  private List<TransformationError> parseTopLevelElements(Element root, List<EipNode> nodes) {
-    List<TransformationError> errors = new ArrayList<>();
+  private List<EipNode> parseTopLevelElements(Element root, Map<String, String> customEntities)
+      throws XMLStreamException, TransformerException {
+    List<EipNode> nodes = new ArrayList<>();
     Node child = root.getFirstChild();
     while (child != null) {
-      TransformationError error = handleXmlNode(child, nodes);
-      if (error != null) {
-        errors.add(error);
-      }
+      handleXmlNode(child, nodes, customEntities);
       child = child.getNextSibling();
     }
-    return errors;
+    return nodes;
   }
 
-  // Parses the full tree for the provided node into an XmlElement. If the element is a custom
+  // Parses the subtree for the provided node into an XmlElement. If the element is a custom
   // entity, save it to the 'customEntities' map, otherwise transform to an EipNode and add to
   // 'nodes' list.
-  private TransformationError handleXmlNode(Node node, List<EipNode> nodes) {
-    try {
-      if (node.getNodeType() == Node.ELEMENT_NODE) {
-        XmlElement element = parseElement((Element) node);
-        if (isCustomEntity(element.qname())) {
-          addCustomEntity(element);
-        } else {
-          nodes.add(getXmlElementTransformer().apply(element, registry));
-        }
+  private void handleXmlNode(Node node, List<EipNode> nodes, Map<String, String> customEntities)
+      throws TransformerException, XMLStreamException {
+    if (node.getNodeType() == Node.ELEMENT_NODE) {
+      XmlElement element = parseElement((Element) node);
+      if (isCustomEntity(element.qname())) {
+        CustomEntity entity = toCustomEntity(element);
+        customEntities.put(entity.id(), entity.xml());
+      } else {
+        nodes.add(getXmlElementTransformer().apply(element, registry));
       }
-    } catch (XMLStreamException | TransformerException e) {
-      return new TransformationError(
-          String.format("%s:%s", node.getPrefix(), node.getLocalName()), e);
     }
-    return null;
   }
 
   private XmlElement parseElement(Element node) throws TransformerException {
@@ -154,7 +145,9 @@ public abstract class GraphXmlParser {
     NamedNodeMap attrs = node.getAttributes();
     for (int i = 0; i < attrs.getLength(); i++) {
       Attr attr = (Attr) attrs.item(i);
-      element.attributes().put(attr.getName(), attr.getValue());
+      if (attr.getSpecified()) {
+        element.attributes().put(attr.getName(), attr.getValue());
+      }
     }
     return element;
   }
@@ -177,7 +170,8 @@ public abstract class GraphXmlParser {
     return new QName(e.getNamespaceURI(), e.getLocalName(), prefix);
   }
 
-  private void addCustomEntity(XmlElement element) throws TransformerException, XMLStreamException {
+  private CustomEntity toCustomEntity(XmlElement element)
+      throws TransformerException, XMLStreamException {
     String id = removeId(element);
 
     Writer sw = new StringWriter();
@@ -186,7 +180,7 @@ public abstract class GraphXmlParser {
     eventWriter.flush();
     eventWriter.close();
 
-    customEntities.put(id, sw.toString());
+    return new CustomEntity(id, sw.toString());
   }
 
   private String removeId(XmlElement element) throws TransformerException {
@@ -198,6 +192,8 @@ public abstract class GraphXmlParser {
     element.attributes().remove(ID);
     return id;
   }
+
+  private record CustomEntity(String id, String xml) {}
 
   private static class ParsingErrorHandler implements ErrorHandler {
     @Override

@@ -189,10 +189,10 @@ class IntegrationGraphXmlSerializerTest extends Specification {
         given:
         EipNode node = Stub {
             id() >> "test-id"
-            eipId() >> new EipId("jms", "inbound-channel-adapter")
+            eipId() >> new EipId("integration", "inbound-channel-adapter")
             role() >> Role.ENDPOINT
             connectionType() >> ConnectionType.SOURCE
-            attributes() >> ["pub-sub-domain": "true"]
+            attributes() >> ["auto-startup": "false"]
             children() >> [new EipChild("poller", ["fixed-delay": 1000], null)]
         }
 
@@ -230,7 +230,7 @@ class IntegrationGraphXmlSerializerTest extends Specification {
 
     Map<String, String> generateCustomEntities() {
         return ["e1": '<bean class="com.example.Test"><property name="limit" value="65536" /></bean>',
-                "e2": '<arbitrary>test</arbitrary>']
+                "e2": '<bean id="e123" lazy-init="true"/>']
     }
 
     NodeTransformer buildExceptionalTransformer(EipNode errorTrigger) {

@@ -1,25 +1,17 @@
 package org.codice.keip.flow.xml.spring
 
 import org.codice.keip.flow.ComponentRegistry
+import org.codice.keip.flow.model.EipId
 import org.codice.keip.flow.xml.NamespaceSpec
-import org.springframework.beans.factory.xml.PluggableSchemaResolver
-import org.springframework.core.io.Resource
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import org.springframework.core.io.support.ResourcePatternResolver
-import org.xml.sax.InputSource
+import org.xml.sax.SAXException
+import spock.lang.Shared
 import spock.lang.Specification
 
-import javax.xml.XMLConstants
-import javax.xml.transform.Source
-import javax.xml.transform.stream.StreamSource
-import javax.xml.validation.Schema
-import javax.xml.validation.SchemaFactory
+import javax.xml.transform.TransformerException
 
 import static org.codice.keip.flow.ComponentRegistryIO.readComponentDefinitionJson
 import static org.codice.keip.flow.xml.XmlComparisonUtil.readTestXml
 
-// TODO: Test with invalid xml against schema
-// TODO: Test with different qname prefixes
 class IntegrationGraphXmlParserTest extends Specification {
 
     private static final List<NamespaceSpec> NAMESPACES = [
@@ -27,62 +19,236 @@ class IntegrationGraphXmlParserTest extends Specification {
             new NamespaceSpec("jms", "http://www.springframework.org/schema/integration/jms", "https://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd")
     ]
 
-    ComponentRegistry componentRegistry = ComponentRegistry.fromJson(readComponentDefinitionJson())
+    @Shared
+    def componentRegistry = ComponentRegistry.fromJson(readComponentDefinitionJson())
 
-    def xmlParser = new IntegrationGraphXmlParser(NAMESPACES, componentRegistry)
+    @Shared
+    def springIntegrationSchema = SchemaBuilder.buildSpringIntegrationSchemas()
 
-    def "test xsd validation"(String xmlFilePath) {
+    @Shared
+    def xmlParser = initParser()
+
+    def "xml to graph"() {
         given:
-        InputStream xml = readTestXml(xmlFilePath)
-        xmlParser.setValidationSchema(integrationSchemas())
+        InputStream xml = readTestXml("nested-children.xml")
+
+        when:
+        def result = xmlParser.fromXml(xml)
+
+        then:
+        result.customEntities().isEmpty()
+        def graph = result.graph()
+        def nodes = graph.traverse().toList()
+        nodes.size() == 4
+
+        def inAdapter = nodes[0]
+        with(inAdapter) {
+            id() == "messageGenerator"
+            eipId() == new EipId("integration", "inbound-channel-adapter")
+            attributes() == ["expression": "'TestMessage'"]
+            children().size() == 2
+        }
+
+        def poller = inAdapter.children() getFirst()
+
+        with(poller) {
+            name() == "poller"
+            attributes() == ["fixed-rate": "5000"]
+            children().size() == 1
+        }
+
+        def advice = poller.children().getFirst()
+        with(advice) {
+            name() == "advice-chain"
+            attributes().isEmpty()
+            children().size() == 1
+        }
+
+        def ref = advice.children().getFirst()
+        with(ref) {
+            name() == "ref"
+            attributes() == ["bean": "adviceRef"]
+            children().isEmpty()
+        }
+
+        def expr = inAdapter.children().getLast()
+        with(expr) {
+            name() == "expression"
+            attributes() == ["key": "testExp"]
+            children().isEmpty()
+        }
+
+        def filter = nodes[1]
+        with(filter) {
+            id() == "checkPayload"
+            eipId() == new EipId("integration", "filter")
+            attributes() == ["expression": "payload == 'error'"]
+            children().isEmpty()
+        }
+
+        def outAdapter = nodes[2]
+        with(outAdapter) {
+            id() == "resultSender"
+            eipId() == new EipId("integration", "outbound-channel-adapter")
+            attributes().isEmpty()
+            children().isEmpty()
+        }
+
+        def logAdapter = nodes[3]
+        with(logAdapter) {
+            id() == "testLogger"
+            eipId() == new EipId("integration", "logging-channel-adapter")
+            attributes().isEmpty()
+            children().isEmpty()
+        }
+
+        def ec = new EdgeChecker(graph)
+        ec.check(inAdapter, [], [filter])
+        ec.check(filter, [inAdapter], [outAdapter, logAdapter])
+        ec.check(outAdapter, [filter], [])
+        ec.check(logAdapter, [filter], [])
+    }
+
+    def "xml to graph with no configured validation"() {
+        given:
+        def localParser = new IntegrationGraphXmlParser(NAMESPACES, componentRegistry)
+        InputStream xml = readTestXml("nested-children.xml")
+
+        when:
+        def result = localParser.fromXml(xml)
+
+        then:
+        result.customEntities().isEmpty()
+        def nodes = result.graph().traverse().toList()
+
+        def nodeIds = nodes.stream().map { it.id() }.toList()
+        nodeIds == ["messageGenerator", "checkPayload", "resultSender", "testLogger"]
+
+        def inAdapter = nodes[0]
+        with(inAdapter) {
+            id() == "messageGenerator"
+            eipId() == new EipId("integration", "inbound-channel-adapter")
+            attributes() == ["expression": "'TestMessage'"]
+            children().size() == 2
+        }
+    }
+
+    def "xml to graph with custom entity"() {
+        given:
+        InputStream xml = readTestXml("single-node-with-custom-entities.xml")
+
+        when:
+        def result = xmlParser.fromXml(xml)
+
+        then:
+        def graph = result.graph()
+        def nodes = graph.traverse().toList()
+        nodes.size() == 1
+        nodes.getFirst().id() == "test-id"
+
+        def expectedEntities = [
+                "e1": '<bean class="com.example.Test"><property name="limit" value="65536"/></bean>',
+                "e2": '<bean lazy-init="true"/>']
+
+        result.customEntities() == expectedEntities
+    }
+
+    def "xml to graph with only custom entities, no eip nodes"() {
+        given:
+        InputStream xml = readTestXml("custom-entities-only.xml")
+
+        when:
+        def result = xmlParser.fromXml(xml)
+
+        then:
+        def graph = result.graph()
+        graph.traverse().count() == 0
+
+        def expectedEntities = [
+                "e1": '<bean class="com.example.Test"><property name="limit" value="65536"/></bean>',
+                "e2": '<bean lazy-init="true"/>']
+
+        result.customEntities() == expectedEntities
+    }
+
+    def "xml to graph with id-less custom entity -> exception thrown"() {
+        given:
+        InputStream xml = readTestXml("invalid/custom-entity-no-id.xml")
 
         when:
         xmlParser.fromXml(xml)
 
         then:
-        noExceptionThrown()
+        thrown(TransformerException)
+    }
+
+    def "xml has an element unregistered namespace"() {
+        given:
+        InputStream xml = readTestXml("invalid/unknown-namespace.xml")
+        def localParser = new IntegrationGraphXmlParser(NAMESPACES, componentRegistry)
+
+        when:
+        localParser.fromXml(xml)
+
+        then:
+        thrown(TransformerException)
+    }
+
+    def "xml to graph with alternative namespace prefixes"() {
+        given:
+        InputStream xml = readTestXml("alternative-prefixes.xml")
+
+        when:
+        def result = xmlParser.fromXml(xml)
+
+        then:
+        def graph = result.graph()
+        def nodes = graph.traverse().toList()
+        nodes.size() == 2
+
+        def inAdapter = nodes.getFirst()
+        with(inAdapter) {
+            id() == "messageGenerator"
+            eipId() == new EipId("integration", "inbound-channel-adapter")
+            attributes() == ["expression": "'TestMessage'"]
+            children().size() == 1
+        }
+
+        def outAdapter = nodes.getLast()
+        with(outAdapter) {
+            id() == "jmsProducer"
+            eipId() == new EipId("jms", "outbound-channel-adapter")
+            attributes() == ["destination-name": "test-target"]
+            children().isEmpty()
+        }
+
+        def expectedEntities = ["b1": '<bean lazy-init="true"/>']
+        result.customEntities() == expectedEntities
+    }
+
+    def "xsd validation with invalid xml -> failure"(String xmlFilePath) {
+        given:
+        InputStream xml = readTestXml(xmlFilePath)
+        xmlParser.setValidationSchema(springIntegrationSchema)
+
+        when:
+        xmlParser.fromXml(xml)
+
+        then:
+        def ex = thrown(TransformerException)
+        ex.cause instanceof SAXException
 
         where:
-        xmlFilePath << ["multi-channel-connections.xml", "default-namespaces.xml", "nested-children.xml"]
+        xmlFilePath << [
+                "invalid/unknown-attribute.xml",
+                "invalid/unknown-element.xml",
+                "invalid/unknown-namespace.xml",
+        ]
     }
 
-    private static Schema integrationSchemas() throws Exception {
-        PluggableSchemaResolver resolver = new PluggableSchemaResolver(getClass().getClassLoader());
-
-        Set<String> integrationSchemas = discoverIntegrationSchemas();
-        List<Source> sources = new ArrayList<>();
-        for (String schemaLocation : integrationSchemas) {
-            InputSource inputSource = resolver.resolveEntity(null, schemaLocation);
-            if (inputSource != null) {
-                sources.add(new StreamSource(inputSource.getByteStream()));
-            }
-        }
-
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        Source[] srcArr = sources.toArray(new Source[0]);
-        return schemaFactory.newSchema(srcArr);
-    }
-
-    private static Set<String> discoverIntegrationSchemas() throws IOException {
-        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        Resource[] resources = resolver.getResources("classpath*:META-INF/spring.schemas");
-
-        List<String> initUrls =
-                List.of("http://www.springframework.org/schema/beans/spring-beans.xsd",
-                        "https://www.springframework.org/schema/beans/spring-beans.xsd",
-                        "http://www.springframework.org/schema/tool/spring-tool.xsd",
-                        "https://www.springframework.org/schema/tool/spring-tool.xsd")
-
-        Set<String> schemas = new LinkedHashSet<>(initUrls);
-        for (Resource resource : resources) {
-            if (!resource.URI.toString().contains("integration")) {
-                continue;
-            }
-            Properties props = new Properties();
-            props.load(resource.getInputStream());
-            schemas.addAll(props.stringPropertyNames())
-        }
-
-        return schemas;
+    private IntegrationGraphXmlParser initParser() {
+        def parser = new IntegrationGraphXmlParser(NAMESPACES, componentRegistry)
+        parser.setValidationSchema(springIntegrationSchema)
+        return parser
     }
 }

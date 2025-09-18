@@ -346,19 +346,4 @@ class ChannelEdgeBuilderTest extends Specification {
             }
         }
     }
-
-    private class EdgeChecker {
-        private EipGraph graph
-
-        EdgeChecker(EipGraph graph) {
-            this.graph = graph
-        }
-
-        void check(EipNode node, List<EipNode> predecessors, List<EipNode> successors) {
-            assert graph.predecessors(node) == predecessors.toSet()
-            assert graph.successors(node) == successors.toSet()
-        }
-
-    }
-
 }

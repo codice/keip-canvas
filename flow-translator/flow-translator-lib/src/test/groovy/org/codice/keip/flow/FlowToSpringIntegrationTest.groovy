@@ -10,6 +10,8 @@ import org.codice.keip.flow.xml.NodeTransformer
 import org.codice.keip.flow.xml.spring.DefaultNodeTransformer
 import org.codice.keip.flow.xml.spring.IntegrationGraphXmlParser
 import org.codice.keip.flow.xml.spring.IntegrationGraphXmlSerializer
+import org.codice.keip.flow.xml.spring.SchemaBuilder
+import spock.lang.Shared
 import spock.lang.Specification
 
 import java.nio.file.Path
@@ -34,7 +36,13 @@ class FlowToSpringIntegrationTest extends Specification {
             JsonMapper.builder()
                       .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
                       .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                      .build();
+                      .build()
+
+    @Shared
+    def componentRegistry = ComponentRegistry.fromJson(readComponentDefinitionJson())
+
+    @Shared
+    def springIntegrationSchema = SchemaBuilder.buildSpringIntegrationSchemas()
 
     def "End-to-end basic flow to spring-integration xml"(String flowFile, String xmlFile) {
         given:
@@ -82,19 +90,17 @@ class FlowToSpringIntegrationTest extends Specification {
     def "End-to-end spring-integration xml to Flow"(String flowFile, String xmlFile) {
         given:
         def xml = readTestXml(xmlFile)
-        def componentRegistry = ComponentRegistry.fromJson(readComponentDefinitionJson())
-        def flowTranslator = new FlowTranslator(new IntegrationGraphXmlParser(
-                NAMESPACES_PARSER, componentRegistry))
+        def xmlParser = new IntegrationGraphXmlParser(NAMESPACES_PARSER, componentRegistry)
+        xmlParser.setValidationSchema(springIntegrationSchema)
+        def flowTranslator = new FlowTranslator(xmlParser)
 
         when:
-        def output = flowTranslator.fromXml(xml)
+        def result = flowTranslator.fromXml(xml)
 
         then:
-        output.errors().isEmpty()
-
         def expectedFlow = MAPPER.readValue(getFlowJson(flowFile), Flow.class)
 
-        compareFlows(output.result(), expectedFlow)
+        compareFlows(result, expectedFlow)
 
         where:
         flowFile          | xmlFile

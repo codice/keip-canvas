@@ -11,7 +11,6 @@ import org.codice.keip.flow.model.Flow;
 import org.codice.keip.flow.xml.GraphXmlParser;
 import org.codice.keip.flow.xml.GraphXmlParser.XmlParseResult;
 import org.codice.keip.flow.xml.GraphXmlSerializer;
-import org.codice.keip.flow.xml.TranslationResult;
 
 /** Transforms an EIP {@link Flow} to an XML document. */
 public final class FlowTranslator {
@@ -52,7 +51,7 @@ public final class FlowTranslator {
     return graphXmlSerializer.toXml(graph, outputXml, flow.customEntities());
   }
 
-  public TranslationResult<Flow> fromXml(InputStream xml) throws TransformerException {
+  public Flow fromXml(InputStream xml) throws TransformerException {
     if (this.graphXmlParser == null) {
       throw new UnsupportedOperationException(
           "A GraphXmlParser must be initialized before calling 'fromXml'");
@@ -60,7 +59,6 @@ public final class FlowTranslator {
 
     XmlParseResult result = graphXmlParser.fromXml(xml);
     Flow flow = result.graph().toFlow();
-    flow = new Flow(flow.nodes(), flow.edges(), result.customEntities());
-    return new TranslationResult<>(flow, result.errors());
+    return new Flow(flow.nodes(), flow.edges(), result.customEntities());
   }
 }
