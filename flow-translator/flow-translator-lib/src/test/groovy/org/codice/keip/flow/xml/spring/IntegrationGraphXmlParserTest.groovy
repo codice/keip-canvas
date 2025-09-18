@@ -1,8 +1,13 @@
 package org.codice.keip.flow.xml.spring
 
 import org.codice.keip.flow.ComponentRegistry
+import org.codice.keip.flow.model.ConnectionType
 import org.codice.keip.flow.model.EipId
+import org.codice.keip.flow.model.EipNode
+import org.codice.keip.flow.model.Role
 import org.codice.keip.flow.xml.NamespaceSpec
+import org.codice.keip.flow.xml.XmlElement
+import org.codice.keip.flow.xml.XmlElementTransformer
 import org.xml.sax.SAXException
 import spock.lang.Shared
 import spock.lang.Specification
@@ -28,7 +33,7 @@ class IntegrationGraphXmlParserTest extends Specification {
     @Shared
     def xmlParser = initParser()
 
-    def "xml to graph"() {
+    def "parse xml to graph"() {
         given:
         InputStream xml = readTestXml("nested-children.xml")
 
@@ -109,7 +114,7 @@ class IntegrationGraphXmlParserTest extends Specification {
         ec.check(logAdapter, [filter], [])
     }
 
-    def "xml to graph with no configured validation"() {
+    def "parse xml to graph with no configured validation"() {
         given:
         def localParser = new IntegrationGraphXmlParser(NAMESPACES, componentRegistry)
         InputStream xml = readTestXml("nested-children.xml")
@@ -131,6 +136,33 @@ class IntegrationGraphXmlParserTest extends Specification {
             attributes() == ["expression": "'TestMessage'"]
             children().size() == 2
         }
+    }
+
+    def "parse xml with a custom XmlElementTransformer"() {
+        given:
+        EipNode dummyNode = Stub(EipNode) {
+            id() >> "testNode"
+            eipId() >> new EipId("test", "dummy")
+            role() >> Role.TRANSFORMER
+            connectionType() >> ConnectionType.PASSTHRU
+        }
+
+        XmlElementTransformer dummyTransformer =
+                (XmlElement element, ComponentRegistry registry) -> dummyNode
+
+        def localParser = new IntegrationGraphXmlParser(
+                NAMESPACES, componentRegistry, dummyTransformer)
+
+        InputStream xml = readTestXml("single-node.xml")
+
+        when:
+        def result = localParser.fromXml(xml)
+
+        then:
+        result.customEntities().isEmpty()
+        def nodes = result.graph().traverse().toList()
+        nodes.size() == 1
+        nodes.getFirst() == dummyNode
     }
 
     def "xml to graph with custom entity"() {

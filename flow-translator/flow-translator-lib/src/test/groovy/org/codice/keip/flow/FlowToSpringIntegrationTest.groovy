@@ -111,6 +111,55 @@ class FlowToSpringIntegrationTest extends Specification {
         "flowGraph5.json" | Path.of("end-to-end", "spring-integration-5.xml").toString()
     }
 
+    def "Uninitialized serializer -> UnsupportedOperationException"() {
+        given:
+        def xmlParser = new IntegrationGraphXmlParser(NAMESPACES_PARSER, componentRegistry)
+        def flowTranslator = new FlowTranslator(xmlParser)
+
+        Flow flow = Stub()
+        Writer writer = Stub()
+
+        when:
+        flowTranslator.toXml(flow, writer)
+
+        then:
+        thrown(UnsupportedOperationException)
+    }
+
+    def "Uninitialized parser -> UnsupportedOperationException"() {
+        given:
+        def serializer = new IntegrationGraphXmlSerializer(NAMESPACES_SERIALIZER)
+        def flowTranslator = new FlowTranslator(serializer)
+
+        InputStream is = Stub()
+
+        when:
+        flowTranslator.fromXml(is)
+
+        then:
+        thrown(UnsupportedOperationException)
+    }
+
+    def "Full initialization of parser and serializer"() {
+        given:
+        def serializer = new IntegrationGraphXmlSerializer(NAMESPACES_SERIALIZER)
+        def parser = new IntegrationGraphXmlParser(NAMESPACES_PARSER, componentRegistry)
+        def flowTranslator = new FlowTranslator(serializer, parser)
+
+        def flow = MAPPER.readValue(getFlowJson("flowGraph1.json"), Flow.class)
+        Writer writer = new StringWriter()
+
+        when:
+        def errors = flowTranslator.toXml(flow, writer)
+
+        InputStream is = new ByteArrayInputStream(writer.toString().getBytes())
+        def resultFlow = flowTranslator.fromXml(is)
+
+        then:
+        errors.isEmpty()
+        compareFlows(resultFlow, flow)
+    }
+
     static BufferedReader getFlowJson(String filename) {
         Path path = Path.of("json").resolve(filename)
         return FlowToSpringIntegrationTest.class

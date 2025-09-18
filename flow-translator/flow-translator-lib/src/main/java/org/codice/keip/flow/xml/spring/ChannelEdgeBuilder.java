@@ -155,8 +155,8 @@ class ChannelEdgeBuilder {
       ConnectionType connectionType,
       ChannelConnections connections) {
 
-    // TODO: Replace channel attributes set with an enum to ensure an exhaustive check (without
-    // default case)
+    // TODO: Replace channel attributes set with an enum to ensure an exhaustive check
+    //  (without the default case)
     switch (attr.getKey()) {
       case OUTPUT_CHANNEL, DEFAULT_OUTPUT_CHANNEL_NAME ->
           addIncomingConnection(nodeId, connections);

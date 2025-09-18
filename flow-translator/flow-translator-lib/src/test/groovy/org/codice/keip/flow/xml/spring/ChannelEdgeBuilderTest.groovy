@@ -1,9 +1,7 @@
 package org.codice.keip.flow.xml.spring
 
-
 import org.codice.keip.flow.model.ConnectionType
 import org.codice.keip.flow.model.EipChild
-import org.codice.keip.flow.model.EipGraph
 import org.codice.keip.flow.model.EipId
 import org.codice.keip.flow.model.EipNode
 import org.codice.keip.flow.model.Role
@@ -25,7 +23,6 @@ import static org.codice.keip.flow.xml.spring.AttributeNames.OUTPUT_CHANNEL
 import static org.codice.keip.flow.xml.spring.AttributeNames.REPLY_CHANNEL
 import static org.codice.keip.flow.xml.spring.AttributeNames.REQUEST_CHANNEL
 import static org.codice.keip.flow.xml.spring.ComponentIdentifiers.DIRECT_CHANNEL
-
 
 class ChannelEdgeBuilderTest extends Specification {
 
@@ -289,6 +286,32 @@ class ChannelEdgeBuilderTest extends Specification {
 
         ec.check(source, [], [recList])
         ec.check(recList, [source], [sink1, sink2])
+    }
+
+    def "test content-based routers with a 'mapping' child missing a 'channel' attribute on mapping -> exception"() {
+        given: "source -> router -> sink1+sink2+sink3"
+        def source = createNode("source", SOURCE, ["channel": "in"])
+        def router = createNode("router", CONTENT_BASED_ROUTER,
+                ["expression"   : "headers['status']",
+                 (INPUT_CHANNEL): "in"])
+        def sink1 = createNode("sink1", SINK, ["channel": "out1"])
+        def sink2 = createNode("sink2", SINK, ["channel": "out2"])
+
+        EipChild mapping1 = new EipChild("mapping", ["value": "one", "channel": "out1"], [])
+        EipChild mapping2 = new EipChild("mapping", ["value": "two"], [])
+        router = router.withChildren([mapping1, mapping2])
+
+        def nodes = [source,
+                     router,
+                     sink1,
+                     sink2,
+                     *createDirectChannels("in", "out1", "out2")]
+
+        when:
+        new ChannelEdgeBuilder(nodes).buildGraph()
+
+        then:
+        thrown(TransformerException)
     }
 
     def "non-direct channel types are left as standalone nodes"(EipId eipId, List<EipChild> children) {
