@@ -192,23 +192,21 @@ class ChannelEdgeBuilder {
 
   private void disambiguateRequestConnection(
       String nodeId, ConnectionType connectionType, ChannelConnections connections) {
-    if (ConnectionType.REQUEST_REPLY.equals(connectionType)) {
-      addOutgoingConnection(nodeId, connections);
-    } else if (ConnectionType.INBOUND_REQUEST_REPLY.equals(connectionType)) {
+    if (ConnectionType.INBOUND_REQUEST_REPLY.equals(connectionType)) {
       addIncomingConnection(nodeId, connections);
+    } else {
+      addOutgoingConnection(nodeId, connections);
     }
   }
 
   private void disambiguateReplyConnection(
       String nodeId, ConnectionType connectionType, ChannelConnections connections) {
-    if (ConnectionType.REQUEST_REPLY.equals(connectionType)) {
-      addIncomingConnection(nodeId, connections);
-    } else if (ConnectionType.INBOUND_REQUEST_REPLY.equals(connectionType)) {
+    if (ConnectionType.INBOUND_REQUEST_REPLY.equals(connectionType)) {
       addOutgoingConnection(nodeId, connections);
+    } else {
+      addIncomingConnection(nodeId, connections);
     }
   }
-
-  // if channel has multiple inputs or outputs -> include as a standalone node in the graph
 
   /**
    * A channel is treated as a standalone node if any of the following conditions are met:

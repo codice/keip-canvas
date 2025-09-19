@@ -232,7 +232,8 @@ class ChannelEdgeBuilderTest extends Specification {
 
         EipChild mapping1 = new EipChild("mapping", ["value": "one", "channel": "out1"], [])
         EipChild mapping2 = new EipChild("mapping", ["value": "two", "channel": "out2"], [])
-        router = router.withChildren([mapping1, mapping2])
+        EipChild other = new EipChild("other", ["key1": "val1"], [])
+        router = router.withChildren([mapping1, mapping2, other])
 
         def nodes = [source,
                      router,
@@ -346,6 +347,62 @@ class ChannelEdgeBuilderTest extends Specification {
         eipId                                                                         | children
         DIRECT_CHANNEL                                                                | [new EipChild("queue", [:], [])]
         new EipId(Namespaces.INTEGRATION.eipNamespace(), "publish-subscribe-channel") | []
+    }
+
+    def "channels with multiple incoming connections are left as standalone nodes"() {
+        given: "n1+n2 -> chan -> n3"
+        def n1 = createNode("n1", SOURCE, ["channel": "in"])
+        def n2 = createNode("n2", SOURCE, ["channel": "in"])
+        def n3 = createNode("n3", SINK, ["channel": "in"])
+
+        def nodes = [
+                n1,
+                n2,
+                n3,
+                *createDirectChannels("in"),
+        ]
+
+        when:
+        def graph = new ChannelEdgeBuilder(nodes).buildGraph()
+
+        then:
+        graph.traverse().count() == 4
+
+        def ec = new EdgeChecker(graph)
+        EipNode chan = nodes[3] as EipNode
+
+        ec.check(n1, [], [chan])
+        ec.check(n2, [], [chan])
+        ec.check(chan, [n1, n2], [n3])
+        ec.check(n3, [chan], [])
+    }
+
+    def "channels with multiple outgoing connections are left as standalone nodes"() {
+        given: "n1 -> chan -> n2+n3"
+        def n1 = createNode("n1", SOURCE, ["channel": "in"])
+        def n2 = createNode("n2", SINK, ["channel": "in"])
+        def n3 = createNode("n3", SINK, ["channel": "in"])
+
+        def nodes = [
+                n1,
+                n2,
+                n3,
+                *createDirectChannels("in"),
+        ]
+
+        when:
+        def graph = new ChannelEdgeBuilder(nodes).buildGraph()
+
+        then:
+        graph.traverse().count() == 4
+
+        def ec = new EdgeChecker(graph)
+        EipNode chan = nodes[3] as EipNode
+
+        ec.check(n1, [], [chan])
+        ec.check(chan, [n1], [n2, n3])
+        ec.check(n2, [chan], [])
+        ec.check(n3, [chan], [])
     }
 
     EipNode createNode(String nodeId, ConnectionType connType, Map<String, Object> attrs) {
