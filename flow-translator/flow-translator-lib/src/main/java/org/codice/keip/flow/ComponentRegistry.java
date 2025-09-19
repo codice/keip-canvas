@@ -12,8 +12,7 @@ import org.codice.keip.flow.model.ConnectionType;
 import org.codice.keip.flow.model.EipId;
 import org.codice.keip.flow.model.Role;
 
-// TODO: Javadoc
-// TODO: Test
+/** A registry for looking up registered EIP components along with their associated properties. */
 public final class ComponentRegistry {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -37,8 +36,7 @@ public final class ComponentRegistry {
   }
 
   /**
-   * Parses an EIP component definition JSON stream. The provided JSON must match the schema defined
-   * <a
+   * Parses an EIP component definition JSON. The provided JSON must match the schema defined <a
    * href="https://github.com/codice/keip-canvas/blob/main/schemas/model/json/eipComponentDef.schema.json">here</a>.
    */
   public static ComponentRegistry fromJson(InputStream json) throws IOException {

@@ -12,7 +12,7 @@
            http://www.springframework.org/schema/integration/jms
            https://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd">
 
-    <http:inbound-channel-adapter id="httpIn" channel="pubSubtopic"/>
+    <http:inbound-channel-adapter id="httpIn" channel="pubSubTopic"/>
 
     <integration:publish-subscribe-channel id="pubSubTopic"/>
 

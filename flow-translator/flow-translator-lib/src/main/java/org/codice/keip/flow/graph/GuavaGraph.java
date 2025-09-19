@@ -79,7 +79,6 @@ public class GuavaGraph implements EipGraph {
     return new Flow(nodes, edges);
   }
 
-  // TODO: Handle error if EdgeProps are not found?
   private FlowEdge graphToFlowEdge(EipNode source, EipNode target) {
     EdgeProps ep = getEdgeProps(source, target).orElseThrow();
     return new FlowEdge(ep.id(), source.id(), target.id(), ep.type());

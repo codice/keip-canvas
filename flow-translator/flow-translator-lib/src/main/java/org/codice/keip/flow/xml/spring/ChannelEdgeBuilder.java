@@ -63,7 +63,6 @@ class ChannelEdgeBuilder {
     this.graphBuilder = GuavaGraph.newBuilder();
   }
 
-  // TODO: Support partial errors by returning a "TranslationResult" record
   GuavaGraph buildGraph() throws TransformerException {
     for (EipNode node : nodes) {
       if (Role.CHANNEL.equals(node.role())) {
@@ -155,8 +154,8 @@ class ChannelEdgeBuilder {
       ConnectionType connectionType,
       ChannelConnections connections) {
 
-    // TODO: Replace channel attributes set with an enum to ensure an exhaustive check
-    //  (without the default case)
+    // TODO: Replace the channel attributes Set with an enum to ensure an
+    //  exhaustive check (without the default case)
     switch (attr.getKey()) {
       case OUTPUT_CHANNEL, DEFAULT_OUTPUT_CHANNEL_NAME ->
           addIncomingConnection(nodeId, connections);

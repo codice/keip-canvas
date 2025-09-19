@@ -35,8 +35,15 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-// TODO: Javadoc
+/**
+ * Parses an XML document into an intermediate {@link EipGraph} representation. This base class
+ * handles the general transformation process, concrete subclasses are responsible for implementing
+ * platform-specific parsing logic.
+ */
 public abstract class GraphXmlParser {
+
+  // TODO: Preserve node descriptions
+  // TODO: Consider deprecating the label field on the EipNode (use id only)
 
   private final XMLOutputFactory outputFactory = WstxOutputFactory.newFactory();
   private final XmlElementWriter elementWriter =
@@ -66,10 +73,30 @@ public abstract class GraphXmlParser {
 
   public record XmlParseResult(EipGraph graph, Map<String, String> customEntities) {}
 
-  // TODO: Preserve node descriptions
-  // TODO: Consider deprecating the label field on the EipNode (use id only)
-
-  // TODO: add note on dom vs stax
+  /**
+   * Parses an XML into an {@link EipGraph} instance.
+   *
+   * @param xml input xml
+   * @return an {@link XmlParseResult} containing the parsed graph and any custom entities
+   * @throws TransformerException thrown if a critical error is encountered while parsing
+   *     <h4>DOM vs StAX API for parsing</h4>
+   *     <p>We considered using the Stax API (streaming) to parse the input XML without loading the
+   *     entire document into memory. However, unlike the DOM API, StAX (including the StAX2
+   *     extension) does not support the standard {@link Schema} interface. Instead, it relies on a
+   *     separate {@link org.codehaus.stax2.validation.XMLValidationSchema}, which offers more
+   *     limited functionality when working with multiple schemas.
+   *     <p>To avoid introducing a complex build step where multiple schemas would need to be
+   *     manually dereferenced and combined, we use the DOM API for validation. Since DOM-based
+   *     validation already requires reading the full XML document into memory, it is practical to
+   *     use DOM for parsing as well, as the benefits of streaming are largely negated at that
+   *     point.
+   *     <p>While the DOM model is generally more memory-intensive and may incur a performance cost,
+   *     we expect the provided EIP XML documents to be relatively small (on the order of
+   *     kilobytes). Therefore, the impact is likely negligible. If future monitoring or
+   *     benchmarking indicates that DOM parsing is a bottleneck, a StAX-based approach could be
+   *     revisited, either by introducing an XSD preprocessing step (as mentioned above) or by
+   *     disabling validation entirely.
+   */
   public final XmlParseResult fromXml(InputStream xml) throws TransformerException {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setNamespaceAware(true);

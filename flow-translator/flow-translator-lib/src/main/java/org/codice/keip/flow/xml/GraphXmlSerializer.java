@@ -249,7 +249,6 @@ public abstract class GraphXmlSerializer {
         .collect(Collectors.toUnmodifiableSet());
   }
 
-  // TODO: duplication
   static XMLInputFactory initializeXMLInputFactory() {
     XMLInputFactory factory = WstxInputFactory.newFactory();
     factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);

@@ -20,7 +20,6 @@ import static ComponentRegistryIO.readComponentDefinitionJson
 import static org.codice.keip.flow.xml.XmlComparisonUtil.compareXml
 import static org.codice.keip.flow.xml.XmlComparisonUtil.readTestXml
 
-// TODO: Validate against spring integration XSDs
 class FlowToSpringIntegrationTest extends Specification {
     private static final List<NamespaceSpec> NAMESPACES_SERIALIZER = [
             new NamespaceSpec("jms", "http://www.springframework.org/schema/integration/jms", "https://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd"),
@@ -66,6 +65,7 @@ class FlowToSpringIntegrationTest extends Specification {
         "flowGraph3.json" | Path.of("end-to-end", "spring-integration-3.xml").toString()
         "flowGraph4.json" | Path.of("end-to-end", "spring-integration-4.xml").toString()
         "flowGraph5.json" | Path.of("end-to-end", "spring-integration-5.xml").toString()
+        "flowGraph6.json" | Path.of("end-to-end", "spring-integration-6.xml").toString()
     }
 
     def "Verify transformation error list is populated on node transformation error"() {
@@ -86,7 +86,6 @@ class FlowToSpringIntegrationTest extends Specification {
         errors.size() == 1
     }
 
-    // TODO: Incorporate "spring-integration-6.xml" test xml
     def "End-to-end spring-integration xml to Flow"(String flowFile, String xmlFile) {
         given:
         def xml = readTestXml(xmlFile)
@@ -109,6 +108,7 @@ class FlowToSpringIntegrationTest extends Specification {
         "flowGraph3.json" | Path.of("end-to-end", "spring-integration-3.xml").toString()
         "flowGraph4.json" | Path.of("end-to-end", "spring-integration-4.xml").toString()
         "flowGraph5.json" | Path.of("end-to-end", "spring-integration-5.xml").toString()
+        "flowGraph6.json" | Path.of("end-to-end", "spring-integration-6.xml").toString()
     }
 
     def "Uninitialized serializer -> UnsupportedOperationException"() {

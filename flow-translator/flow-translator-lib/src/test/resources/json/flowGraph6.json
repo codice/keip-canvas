@@ -1,0 +1,68 @@
+{
+  "nodes": [
+    {
+      "id": "httpIn",
+      "eipId": {
+        "namespace": "http",
+        "name": "inbound-channel-adapter"
+      },
+      "role": "ENDPOINT",
+      "connectionType": "SOURCE"
+    },
+    {
+      "id": "pubSubTopic",
+      "eipId": {
+        "namespace": "integration",
+        "name": "publish-subscribe-channel"
+      },
+      "role": "CHANNEL",
+      "connectionType": "PASSTHRU"
+    },
+    {
+      "id": "httpProd",
+      "eipId": {
+        "namespace": "http",
+        "name": "outbound-channel-adapter"
+      },
+      "role": "ENDPOINT",
+      "connectionType": "SINK",
+      "attributes": {
+        "http-method": "POST",
+        "url": "http://localhost/example"
+      },
+      "children": []
+    },
+    {
+      "id": "jmsProd",
+      "eipId": {
+        "namespace": "jms",
+        "name": "outbound-channel-adapter"
+      },
+      "role": "ENDPOINT",
+      "connectionType": "SINK",
+      "attributes": {
+        "pub-sub-domain": "true",
+        "destination-name": "test.error"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "ch-httpIn-pubSubTopic",
+      "source": "httpIn",
+      "target": "pubSubTopic"
+    },
+    {
+      "id": "ch-pubSubTopic-httpProd",
+      "source": "pubSubTopic",
+      "target": "httpProd"
+    },
+    {
+      "id": "ch-pubSubTopic-jmsProd",
+      "source": "pubSubTopic",
+      "target": "jmsProd",
+      "type": "DEFAULT"
+    }
+  ],
+  "customEntities": {}
+}

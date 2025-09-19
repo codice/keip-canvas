@@ -218,7 +218,6 @@ public class DefaultNodeTransformer implements NodeTransformer {
       return attributes;
     }
 
-    // TODO: Might be used by other transformers. Consider extracting.
     private String getChannelId(EipNode source, EipNode target) {
       if (Role.CHANNEL.equals(source.role())) {
         return source.id();
