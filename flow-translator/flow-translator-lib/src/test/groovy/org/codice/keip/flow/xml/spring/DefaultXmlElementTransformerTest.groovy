@@ -8,7 +8,6 @@ import org.codice.keip.flow.xml.XmlElement
 import spock.lang.Specification
 
 import javax.xml.namespace.QName
-import javax.xml.transform.TransformerException
 
 class DefaultXmlElementTransformerTest extends Specification {
 
@@ -107,7 +106,7 @@ class DefaultXmlElementTransformerTest extends Specification {
         transformer.apply(element, registry)
 
         then:
-        thrown(TransformerException)
+        thrown(IllegalArgumentException)
     }
 
     def "transform unregistered eip node -> exception thrown"() {
@@ -121,7 +120,7 @@ class DefaultXmlElementTransformerTest extends Specification {
         transformer.apply(element, registry)
 
         then:
-        thrown(TransformerException)
+        thrown(IllegalArgumentException)
     }
 
     ComponentRegistry stubRegistry() {

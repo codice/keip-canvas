@@ -29,11 +29,11 @@ class IntegrationGraphXmlSerializerTest extends Specification {
 
     def xmlOutput = new StringWriter()
 
-    def graphTransformer = new IntegrationGraphXmlSerializer(NAMESPACES)
+    def graphSerializer = new IntegrationGraphXmlSerializer(NAMESPACES)
 
     def "Transform empty graph. Check root element"() {
         given:
-        def errors = graphTransformer.toXml(graph, xmlOutput)
+        def errors = graphSerializer.toXml(graph, xmlOutput)
 
         expect:
         errors.isEmpty()
@@ -54,7 +54,7 @@ class IntegrationGraphXmlSerializerTest extends Specification {
         graph.traverse() >> { _ -> Stream.of(node) }
 
         when:
-        def errors = graphTransformer.toXml(graph, xmlOutput)
+        def errors = graphSerializer.toXml(graph, xmlOutput)
 
         then: "only referenced namespaces should be included (instead of all registered namespaces)"
         errors.isEmpty()
@@ -102,7 +102,7 @@ class IntegrationGraphXmlSerializerTest extends Specification {
         graph.traverse() >> { _ -> Stream.of(inbound, transformer, outbound) }
 
         when:
-        def errors = graphTransformer.toXml(graph, xmlOutput)
+        def errors = graphSerializer.toXml(graph, xmlOutput)
 
         then:
         errors.isEmpty()
@@ -121,13 +121,13 @@ class IntegrationGraphXmlSerializerTest extends Specification {
         graph.traverse() >> { _ -> Stream.of(node) }
 
         when:
-        graphTransformer.toXml(graph, xmlOutput)
+        graphSerializer.toXml(graph, xmlOutput)
 
         then:
         thrown(TransformerException)
     }
 
-    def "Initializing transformer with a reserved namespace prefix throws an exception"(String prefix) {
+    def "Initializing transformer with a reserved namespace prefix -> provided prefix is ignored and logged"(String prefix) {
         given:
         def namespaces = [new NamespaceSpec(prefix,
                 "http://www.example.com/schema/xml",
@@ -137,7 +137,7 @@ class IntegrationGraphXmlSerializerTest extends Specification {
         new IntegrationGraphXmlSerializer(namespaces)
 
         then:
-        thrown(IllegalArgumentException)
+        noExceptionThrown()
 
         where:
         prefix << ["xml", "xsi", "beans", "integration"]
@@ -199,7 +199,7 @@ class IntegrationGraphXmlSerializerTest extends Specification {
         graph.traverse() >> { _ -> Stream.of(node) }
 
         when:
-        def errors = graphTransformer.toXml(graph, xmlOutput, generateCustomEntities())
+        def errors = graphSerializer.toXml(graph, xmlOutput, generateCustomEntities())
 
         then:
         errors.isEmpty()
@@ -211,7 +211,7 @@ class IntegrationGraphXmlSerializerTest extends Specification {
         graph.traverse() >> { _ -> Stream.empty() }
 
         when:
-        def errors = graphTransformer.toXml(graph, xmlOutput, generateCustomEntities())
+        def errors = graphSerializer.toXml(graph, xmlOutput, generateCustomEntities())
 
         then:
         errors.isEmpty()

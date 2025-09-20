@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.xml.transform.TransformerException;
 import org.codice.keip.flow.graph.GuavaGraph;
 import org.codice.keip.flow.model.ConnectionType;
 import org.codice.keip.flow.model.EdgeProps;
@@ -63,7 +62,7 @@ class ChannelEdgeBuilder {
     this.graphBuilder = GuavaGraph.newBuilder();
   }
 
-  GuavaGraph buildGraph() throws TransformerException {
+  GuavaGraph buildGraph() {
     for (EipNode node : nodes) {
       if (Role.CHANNEL.equals(node.role())) {
         channelConnections.putIfAbsent(node.id(), new ChannelConnections());
@@ -98,7 +97,7 @@ class ChannelEdgeBuilder {
     return channelAttributes;
   }
 
-  private void processContentBasedRouters(EipNode node) throws TransformerException {
+  private void processContentBasedRouters(EipNode node) {
     if (!node.connectionType().equals(ConnectionType.CONTENT_BASED_ROUTER)) {
       return;
     }
@@ -107,7 +106,7 @@ class ChannelEdgeBuilder {
       if (CHANNEL_ROUTING_CHILDREN.contains(child.name())) {
         Object channel = child.attributes().get(CHANNEL);
         if (channel == null) {
-          throw new TransformerException(
+          throw new IllegalArgumentException(
               String.format(
                   "Unable to process node (%s): 'mapping' or 'recipient' children must have a 'channel' attribute",
                   node.id()));
@@ -120,15 +119,14 @@ class ChannelEdgeBuilder {
     }
   }
 
-  private void addChannelAsGraphEdge(String channelId, ChannelConnections connections)
-      throws TransformerException {
+  private void addChannelAsGraphEdge(String channelId, ChannelConnections connections) {
     if (connections.incoming.isEmpty() || connections.outgoing.isEmpty()) {
-      throw new TransformerException(String.format("disconnected channel: '%s'", channelId));
+      throw new IllegalArgumentException(String.format("disconnected channel: '%s'", channelId));
     }
 
     if (!channelNodes.containsKey(channelId)) {
-      throw new TransformerException(
-          String.format("No channel node found with id: '%s'", channelId));
+      throw new IllegalArgumentException(
+          String.format("Could not find a channel node with id: '%s'", channelId));
     }
 
     EipNode chanNode = channelNodes.get(channelId);

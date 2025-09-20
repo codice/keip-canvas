@@ -267,7 +267,7 @@ class IntegrationGraphXmlParserTest extends Specification {
         xmlParser.fromXml(xml)
 
         then:
-        def ex = thrown(TransformerException)
+        def ex = thrown(IllegalArgumentException)
         ex.cause instanceof SAXException
 
         where:

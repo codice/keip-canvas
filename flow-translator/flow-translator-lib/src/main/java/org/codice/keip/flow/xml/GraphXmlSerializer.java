@@ -31,6 +31,8 @@ import javax.xml.transform.TransformerException;
 import org.codice.keip.flow.error.TransformationError;
 import org.codice.keip.flow.model.EipGraph;
 import org.codice.keip.flow.model.EipNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Transforms an intermediate {@link EipGraph} representation to an XML document. This base class
@@ -39,6 +41,7 @@ import org.codice.keip.flow.model.EipNode;
  */
 public abstract class GraphXmlSerializer {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(GraphXmlSerializer.class);
   private static final String XSI_PREFIX = "xsi";
 
   private final XMLEventFactory eventFactory = WstxEventFactory.newFactory();
@@ -52,9 +55,9 @@ public abstract class GraphXmlSerializer {
   private final Map<String, NamespaceSpec> registeredNamespaces;
 
   protected GraphXmlSerializer(Collection<NamespaceSpec> namespaceSpecs) {
-    validatePrefixes(namespaceSpecs);
+    Collection<NamespaceSpec> filteredNamespaces = excludeReservedNamespaces(namespaceSpecs);
     this.customEntityTransformer = new CustomEntityTransformer(initializeXMLInputFactory());
-    this.registeredNamespaces = buildRegisteredNamespaceMap(namespaceSpecs);
+    this.registeredNamespaces = buildRegisteredNamespaceMap(filteredNamespaces);
   }
 
   protected abstract NamespaceSpec defaultNamespace();
@@ -74,13 +77,18 @@ public abstract class GraphXmlSerializer {
     return Collections.unmodifiableMap(map);
   }
 
-  private void validatePrefixes(Collection<NamespaceSpec> namespaceSpecs) {
+  private List<NamespaceSpec> excludeReservedNamespaces(Collection<NamespaceSpec> namespaceSpecs) {
+    List<NamespaceSpec> filtered = new ArrayList<>();
     for (NamespaceSpec ns : namespaceSpecs) {
       if (this.reservedPrefixes.contains(ns.eipNamespace())) {
-        throw new IllegalArgumentException(
-            String.format("'%s' is a reserved namespace prefix", ns.eipNamespace()));
+        LOGGER.warn(
+            "'{}' is a reserved namespace prefix. The provided namespace entry will be ignored",
+            ns.eipNamespace());
+      } else {
+        filtered.add(ns);
       }
     }
+    return filtered;
   }
 
   /**

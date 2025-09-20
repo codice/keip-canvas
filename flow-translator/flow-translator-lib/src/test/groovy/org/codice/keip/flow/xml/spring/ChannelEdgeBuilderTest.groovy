@@ -7,8 +7,6 @@ import org.codice.keip.flow.model.EipNode
 import org.codice.keip.flow.model.Role
 import spock.lang.Specification
 
-import javax.xml.transform.TransformerException
-
 import static org.codice.keip.flow.model.ConnectionType.CONTENT_BASED_ROUTER
 import static org.codice.keip.flow.model.ConnectionType.INBOUND_REQUEST_REPLY
 import static org.codice.keip.flow.model.ConnectionType.PASSTHRU
@@ -87,7 +85,7 @@ class ChannelEdgeBuilderTest extends Specification {
         new ChannelEdgeBuilder(nodes).buildGraph()
 
         then:
-        thrown(TransformerException)
+        thrown(IllegalArgumentException)
     }
 
     def "disconnected channel nodes (no inputs or no outputs) -> throw exception"(List<EipNode> nodes, List<EipNode> channels) {
@@ -98,7 +96,7 @@ class ChannelEdgeBuilderTest extends Specification {
         new ChannelEdgeBuilder(nodeList).buildGraph()
 
         then:
-        thrown(TransformerException)
+        thrown(IllegalArgumentException)
 
         where:
         nodes                                          | channels
@@ -312,7 +310,7 @@ class ChannelEdgeBuilderTest extends Specification {
         new ChannelEdgeBuilder(nodes).buildGraph()
 
         then:
-        thrown(TransformerException)
+        thrown(IllegalArgumentException)
     }
 
     def "non-direct channel types are left as standalone nodes"(EipId eipId, List<EipChild> children) {

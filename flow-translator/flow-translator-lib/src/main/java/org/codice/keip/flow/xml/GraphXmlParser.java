@@ -113,7 +113,7 @@ public abstract class GraphXmlParser {
       Document doc = builder.parse(xml);
       nodes = parseTopLevelElements(doc.getDocumentElement(), customEntities);
     } catch (SAXException e) {
-      throw new TransformerException("Failed to validate input xml", e);
+      throw new IllegalArgumentException("Failed to validate input xml", e);
     } catch (ParserConfigurationException | IOException e) {
       throw new TransformerException("Failed to parse input xml", e);
     } catch (RuntimeException | XMLStreamException e) {
@@ -153,7 +153,7 @@ public abstract class GraphXmlParser {
     }
   }
 
-  private XmlElement parseElement(Element node) throws TransformerException {
+  private XmlElement parseElement(Element node) {
     XmlElement parentElement = createXmlElement(node);
     Node child = node.getFirstChild();
     while (child != null) {
@@ -166,7 +166,7 @@ public abstract class GraphXmlParser {
     return parentElement;
   }
 
-  private XmlElement createXmlElement(Element node) throws TransformerException {
+  private XmlElement createXmlElement(Element node) {
     QName name = new QName(node.getNamespaceURI(), node.getLocalName(), getEipPrefix(node));
     XmlElement element = new XmlElement(name, new LinkedHashMap<>(), new ArrayList<>());
     NamedNodeMap attrs = node.getAttributes();
@@ -179,14 +179,14 @@ public abstract class GraphXmlParser {
     return element;
   }
 
-  private String getEipPrefix(Element e) throws TransformerException {
+  private String getEipPrefix(Element e) {
     if (isCustomEntity(toQName(e))) {
       return "";
     }
 
     String prefix = xmlToEipNamespaceMap.get(e.getNamespaceURI());
     if (prefix == null) {
-      throw new TransformerException(
+      throw new IllegalArgumentException(
           String.format("Unregistered namespace: %s", e.getNamespaceURI()));
     }
     return prefix;
@@ -197,8 +197,7 @@ public abstract class GraphXmlParser {
     return new QName(e.getNamespaceURI(), e.getLocalName(), prefix);
   }
 
-  private CustomEntity toCustomEntity(XmlElement element)
-      throws TransformerException, XMLStreamException {
+  private CustomEntity toCustomEntity(XmlElement element) throws XMLStreamException {
     String id = removeId(element);
 
     Writer sw = new StringWriter();
@@ -210,9 +209,9 @@ public abstract class GraphXmlParser {
     return new CustomEntity(id, sw.toString());
   }
 
-  private String removeId(XmlElement element) throws TransformerException {
+  private String removeId(XmlElement element) {
     if (!element.attributes().containsKey(ID)) {
-      throw new TransformerException(
+      throw new IllegalArgumentException(
           String.format("%s element does not have an 'id' attribute", element.localName()));
     }
     String id = element.attributes().get(ID).toString();
