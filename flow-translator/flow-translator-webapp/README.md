@@ -14,7 +14,7 @@ mvn package
 Run the JAR:
 
 ```shell
-java -jar ./target/flow-translator-webapp-0.1.0.jar
+java -jar ./target/flow-translator-webapp-${version}.jar
 ```
 
 Or in a Docker container:

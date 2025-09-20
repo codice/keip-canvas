@@ -1,6 +1,7 @@
 package org.codice.keip.flow.web.translation;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -32,17 +33,26 @@ class TranslationService {
     this.flowTranslator = flowTranslator;
   }
 
-  TranslationResponse toXml(Flow flow) {
+  TranslationResponse<String> toXml(Flow flow) {
     return toXml(flow, false);
   }
 
-  TranslationResponse toXml(Flow flow, boolean prettyPrint) {
+  TranslationResponse<String> toXml(Flow flow, boolean prettyPrint) {
     try (StringWriter output = new StringWriter()) {
       List<TransformationError> errors = this.flowTranslator.toXml(flow, output);
       String data =
           prettyPrint ? this.prettyPrint(new StringReader(output.toString())) : output.toString();
-      return new TranslationResponse(data, toApiError(errors));
+      return new TranslationResponse<>(data, toApiError(errors));
     } catch (TransformerException | IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  TranslationResponse<Flow> fromXml(InputStream xml) {
+    try {
+      Flow flow = this.flowTranslator.fromXml(xml);
+      return new TranslationResponse<>(flow, null);
+    } catch (TransformerException e) {
       throw new RuntimeException(e);
     }
   }

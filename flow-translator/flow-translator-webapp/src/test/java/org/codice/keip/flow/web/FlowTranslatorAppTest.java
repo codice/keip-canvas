@@ -1,5 +1,6 @@
 package org.codice.keip.flow.web;
 
+import static org.codice.keip.flow.web.translation.TranslationController.FLOW_TO_XML_ENDPOINT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -27,7 +28,9 @@ class FlowTranslatorAppTest {
   void testCorsHeadersExcludedByDefault() throws Exception {
     mockMvc
         .perform(
-            post("/").contentType(APPLICATION_JSON_VALUE).content(readFlowJson("sample-flow.json")))
+            post(FLOW_TO_XML_ENDPOINT)
+                .contentType(APPLICATION_JSON_VALUE)
+                .content(readFlowJson("sample-flow.json")))
         .andExpect(status().isOk())
         .andExpect(header().doesNotExist(HttpHeaders.VARY));
   }
@@ -35,7 +38,7 @@ class FlowTranslatorAppTest {
   static String readFlowJson(String filename) throws IOException {
     Path path = Path.of("json").resolve(filename);
     try (var inputStream =
-        CorsConfigurationAppTest.class.getClassLoader().getResourceAsStream(path.toString())) {
+        FlowTranslatorAppTest.class.getClassLoader().getResourceAsStream(path.toString())) {
       assert inputStream != null;
       return new String(inputStream.readAllBytes());
     }
