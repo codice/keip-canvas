@@ -19,45 +19,42 @@ springdoc:
 spring:
   application:
     name: flow-translator-webapp
-  jackson:
-    default-property-inclusion: non_null
-    mapper:
-      accept-case-insensitive-enums: true
-    deserialization:
-      fail-on-unknown-properties: false
 
 keip:
   namespaceMappings:
+    - eipNamespace: integration
+      xmlNamespace: http://www.springframework.org/schema/integration
+      schemaLocation: classpath:org/springframework/integration/config/spring-integration.xsd
     - eipNamespace: file
       xmlNamespace: http://www.springframework.org/schema/integration/file
-      schemaLocation: https://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+      schemaLocation: classpath:org/springframework/integration/file/config/spring-integration-file.xsd
     - eipNamespace: ftp
       xmlNamespace: http://www.springframework.org/schema/integration/ftp
-      schemaLocation: https://www.springframework.org/schema/integration/ftp/spring-integration-ftp.xsd
+      schemaLocation: classpath:org/springframework/integration/ftp/config/spring-integration-ftp.xsd
     - eipNamespace: groovy
       xmlNamespace: http://www.springframework.org/schema/integration/groovy
-      schemaLocation: https://www.springframework.org/schema/integration/groovy/spring-integration-groovy.xsd
+      schemaLocation: classpath:org/springframework/integration/groovy/config/spring-integration-groovy.xsd
     - eipNamespace: http
       xmlNamespace: http://www.springframework.org/schema/integration/http
-      schemaLocation: https://www.springframework.org/schema/integration/http/spring-integration-http.xsd
+      schemaLocation: classpath:org/springframework/integration/http/config/spring-integration-http.xsd
     - eipNamespace: jms
       xmlNamespace: http://www.springframework.org/schema/integration/jms
-      schemaLocation: https://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd
+      schemaLocation: classpath:org/springframework/integration/jms/config/spring-integration-jms.xsd
     - eipNamespace: kafka
       xmlNamespace: http://www.springframework.org/schema/integration/kafka
-      schemaLocation: https://www.springframework.org/schema/integration/kafka/spring-integration-kafka.xsd
+      schemaLocation: classpath:org/springframework/integration/kafka/config/spring-integration-kafka.xsd
     - eipNamespace: mqtt
       xmlNamespace: http://www.springframework.org/schema/integration/mqtt
-      schemaLocation: https://www.springframework.org/schema/integration/mqtt/spring-integration-mqtt.xsd
+      schemaLocation: classpath:org/springframework/integration/mqtt/config/spring-integration-mqtt.xsd
     - eipNamespace: sftp
       xmlNamespace: http://www.springframework.org/schema/integration/sftp
-      schemaLocation: https://www.springframework.org/schema/integration/sftp/spring-integration-sftp.xsd
+      schemaLocation: classpath:org/springframework/integration/sftp/config/spring-integration-sftp.xsd
     - eipNamespace: tcp-udp
       xmlNamespace: http://www.springframework.org/schema/integration/ip
-      schemaLocation: https://www.springframework.org/schema/integration/ip/spring-integration-ip.xsd
+      schemaLocation: classpath:org/springframework/integration/ip/config/spring-integration-ip.xsd
     - eipNamespace: ws
       xmlNamespace: http://www.springframework.org/schema/integration/ws
-      schemaLocation: https://www.springframework.org/schema/integration/ws/spring-integration-ws.xsd
+      schemaLocation: classpath:org/springframework/integration/ws/config/spring-integration-ws.xsd
     - eipNamespace: int-xml
       xmlNamespace: http://www.springframework.org/schema/integration/xml
-      schemaLocation: https://www.springframework.org/schema/integration/xml/spring-integration-xml.xsd
+      schemaLocation: classpath:org/springframework/integration/xml/config/spring-integration-xml.xsd

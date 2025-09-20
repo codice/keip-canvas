@@ -9,9 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
+    <!-- TODO: Upgrade Spring versions-->
     <groupId>org.codice.keip</groupId>
     <artifactId>flow-translator-webapp</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.0</version>
 
     <packaging>jar</packaging>
 
@@ -43,7 +44,12 @@
         <dependency>
             <groupId>org.codice.keip</groupId>
             <artifactId>flow-translator-lib</artifactId>
-            <version>0.3.0</version>
+            <version>0.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codice.keip.xsd</groupId>
+            <artifactId>eip-schema-definitions</artifactId>
+            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -81,6 +87,21 @@
     </dependencies>
 
     <build>
+
+        <!--        <resources>-->
+        <!--            <resource>-->
+        <!--                <directory>src/main/resources</directory>-->
+        <!--            </resource>-->
+
+        <!--            &lt;!&ndash; add unpacked Spring Integration XSDs &ndash;&gt;-->
+        <!--            <resource>-->
+        <!--                <directory>${project.build.directory}/generated-resources/spring-xsds</directory>-->
+        <!--                <includes>-->
+        <!--                    <include>**/*.xsd</include>-->
+        <!--                </includes>-->
+        <!--            </resource>-->
+        <!--        </resources>-->
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -124,6 +145,81 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Only include XSDs from spring-integration dependencies -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>unpack-spring-integration-xsds</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                            <includes>**/*.xsd</includes>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.springframework.integration</groupId>
+                                    <artifactId>spring-integration-file</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.springframework.integration</groupId>
+                                    <artifactId>spring-integration-ftp</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.springframework.integration</groupId>
+                                    <artifactId>spring-integration-scripting</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.springframework.integration</groupId>
+                                    <artifactId>spring-integration-groovy</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.springframework.integration</groupId>
+                                    <artifactId>spring-integration-http</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.springframework.integration</groupId>
+                                    <artifactId>spring-integration-core</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.springframework.integration</groupId>
+                                    <artifactId>spring-integration-jms</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.springframework.integration</groupId>
+                                    <artifactId>spring-integration-kafka</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.springframework.integration</groupId>
+                                    <artifactId>spring-integration-mqtt</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.springframework.integration</groupId>
+                                    <artifactId>spring-integration-sftp</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.springframework.integration</groupId>
+                                    <artifactId>spring-integration-ip</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.springframework.integration</groupId>
+                                    <artifactId>spring-integration-ws</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.springframework.integration</groupId>
+                                    <artifactId>spring-integration-xml</artifactId>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
 
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
