@@ -2,6 +2,7 @@ package org.codice.keip.flow.web.translation
 
 import org.codice.keip.flow.FlowTranslator
 import org.codice.keip.flow.error.TransformationError
+import org.codice.keip.flow.model.EipNode
 import org.codice.keip.flow.model.Flow
 import spock.lang.Specification
 
@@ -12,11 +13,13 @@ class TranslationServiceTest extends Specification {
 
     private static final String OUTPUT_XML = "<test>canned</test>"
 
+    Flow outputFlow = buildOutputFlow()
+
     FlowTranslator flowTranslator = Stub()
 
     def translationSvc = new TranslationService(flowTranslator)
 
-    def "error-free transformation -> transformed data plus null error field"() {
+    def "transform flow to xml error-free -> transformed data plus null error field"() {
         given:
         flowTranslator.toXml(_ as Flow, _ as Writer) >> {
             args ->
@@ -34,7 +37,7 @@ class TranslationServiceTest extends Specification {
         response == new TranslationResponse(OUTPUT_XML, null)
     }
 
-    def "transformation with non-critical errors -> transformed partial data plus detailed error field"() {
+    def "transform flow to xml with non-critical errors -> transformed partial data plus detailed error field"() {
         given:
         flowTranslator.toXml(_ as Flow, _ as Writer) >> {
             args ->
@@ -56,7 +59,7 @@ class TranslationServiceTest extends Specification {
         }
     }
 
-    def "transformation with critical error -> throw runtime exception"() {
+    def "transform flow to xml with critical error -> throw runtime exception"() {
         given:
         flowTranslator.toXml(_ as Flow, _ as Writer) >> { throw new TransformerException("oops") }
 
@@ -67,7 +70,7 @@ class TranslationServiceTest extends Specification {
         thrown(RuntimeException)
     }
 
-    def "transformation with pretty print -> transformed data is formatted, no errors"() {
+    def "transform flow to xml with pretty print -> transformed data is formatted, no errors"() {
         given:
         flowTranslator.toXml(_ as Flow, _ as Writer) >> {
             args ->
@@ -85,7 +88,38 @@ class TranslationServiceTest extends Specification {
         response == new TranslationResponse(readXml("formatted-sample.xml"), null)
     }
 
-    static String readXml(String filename) {
+    def "transform xml to flow error-free -> transformed data plus null error field"() {
+        given:
+        flowTranslator.fromXml(_ as InputStream) >> outputFlow
+
+        when:
+        def is = new ByteArrayInputStream("".getBytes())
+        def response = translationSvc.fromXml(is)
+
+        then:
+        response == new TranslationResponse(outputFlow, null)
+    }
+
+    def "transform xml to flow with error -> throw runtime exception"() {
+        given:
+        flowTranslator.fromXml(_ as InputStream) >> { throw new TransformerException("oops") }
+
+        when:
+        def is = new ByteArrayInputStream("".getBytes())
+        translationSvc.fromXml(is)
+
+        then:
+        thrown(RuntimeException)
+    }
+
+    private Flow buildOutputFlow() {
+        EipNode test = Stub() {
+            id() >> "test"
+        }
+        return new Flow([test], [])
+    }
+
+    private static String readXml(String filename) {
         Path path = Path.of("xml").resolve(filename)
         return TranslationServiceTest.class.getClassLoader()
                                      .getResource(path.toString()).text

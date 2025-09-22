@@ -1,6 +1,7 @@
 package org.codice.keip.flow.web;
 
 import static org.codice.keip.flow.web.FlowTranslatorAppTest.readFlowJson;
+import static org.codice.keip.flow.web.translation.TranslationController.FLOW_TO_XML_ENDPOINT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -33,7 +34,7 @@ class CorsConfigurationAppTest {
   void testCorsHeadersIncluded() throws Exception {
     mockMvc
         .perform(
-            post("/")
+            post(FLOW_TO_XML_ENDPOINT)
                 .contentType(APPLICATION_JSON_VALUE)
                 .content(readFlowJson("sample-flow.json"))
                 .header(HttpHeaders.ORIGIN, ORIGIN)

@@ -78,6 +78,7 @@ class SchemaBuilder {
   }
 
   // Workaround for groovy xsd including the scripting-core xsd with a schemaLocation only
+  // (no namespaceUri)
   private static class ClasspathLSResourceResolver implements LSResourceResolver {
 
     @Override

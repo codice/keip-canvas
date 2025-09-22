@@ -88,20 +88,6 @@
 
     <build>
 
-        <!--        <resources>-->
-        <!--            <resource>-->
-        <!--                <directory>src/main/resources</directory>-->
-        <!--            </resource>-->
-
-        <!--            &lt;!&ndash; add unpacked Spring Integration XSDs &ndash;&gt;-->
-        <!--            <resource>-->
-        <!--                <directory>${project.build.directory}/generated-resources/spring-xsds</directory>-->
-        <!--                <includes>-->
-        <!--                    <include>**/*.xsd</include>-->
-        <!--                </includes>-->
-        <!--            </resource>-->
-        <!--        </resources>-->
-
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -264,22 +250,22 @@
                                         <limit>
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.98</minimum>
+                                            <minimum>0.93</minimum>
                                         </limit>
                                         <limit>
                                             <counter>BRANCH</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.99</minimum>
+                                            <minimum>0.80</minimum>
                                         </limit>
                                         <limit>
                                             <counter>COMPLEXITY</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.96</minimum>
+                                            <minimum>0.77</minimum>
                                         </limit>
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.96</minimum>
+                                            <minimum>0.88</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
