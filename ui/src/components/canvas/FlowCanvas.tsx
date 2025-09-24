@@ -13,20 +13,14 @@ import {
   ControlButton,
   Controls,
   ReactFlow,
-  ReactFlowInstance,
   useReactFlow,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import { KeyboardEvent, useEffect } from "react"
-import { DropTargetMonitor, useDrop } from "react-dnd"
-import { NativeTypes } from "react-dnd-html5-backend"
 import { CustomNodeType, DYNAMIC_EDGE_TYPE } from "../../api/flow"
-import { EipId } from "../../api/generated/eipFlow"
 import {
   clearFlow,
   clearSelectedChildNode,
-  createDroppedNode,
-  importFlowFromJson,
   toggleLayoutDensity,
   updateLayoutOrientation,
 } from "../../singletons/store/appActions"
@@ -40,18 +34,12 @@ import {
   onEdgesChange,
   onNodesChange,
 } from "../../singletons/store/reactFlowActions"
-import { DragTypes } from "../palette/dragTypes"
 import DynamicEdge from "./DynamicEdge"
 import { EipNode, FollowerNode } from "./EipNode"
+import { useCanvasDrop } from "./canvasDropHook"
 
 const FLOW_ERROR_MESSAGE =
   "Failed to load the canvas - the stored flow is malformed. Clearing the flow from the state store."
-
-interface FileDrop {
-  files: File[]
-}
-
-type DropType = EipId | FileDrop
 
 interface ErrorHandlerProps {
   message: string
@@ -62,29 +50,6 @@ const ErrorHandler = ({ message, callback }: ErrorHandlerProps) => {
   console.error(message)
   callback()
   return null
-}
-
-const acceptDroppedFile = (file: File, importFlow: (json: string) => void) => {
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    try {
-      e.target && importFlow(e.target.result as string)
-    } catch (e) {
-      // TODO: Display an error pop-up on failed import
-      // https://github.com/codice/keip-canvas/issues/7
-      console.error((e as Error).message)
-    }
-  }
-  reader.readAsText(file)
-}
-
-const getDropPosition = (
-  monitor: DropTargetMonitor,
-  reactFlowInstance: ReactFlowInstance
-) => {
-  let offset = monitor.getClientOffset()
-  offset = offset ?? { x: 0, y: 0 }
-  return reactFlowInstance.screenToFlowPosition(offset)
 }
 
 const nodeTypes = {
@@ -123,39 +88,13 @@ const FlowCanvas = () => {
   const flowStore = useFlowStore()
   const layout = useGetLayout()
   const { undo, redo } = useUndoRedo()
+  const drop = useCanvasDrop(reactFlowInstance)
 
   useEffect(() => {
     reactFlowInstance
       .fitView()
       .catch((e) => console.warn("failed to call fitView", e))
   }, [layout, reactFlowInstance])
-
-  const [, drop] = useDrop(
-    () => ({
-      accept: [DragTypes.FLOWNODE, NativeTypes.FILE],
-      drop: (item: DropType, monitor) => {
-        if ("namespace" in item) {
-          // Dropping a FLOWNODE creates a new node in the flow.
-          const pos = getDropPosition(monitor, reactFlowInstance)
-          createDroppedNode(item, pos)
-        } else if ("files" in item) {
-          // Dropping a JSON file imports it as a flow.
-          acceptDroppedFile(item.files[0], importFlowFromJson)
-        } else {
-          console.warn("unknown drop type: ", item)
-        }
-      },
-      canDrop: (item: DropType) => {
-        if ("files" in item) {
-          return (
-            item.files.length == 1 && item.files[0].type == "application/json"
-          )
-        }
-        return true
-      },
-    }),
-    [reactFlowInstance]
-  )
 
   // TODO: See if there is a better way to select and clear child nodes,
   // to avoid having to clear the selection in multiple components.

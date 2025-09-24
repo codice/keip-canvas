@@ -136,7 +136,7 @@ const removeNestedConfigs = (root: string, configs: AppStore["eipConfigs"]) => {
 }
 
 // TODO: Refactor
-const createDynamicRoutingEdge = (
+export const createDynamicRoutingEdge = (
   connection: Connection,
   sourceComponent: EipComponent
 ) => {

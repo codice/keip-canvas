@@ -3,11 +3,11 @@ import { ConnectionType, EipId } from "../api/generated/eipFlow"
 import { lookupEipComponent } from "./eipDefinitions"
 import { getEipId } from "./store/storeViews"
 
-interface FollowerNodeDescriptor {
+export interface FollowerNodeDescriptor {
   eipId: EipId
   generateLabel: (leaderLabel: string) => string
 
-  hiddenEdges?: (leaderId: string, followerId: string) => Partial<CustomEdge>[]
+  hiddenEdge?: (leaderId: string, followerId: string) => Partial<CustomEdge>
   overrides?: {
     connectionType: ConnectionType
   }
@@ -28,12 +28,10 @@ export const describeFollower = (
     return {
       eipId: { namespace: "integration", name: "channel" },
       generateLabel: (leaderLabel) => `${leaderLabel}-reply-channel`,
-      hiddenEdges: (leaderId, followerId) => [
-        {
-          source: followerId,
-          target: leaderId,
-        },
-      ],
+      hiddenEdge: (leaderId, followerId) => ({
+        source: followerId,
+        target: leaderId,
+      }),
       overrides: {
         connectionType: "sink",
       },

@@ -1,0 +1,128 @@
+{
+  "nodes": [
+    {
+      "id": "in1",
+      "eipId": {
+        "namespace": "integration",
+        "name": "inbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "source",
+      "attributes": {
+        "expression": "'abc'"
+      },
+      "children": []
+    },
+    {
+      "id": "router",
+      "eipId": {
+        "namespace": "int-xml",
+        "name": "xpath-router"
+      },
+      "role": "router",
+      "connectionType": "content_based_router",
+      "attributes": {
+        "phase": "init"
+      },
+      "children": [
+        {
+          "name": "xpath-expression",
+          "attributes": {
+            "expression": "/test/xpath",
+            "id": "token",
+            "ns-prefix": "testing",
+            "ns-uri": "test.example.com"
+          },
+          "children": []
+        },
+        {
+          "name": "mapping",
+          "attributes": {
+            "channel": "ch-router-out1",
+            "value": "first"
+          },
+          "children": []
+        },
+        {
+          "name": "mapping",
+          "attributes": {
+            "channel": "ch-router-out2",
+            "value": "second"
+          },
+          "children": []
+        },
+        {
+          "name": "mapping",
+          "attributes": {
+            "channel": "ch-router-logger",
+            "value": "third"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "out2",
+      "eipId": {
+        "namespace": "http",
+        "name": "outbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "sink",
+      "attributes": {},
+      "children": []
+    },
+    {
+      "id": "logger",
+      "eipId": {
+        "namespace": "integration",
+        "name": "logging-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "sink",
+      "attributes": {},
+      "children": []
+    },
+    {
+      "id": "out1",
+      "eipId": {
+        "namespace": "jms",
+        "name": "outbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "sink",
+      "attributes": {
+        "pub-sub-domain": "false",
+        "destination-name": "test_queue"
+      },
+      "children": []
+    }
+  ],
+  "edges": [
+    {
+      "id": "ch-in1-router",
+      "source": "in1",
+      "target": "router",
+      "type": "default"
+    },
+    {
+      "id": "ch-router-out2",
+      "source": "router",
+      "target": "out2",
+      "type": "default"
+    },
+    {
+      "id": "ch-router-logger",
+      "source": "router",
+      "target": "logger",
+      "type": "default"
+    },
+    {
+      "id": "ch-router-out1",
+      "source": "router",
+      "target": "out1",
+      "type": "default"
+    }
+  ],
+  "customEntities": {}
+}

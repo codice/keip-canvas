@@ -1,0 +1,59 @@
+{
+  "nodes": [
+    {
+      "id": "in1",
+      "eipId": {
+        "namespace": "integration",
+        "name": "inbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "source",
+      "attributes": {
+        "expression": "'abc'"
+      },
+      "children": []
+    },
+    {
+      "id": "addPrefix",
+      "eipId": {
+        "namespace": "integration",
+        "name": "transformer"
+      },
+      "role": "transformer",
+      "connectionType": "passthru",
+      "attributes": {
+        "expression": "'test_' + payload"
+      },
+      "children": []
+    },
+    {
+      "id": "out1",
+      "eipId": {
+        "namespace": "jms",
+        "name": "outbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "sink",
+      "attributes": {
+        "pub-sub-domain": "false",
+        "destination-name": "test_queue"
+      },
+      "children": []
+    }
+  ],
+  "edges": [
+    {
+      "id": "ch-in1-addPrefix",
+      "source": "in1",
+      "target": "addPrefix",
+      "type": "default"
+    },
+    {
+      "id": "ch-addPrefix-out1",
+      "source": "addPrefix",
+      "target": "out1",
+      "type": "default"
+    }
+  ],
+  "customEntities": {}
+}

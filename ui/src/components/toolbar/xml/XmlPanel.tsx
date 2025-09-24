@@ -45,7 +45,7 @@ const fetchXmlTranslation = async (
 ) => {
   const queryStr = new URLSearchParams({ prettyPrint: "true" }).toString()
   const response = await fetchWithTimeout(
-    `${FLOW_TRANSLATOR_BASE_URL}?` + queryStr,
+    `${FLOW_TRANSLATOR_BASE_URL}/translation/toSpringXml?` + queryStr,
     {
       method: "POST",
       body: JSON.stringify(flow),

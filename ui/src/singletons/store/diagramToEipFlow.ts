@@ -38,6 +38,27 @@ export const useEipFlow = () =>
 
 // TODO: Dynamic router logic is over-complicating this method, extract to
 // a separate method and apply modifications after building original flow.
+
+// TODO: Consider deprecating the 'label' field and just using 'id' instead,
+// to simplify the conversion between Diagram and EipFlow representations
+
+/**
+ * Converts the {@link AppStore} flow representation to an {@link EipFlow}.
+ * The EipFlow can then be sent to a backend server for translation.
+ *
+ * Much of this method's complexity is due to the impedance mismatch between the
+ * internal {@link AppStore} representation and the shared {@link EipFlow} API,
+ * especially when handling special case nodes such as content-based routers and
+ * inbound-request-reply nodes.
+ *
+ * One potential approach for reducing the mismatch is to create a richer model
+ * for the EipFlow, which could allow these special case nodes to be represented
+ * similarly across projects. However, care must be taken not to pollute the
+ * model unnecessarily, which could lead inflexibility and difficulty evolving the model.
+ *
+ * @param state the AppStore's current state object
+ * @returns An EipFlow
+ */
 const diagramToEipFlow = (state: AppStore): EipFlow => {
   const nodeLookup = createNodeLookupMap(state.nodes)
 
@@ -124,12 +145,12 @@ const addHiddenFollowerEdges = (nodes: CustomNode[], edges: CustomEdge[]) => {
   nodes.forEach((node) => {
     if (isFollowerNode(node)) {
       const followerDesc = describeFollowerFromId(node.data.leaderId)
-      if (followerDesc?.hiddenEdges) {
-        const edges = followerDesc.hiddenEdges(
+      if (followerDesc?.hiddenEdge) {
+        const edge = followerDesc.hiddenEdge(
           node.data.leaderId,
           node.id
-        ) as CustomEdge[]
-        combinedEdges.push(...edges)
+        ) as CustomEdge
+        combinedEdges.push(edge)
       }
     }
   })

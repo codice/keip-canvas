@@ -1,0 +1,7 @@
+{
+  "nodes": [],
+  "edges": [],
+  "customEntities": {
+    "e1": "<bean class=\"com.example.Test\"><property name=\"limit\" value=\"65536\"/></bean>"
+  }
+}

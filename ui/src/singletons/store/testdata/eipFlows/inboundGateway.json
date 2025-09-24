@@ -1,0 +1,58 @@
+{
+  "nodes": [
+    {
+      "id": "gatewayIn",
+      "eipId": {
+        "namespace": "http",
+        "name": "inbound-gateway"
+      },
+      "role": "endpoint",
+      "connectionType": "inbound_request_reply",
+      "attributes": {},
+      "children": []
+    },
+    {
+      "id": "updatePayload",
+      "eipId": {
+        "namespace": "integration",
+        "name": "transformer"
+      },
+      "role": "transformer",
+      "connectionType": "passthru",
+      "attributes": {},
+      "children": []
+    },
+    {
+      "id": "gatewayIn-reply-channel",
+      "eipId": {
+        "namespace": "integration",
+        "name": "channel"
+      },
+      "role": "channel",
+      "connectionType": "passthru",
+      "attributes": {},
+      "children": []
+    }
+  ],
+  "edges": [
+    {
+      "id": "ch-gatewayIn-updatePayload",
+      "source": "gatewayIn",
+      "target": "updatePayload",
+      "type": "default"
+    },
+    {
+      "id": "ch-updatePayload-gatewayIn-reply-channel",
+      "source": "updatePayload",
+      "target": "gatewayIn-reply-channel",
+      "type": "default"
+    },
+    {
+      "id": "ch-gatewayIn-reply-channel-gatewayIn",
+      "source": "gatewayIn-reply-channel",
+      "target": "gatewayIn",
+      "type": "default"
+    }
+  ],
+  "customEntities": {}
+}

@@ -1,0 +1,1200 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`EipFlow to diagram > 'custom entity' 1`] = `
+{
+  "customEntities": {
+    "e1": "<bean class="com.example.Test"><property name="limit" value="65536"/></bean>",
+  },
+  "edges": [],
+  "eipConfigs": {},
+  "nodes": [],
+}
+`;
+
+exports[`EipFlow to diagram > 'inbound gateway' 1`] = `
+{
+  "customEntities": {},
+  "edges": [
+    {
+      "id": "ch-gatewayIn-updatePayload",
+      "source": "n0",
+      "target": "n1",
+    },
+    {
+      "id": "ch-updatePayload-gatewayIn-reply-channel",
+      "source": "n1",
+      "target": "n2",
+    },
+  ],
+  "eipConfigs": {
+    "n0": {
+      "attributes": {},
+      "children": [],
+      "eipId": {
+        "name": "inbound-gateway",
+        "namespace": "http",
+      },
+    },
+    "n1": {
+      "attributes": {},
+      "children": [],
+      "eipId": {
+        "name": "transformer",
+        "namespace": "integration",
+      },
+    },
+    "n2": {
+      "attributes": {},
+      "children": [],
+      "eipId": {
+        "name": "channel",
+        "namespace": "integration",
+      },
+    },
+  },
+  "nodes": [
+    {
+      "data": {
+        "followerId": "n2",
+        "label": "gatewayIn",
+      },
+      "id": "n0",
+      "position": {
+        "x": 0,
+        "y": 55.75,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "updatePayload",
+      },
+      "id": "n1",
+      "position": {
+        "x": 203,
+        "y": 0,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "leaderId": "n0",
+      },
+      "id": "n2",
+      "position": {
+        "x": 406,
+        "y": 55.75,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "followerNode",
+    },
+  ],
+}
+`;
+
+exports[`EipFlow to diagram > 'nested children' 1`] = `
+{
+  "customEntities": {},
+  "edges": [
+    {
+      "id": "ch-in1-addPrefix",
+      "source": "n0",
+      "target": "n1",
+    },
+    {
+      "id": "ch-addPrefix-out1",
+      "source": "n1",
+      "target": "n2",
+    },
+  ],
+  "eipConfigs": {
+    "c0": {
+      "attributes": {
+        "fixed-rate": "3000",
+      },
+      "children": [],
+      "eipId": {
+        "name": "poller",
+        "namespace": "integration",
+      },
+    },
+    "c1": {
+      "attributes": {
+        "maximum": "30000",
+      },
+      "children": [],
+      "eipId": {
+        "name": "exponential-back-off",
+        "namespace": "integration",
+      },
+    },
+    "c2": {
+      "attributes": {},
+      "children": [
+        "c1",
+      ],
+      "eipId": {
+        "name": "retry-advice",
+        "namespace": "integration",
+      },
+    },
+    "c3": {
+      "attributes": {},
+      "children": [
+        "c2",
+      ],
+      "eipId": {
+        "name": "request-handler-advice-chain",
+        "namespace": "integration",
+      },
+    },
+    "n0": {
+      "attributes": {
+        "expression": "'abc'",
+      },
+      "children": [
+        "c0",
+      ],
+      "eipId": {
+        "name": "inbound-channel-adapter",
+        "namespace": "integration",
+      },
+    },
+    "n1": {
+      "attributes": {
+        "expression": "'test_' + payload",
+      },
+      "children": [
+        "c3",
+      ],
+      "eipId": {
+        "name": "transformer",
+        "namespace": "integration",
+      },
+    },
+    "n2": {
+      "attributes": {
+        "destination-name": "test_queue",
+        "pub-sub-domain": "false",
+      },
+      "children": [],
+      "eipId": {
+        "name": "outbound-channel-adapter",
+        "namespace": "jms",
+      },
+    },
+  },
+  "nodes": [
+    {
+      "data": {
+        "label": "in1",
+      },
+      "id": "n0",
+      "position": {
+        "x": 0,
+        "y": 0,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "addPrefix",
+      },
+      "id": "n1",
+      "position": {
+        "x": 203,
+        "y": 0,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "out1",
+      },
+      "id": "n2",
+      "position": {
+        "x": 406,
+        "y": 0,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+  ],
+}
+`;
+
+exports[`EipFlow to diagram > 'payload-type router' 1`] = `
+{
+  "customEntities": {},
+  "edges": [
+    {
+      "id": "ch-in1-router",
+      "source": "n0",
+      "target": "n1",
+    },
+    {
+      "animated": true,
+      "data": {
+        "mapping": {
+          "mapperName": "mapping",
+          "matcher": {
+            "description": "The type of the payload that this mapping will match, e.g. 'java.lang.String' or 'java.lang.Integer' ",
+            "name": "type",
+            "required": false,
+            "type": "string",
+          },
+          "matcherValue": "Integer",
+        },
+      },
+      "id": "ch-router-out2",
+      "source": "n1",
+      "target": "n2",
+      "type": "dynamicEdge",
+    },
+    {
+      "animated": true,
+      "data": {
+        "mapping": {
+          "mapperName": "mapping",
+          "matcher": {
+            "description": "The type of the payload that this mapping will match, e.g. 'java.lang.String' or 'java.lang.Integer' ",
+            "name": "type",
+            "required": false,
+            "type": "string",
+          },
+          "matcherValue": "Boolean",
+        },
+      },
+      "id": "ch-router-logger",
+      "source": "n1",
+      "target": "n3",
+      "type": "dynamicEdge",
+    },
+    {
+      "animated": true,
+      "data": {
+        "mapping": {
+          "mapperName": "mapping",
+          "matcher": {
+            "description": "The type of the payload that this mapping will match, e.g. 'java.lang.String' or 'java.lang.Integer' ",
+            "name": "type",
+            "required": false,
+            "type": "string",
+          },
+          "matcherValue": "String",
+        },
+      },
+      "id": "ch-router-out1",
+      "source": "n1",
+      "target": "n4",
+      "type": "dynamicEdge",
+    },
+  ],
+  "eipConfigs": {
+    "c0": {
+      "attributes": {
+        "channel": "ch-router-out1",
+        "type": "String",
+      },
+      "children": [],
+      "eipId": {
+        "name": "mapping",
+        "namespace": "integration",
+      },
+    },
+    "c1": {
+      "attributes": {
+        "channel": "ch-router-out2",
+        "type": "Integer",
+      },
+      "children": [],
+      "eipId": {
+        "name": "mapping",
+        "namespace": "integration",
+      },
+    },
+    "c2": {
+      "attributes": {
+        "channel": "ch-router-logger",
+        "type": "Boolean",
+      },
+      "children": [],
+      "eipId": {
+        "name": "mapping",
+        "namespace": "integration",
+      },
+    },
+    "n0": {
+      "attributes": {
+        "expression": "'abc'",
+      },
+      "children": [],
+      "eipId": {
+        "name": "inbound-channel-adapter",
+        "namespace": "integration",
+      },
+    },
+    "n1": {
+      "attributes": {},
+      "children": [],
+      "eipId": {
+        "name": "payload-type-router",
+        "namespace": "integration",
+      },
+    },
+    "n2": {
+      "attributes": {},
+      "children": [],
+      "eipId": {
+        "name": "outbound-channel-adapter",
+        "namespace": "http",
+      },
+    },
+    "n3": {
+      "attributes": {},
+      "children": [],
+      "eipId": {
+        "name": "logging-channel-adapter",
+        "namespace": "integration",
+      },
+    },
+    "n4": {
+      "attributes": {
+        "destination-name": "test_queue",
+        "pub-sub-domain": "false",
+      },
+      "children": [],
+      "eipId": {
+        "name": "outbound-channel-adapter",
+        "namespace": "jms",
+      },
+    },
+  },
+  "nodes": [
+    {
+      "data": {
+        "label": "in1",
+      },
+      "id": "n0",
+      "position": {
+        "x": 0,
+        "y": 203,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "router",
+      },
+      "id": "n1",
+      "position": {
+        "x": 203,
+        "y": 203,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "out2",
+      },
+      "id": "n2",
+      "position": {
+        "x": 406,
+        "y": 0,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "logger",
+      },
+      "id": "n3",
+      "position": {
+        "x": 406,
+        "y": 203,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "out1",
+      },
+      "id": "n4",
+      "position": {
+        "x": 406,
+        "y": 406,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+  ],
+}
+`;
+
+exports[`EipFlow to diagram > 'recipient-list router' 1`] = `
+{
+  "customEntities": {},
+  "edges": [
+    {
+      "id": "ch-in1-router",
+      "source": "n0",
+      "target": "n1",
+    },
+    {
+      "animated": true,
+      "data": {
+        "mapping": {
+          "mapperName": "recipient",
+          "matcher": {
+            "description": "An expression to be evaluated to determine if this recipient should be included in the recipient list for a given input Message. The evaluation result of the expression must be a boolean. If this attribute is not defined, the channel will always be among the list of recipients.",
+            "name": "selector-expression",
+            "required": false,
+            "type": "string",
+          },
+        },
+      },
+      "id": "ch-router-out2",
+      "source": "n1",
+      "target": "n2",
+      "type": "dynamicEdge",
+    },
+    {
+      "animated": true,
+      "data": {
+        "mapping": {
+          "mapperName": "recipient",
+          "matcher": {
+            "description": "An expression to be evaluated to determine if this recipient should be included in the recipient list for a given input Message. The evaluation result of the expression must be a boolean. If this attribute is not defined, the channel will always be among the list of recipients.",
+            "name": "selector-expression",
+            "required": false,
+            "type": "string",
+          },
+          "matcherValue": "headers['log'] == true",
+        },
+      },
+      "id": "ch-router-logger",
+      "source": "n1",
+      "target": "n3",
+      "type": "dynamicEdge",
+    },
+    {
+      "animated": true,
+      "data": {
+        "mapping": {
+          "mapperName": "recipient",
+          "matcher": {
+            "description": "An expression to be evaluated to determine if this recipient should be included in the recipient list for a given input Message. The evaluation result of the expression must be a boolean. If this attribute is not defined, the channel will always be among the list of recipients.",
+            "name": "selector-expression",
+            "required": false,
+            "type": "string",
+          },
+        },
+      },
+      "id": "ch-router-out1",
+      "source": "n1",
+      "target": "n4",
+      "type": "dynamicEdge",
+    },
+  ],
+  "eipConfigs": {
+    "c0": {
+      "attributes": {
+        "channel": "ch-router-out1",
+      },
+      "children": [],
+      "eipId": {
+        "name": "recipient",
+        "namespace": "integration",
+      },
+    },
+    "c1": {
+      "attributes": {
+        "channel": "ch-router-out2",
+      },
+      "children": [],
+      "eipId": {
+        "name": "recipient",
+        "namespace": "integration",
+      },
+    },
+    "c2": {
+      "attributes": {
+        "channel": "ch-router-logger",
+        "selector-expression": "headers['log'] == true",
+      },
+      "children": [],
+      "eipId": {
+        "name": "recipient",
+        "namespace": "integration",
+      },
+    },
+    "n0": {
+      "attributes": {
+        "expression": "'abc'",
+      },
+      "children": [],
+      "eipId": {
+        "name": "inbound-channel-adapter",
+        "namespace": "integration",
+      },
+    },
+    "n1": {
+      "attributes": {
+        "apply-sequence": "true",
+      },
+      "children": [],
+      "eipId": {
+        "name": "recipient-list-router",
+        "namespace": "integration",
+      },
+    },
+    "n2": {
+      "attributes": {},
+      "children": [],
+      "eipId": {
+        "name": "outbound-channel-adapter",
+        "namespace": "http",
+      },
+    },
+    "n3": {
+      "attributes": {},
+      "children": [],
+      "eipId": {
+        "name": "logging-channel-adapter",
+        "namespace": "integration",
+      },
+    },
+    "n4": {
+      "attributes": {
+        "destination-name": "test_queue",
+        "pub-sub-domain": "false",
+      },
+      "children": [],
+      "eipId": {
+        "name": "outbound-channel-adapter",
+        "namespace": "jms",
+      },
+    },
+  },
+  "nodes": [
+    {
+      "data": {
+        "label": "in1",
+      },
+      "id": "n0",
+      "position": {
+        "x": 0,
+        "y": 203,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "router",
+      },
+      "id": "n1",
+      "position": {
+        "x": 203,
+        "y": 203,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "out2",
+      },
+      "id": "n2",
+      "position": {
+        "x": 406,
+        "y": 0,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "logger",
+      },
+      "id": "n3",
+      "position": {
+        "x": 406,
+        "y": 203,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "out1",
+      },
+      "id": "n4",
+      "position": {
+        "x": 406,
+        "y": 406,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+  ],
+}
+`;
+
+exports[`EipFlow to diagram > 'simple flow' 1`] = `
+{
+  "customEntities": {},
+  "edges": [
+    {
+      "id": "ch-in1-addPrefix",
+      "source": "n0",
+      "target": "n1",
+    },
+    {
+      "id": "ch-addPrefix-out1",
+      "source": "n1",
+      "target": "n2",
+    },
+  ],
+  "eipConfigs": {
+    "n0": {
+      "attributes": {
+        "expression": "'abc'",
+      },
+      "children": [],
+      "eipId": {
+        "name": "inbound-channel-adapter",
+        "namespace": "integration",
+      },
+    },
+    "n1": {
+      "attributes": {
+        "expression": "'test_' + payload",
+      },
+      "children": [],
+      "eipId": {
+        "name": "transformer",
+        "namespace": "integration",
+      },
+    },
+    "n2": {
+      "attributes": {
+        "destination-name": "test_queue",
+        "pub-sub-domain": "false",
+      },
+      "children": [],
+      "eipId": {
+        "name": "outbound-channel-adapter",
+        "namespace": "jms",
+      },
+    },
+  },
+  "nodes": [
+    {
+      "data": {
+        "label": "in1",
+      },
+      "id": "n0",
+      "position": {
+        "x": 0,
+        "y": 0,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "addPrefix",
+      },
+      "id": "n1",
+      "position": {
+        "x": 203,
+        "y": 0,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "out1",
+      },
+      "id": "n2",
+      "position": {
+        "x": 406,
+        "y": 0,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+  ],
+}
+`;
+
+exports[`EipFlow to diagram > 'simple router' 1`] = `
+{
+  "customEntities": {},
+  "edges": [
+    {
+      "id": "ch-in1-testRouter",
+      "source": "n0",
+      "target": "n1",
+    },
+    {
+      "animated": true,
+      "data": {
+        "mapping": {
+          "mapperName": "mapping",
+          "matcher": {
+            "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
+            "name": "value",
+            "required": false,
+            "type": "string",
+          },
+          "matcherValue": "first",
+        },
+      },
+      "id": "ch-testRouter-out1",
+      "source": "n1",
+      "target": "n2",
+      "type": "dynamicEdge",
+    },
+    {
+      "animated": true,
+      "data": {
+        "mapping": {
+          "mapperName": "mapping",
+          "matcher": {
+            "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
+            "name": "value",
+            "required": false,
+            "type": "string",
+          },
+          "matcherValue": "second",
+        },
+      },
+      "id": "ch-testRouter-out2",
+      "source": "n1",
+      "target": "n3",
+      "type": "dynamicEdge",
+    },
+    {
+      "animated": true,
+      "data": {
+        "mapping": {
+          "isDefaultMapping": true,
+          "mapperName": "mapping",
+          "matcher": {
+            "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
+            "name": "value",
+            "required": false,
+            "type": "string",
+          },
+        },
+      },
+      "id": "ch-testRouter-logger",
+      "source": "n1",
+      "target": "n4",
+      "type": "dynamicEdge",
+    },
+  ],
+  "eipConfigs": {
+    "c0": {
+      "attributes": {
+        "channel": "ch-testRouter-out1",
+        "value": "first",
+      },
+      "children": [],
+      "eipId": {
+        "name": "mapping",
+        "namespace": "integration",
+      },
+    },
+    "c1": {
+      "attributes": {
+        "channel": "ch-testRouter-out2",
+        "value": "second",
+      },
+      "children": [],
+      "eipId": {
+        "name": "mapping",
+        "namespace": "integration",
+      },
+    },
+    "n0": {
+      "attributes": {
+        "expression": "'abc'",
+      },
+      "children": [],
+      "eipId": {
+        "name": "inbound-channel-adapter",
+        "namespace": "integration",
+      },
+    },
+    "n1": {
+      "attributes": {
+        "send-timeout": "2000",
+      },
+      "children": [],
+      "eipId": {
+        "name": "router",
+        "namespace": "integration",
+      },
+      "routerKey": {
+        "attributes": {
+          "expression": "payload",
+        },
+        "name": "expression",
+      },
+    },
+    "n2": {
+      "attributes": {
+        "destination-name": "test_queue",
+        "pub-sub-domain": "false",
+      },
+      "children": [],
+      "eipId": {
+        "name": "outbound-channel-adapter",
+        "namespace": "jms",
+      },
+    },
+    "n3": {
+      "attributes": {},
+      "children": [],
+      "eipId": {
+        "name": "outbound-channel-adapter",
+        "namespace": "http",
+      },
+    },
+    "n4": {
+      "attributes": {},
+      "children": [],
+      "eipId": {
+        "name": "logging-channel-adapter",
+        "namespace": "integration",
+      },
+    },
+  },
+  "nodes": [
+    {
+      "data": {
+        "label": "in1",
+      },
+      "id": "n0",
+      "position": {
+        "x": 0,
+        "y": 203,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "testRouter",
+      },
+      "id": "n1",
+      "position": {
+        "x": 203,
+        "y": 203,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "out1",
+      },
+      "id": "n2",
+      "position": {
+        "x": 406,
+        "y": 0,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "out2",
+      },
+      "id": "n3",
+      "position": {
+        "x": 406,
+        "y": 203,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "logger",
+      },
+      "id": "n4",
+      "position": {
+        "x": 406,
+        "y": 406,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+  ],
+}
+`;
+
+exports[`EipFlow to diagram > 'xpath router' 1`] = `
+{
+  "customEntities": {},
+  "edges": [
+    {
+      "id": "ch-in1-router",
+      "source": "n0",
+      "target": "n1",
+    },
+    {
+      "animated": true,
+      "data": {
+        "mapping": {
+          "mapperName": "mapping",
+          "matcher": {
+            "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
+            "name": "value",
+            "required": false,
+            "type": "string",
+          },
+          "matcherValue": "second",
+        },
+      },
+      "id": "ch-router-out2",
+      "source": "n1",
+      "target": "n2",
+      "type": "dynamicEdge",
+    },
+    {
+      "animated": true,
+      "data": {
+        "mapping": {
+          "mapperName": "mapping",
+          "matcher": {
+            "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
+            "name": "value",
+            "required": false,
+            "type": "string",
+          },
+          "matcherValue": "third",
+        },
+      },
+      "id": "ch-router-logger",
+      "source": "n1",
+      "target": "n3",
+      "type": "dynamicEdge",
+    },
+    {
+      "animated": true,
+      "data": {
+        "mapping": {
+          "mapperName": "mapping",
+          "matcher": {
+            "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
+            "name": "value",
+            "required": false,
+            "type": "string",
+          },
+          "matcherValue": "first",
+        },
+      },
+      "id": "ch-router-out1",
+      "source": "n1",
+      "target": "n4",
+      "type": "dynamicEdge",
+    },
+  ],
+  "eipConfigs": {
+    "c1": {
+      "attributes": {
+        "channel": "ch-router-out1",
+        "value": "first",
+      },
+      "children": [],
+      "eipId": {
+        "name": "mapping",
+        "namespace": "integration",
+      },
+    },
+    "c2": {
+      "attributes": {
+        "channel": "ch-router-out2",
+        "value": "second",
+      },
+      "children": [],
+      "eipId": {
+        "name": "mapping",
+        "namespace": "integration",
+      },
+    },
+    "c3": {
+      "attributes": {
+        "channel": "ch-router-logger",
+        "value": "third",
+      },
+      "children": [],
+      "eipId": {
+        "name": "mapping",
+        "namespace": "integration",
+      },
+    },
+    "n0": {
+      "attributes": {
+        "expression": "'abc'",
+      },
+      "children": [],
+      "eipId": {
+        "name": "inbound-channel-adapter",
+        "namespace": "integration",
+      },
+    },
+    "n1": {
+      "attributes": {
+        "phase": "init",
+      },
+      "children": [],
+      "eipId": {
+        "name": "xpath-router",
+        "namespace": "int-xml",
+      },
+      "routerKey": {
+        "attributes": {
+          "expression": "/test/xpath",
+          "id": "token",
+          "ns-prefix": "testing",
+          "ns-uri": "test.example.com",
+        },
+        "name": "xpath-expression",
+      },
+    },
+    "n2": {
+      "attributes": {},
+      "children": [],
+      "eipId": {
+        "name": "outbound-channel-adapter",
+        "namespace": "http",
+      },
+    },
+    "n3": {
+      "attributes": {},
+      "children": [],
+      "eipId": {
+        "name": "logging-channel-adapter",
+        "namespace": "integration",
+      },
+    },
+    "n4": {
+      "attributes": {
+        "destination-name": "test_queue",
+        "pub-sub-domain": "false",
+      },
+      "children": [],
+      "eipId": {
+        "name": "outbound-channel-adapter",
+        "namespace": "jms",
+      },
+    },
+  },
+  "nodes": [
+    {
+      "data": {
+        "label": "in1",
+      },
+      "id": "n0",
+      "position": {
+        "x": 0,
+        "y": 203,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "router",
+      },
+      "id": "n1",
+      "position": {
+        "x": 203,
+        "y": 203,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "out2",
+      },
+      "id": "n2",
+      "position": {
+        "x": 406,
+        "y": 0,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "logger",
+      },
+      "id": "n3",
+      "position": {
+        "x": 406,
+        "y": 203,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "out1",
+      },
+      "id": "n4",
+      "position": {
+        "x": 406,
+        "y": 406,
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+  ],
+}
+`;

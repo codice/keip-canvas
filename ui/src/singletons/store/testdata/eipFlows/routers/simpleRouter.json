@@ -1,0 +1,111 @@
+{
+  "nodes": [
+    {
+      "id": "in1",
+      "eipId": {
+        "namespace": "integration",
+        "name": "inbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "source",
+      "attributes": {
+        "expression": "'abc'"
+      },
+      "children": []
+    },
+    {
+      "id": "testRouter",
+      "eipId": {
+        "namespace": "integration",
+        "name": "router"
+      },
+      "role": "router",
+      "connectionType": "content_based_router",
+      "attributes": {
+        "expression": "payload",
+        "send-timeout": "2000"
+      },
+      "children": [
+        {
+          "name": "mapping",
+          "attributes": {
+            "channel": "ch-testRouter-out1",
+            "value": "first"
+          },
+          "children": []
+        },
+        {
+          "name": "mapping",
+          "attributes": {
+            "channel": "ch-testRouter-out2",
+            "value": "second"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "out1",
+      "eipId": {
+        "namespace": "jms",
+        "name": "outbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "sink",
+      "attributes": {
+        "pub-sub-domain": "false",
+        "destination-name": "test_queue"
+      },
+      "children": []
+    },
+    {
+      "id": "out2",
+      "eipId": {
+        "namespace": "http",
+        "name": "outbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "sink",
+      "attributes": {},
+      "children": []
+    },
+    {
+      "id": "logger",
+      "eipId": {
+        "namespace": "integration",
+        "name": "logging-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "sink",
+      "attributes": {},
+      "children": []
+    }
+  ],
+  "edges": [
+    {
+      "id": "ch-in1-testRouter",
+      "source": "in1",
+      "target": "testRouter",
+      "type": "default"
+    },
+    {
+      "id": "ch-testRouter-out1",
+      "source": "testRouter",
+      "target": "out1",
+      "type": "default"
+    },
+    {
+      "id": "ch-testRouter-out2",
+      "source": "testRouter",
+      "target": "out2",
+      "type": "default"
+    },
+    {
+      "id": "ch-testRouter-logger",
+      "source": "testRouter",
+      "target": "logger",
+      "type": "default"
+    }
+  ],
+  "customEntities": {}
+}

@@ -1,6 +1,5 @@
 import { Edge, XYPosition } from "@xyflow/react"
 import { produce } from "immer"
-import { nanoid } from "nanoid/non-secure"
 import {
   ChannelMapping,
   CustomNode,
@@ -15,6 +14,7 @@ import {
 import { AttributeType } from "../../api/generated/eipComponentDef"
 import { EipId } from "../../api/generated/eipFlow"
 import { newFlowLayout } from "../../components/layout/layouting"
+import { generateChildId, generateNodeId } from "../../utils/nodeIdGenerator"
 import { describeFollower } from "../followerNodeDefs"
 import { AppStore, EipConfig, SerializedFlow } from "./api"
 import { useAppStore } from "./appStore"
@@ -135,7 +135,7 @@ export const enableChild = (parentId: string, childEipId: EipId) =>
       children: [],
     }
 
-    const childId = nanoid(11)
+    const childId = generateChildId()
 
     return produce(state, (draft: AppStore) => {
       draft.eipConfigs[parentId].children.push(childId)
@@ -367,8 +367,9 @@ const generateNodes = (
   return descriptors
 }
 
-const newEipNode = (position: XYPosition) => {
-  const id = nanoid(10)
+// TODO: Extract node generators
+export const newEipNode = (position: XYPosition) => {
+  const id = generateNodeId()
   const node: EipFlowNode = {
     id: id,
     type: CustomNodeType.EipNode,
@@ -379,7 +380,7 @@ const newEipNode = (position: XYPosition) => {
 }
 
 const newFollowerNode = (leaderId: string, position: XYPosition) => {
-  const id = nanoid(10)
+  const id = generateNodeId()
   const node: FollowerNode = {
     id: id,
     type: CustomNodeType.FollowerNode,

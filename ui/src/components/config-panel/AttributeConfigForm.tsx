@@ -9,7 +9,7 @@ import {
   Toggle,
 } from "@carbon/react"
 import { ChangeEvent, useMemo } from "react"
-import { Attribute } from "../../api/generated/eipComponentDef"
+import { Attribute, AttributeType } from "../../api/generated/eipComponentDef"
 import {
   deleteEipAttribute,
   updateEipAttribute,
@@ -144,8 +144,15 @@ const AttributeInput = (props: AttributeInputFactoryProps) => {
       return <AttributeTextInput {...props} attrValue={attrValue as string} />
 
     case "boolean":
-      return <AttributeBoolInput {...props} attrValue={attrValue as boolean} />
+      return <AttributeBoolInput {...props} attrValue={toBoolean(attrValue)} />
   }
+}
+
+const toBoolean = (value: AttributeType) => {
+  if (typeof value === "string") {
+    return value === "true"
+  }
+  return Boolean(value)
 }
 
 export const AttributeConfigForm = (props: AttributeFormProps) => {

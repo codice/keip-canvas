@@ -1,0 +1,116 @@
+{
+  "nodes": [
+    {
+      "id": "in1",
+      "eipId": {
+        "namespace": "integration",
+        "name": "inbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "source",
+      "attributes": {
+        "expression": "'abc'"
+      },
+      "children": []
+    },
+    {
+      "id": "router",
+      "eipId": {
+        "namespace": "integration",
+        "name": "payload-type-router"
+      },
+      "role": "router",
+      "connectionType": "content_based_router",
+      "attributes": {},
+      "children": [
+        {
+          "name": "mapping",
+          "attributes": {
+            "channel": "ch-router-out1",
+            "type": "String"
+          },
+          "children": []
+        },
+        {
+          "name": "mapping",
+          "attributes": {
+            "channel": "ch-router-out2",
+            "type": "Integer"
+          },
+          "children": []
+        },
+        {
+          "name": "mapping",
+          "attributes": {
+            "channel": "ch-router-logger",
+            "type": "Boolean"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "out2",
+      "eipId": {
+        "namespace": "http",
+        "name": "outbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "sink",
+      "attributes": {},
+      "children": []
+    },
+    {
+      "id": "logger",
+      "eipId": {
+        "namespace": "integration",
+        "name": "logging-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "sink",
+      "attributes": {},
+      "children": []
+    },
+    {
+      "id": "out1",
+      "eipId": {
+        "namespace": "jms",
+        "name": "outbound-channel-adapter"
+      },
+      "role": "endpoint",
+      "connectionType": "sink",
+      "attributes": {
+        "pub-sub-domain": "false",
+        "destination-name": "test_queue"
+      },
+      "children": []
+    }
+  ],
+  "edges": [
+    {
+      "id": "ch-in1-router",
+      "source": "in1",
+      "target": "router",
+      "type": "default"
+    },
+    {
+      "id": "ch-router-out2",
+      "source": "router",
+      "target": "out2",
+      "type": "default"
+    },
+    {
+      "id": "ch-router-logger",
+      "source": "router",
+      "target": "logger",
+      "type": "default"
+    },
+    {
+      "id": "ch-router-out1",
+      "source": "router",
+      "target": "out1",
+      "type": "default"
+    }
+  ],
+  "customEntities": {}
+}
