@@ -48,11 +48,11 @@ schemas:
     namespace: "http://www.springframework.org/schema/integration/ip"
     location: "https://www.springframework.org/schema/integration/ip/spring-integration-ip-5.2.xsd"
 
-  - alias: "web-services"
+  - alias: "ws"
     namespace: "http://www.springframework.org/schema/integration/ws"
     location: "https://www.springframework.org/schema/integration/ws/spring-integration-ws-5.2.xsd"
 
-  - alias: "xml"
+  - alias: "int-xml"
     namespace: "http://www.springframework.org/schema/integration/xml"
     location: "https://www.springframework.org/schema/integration/xml/spring-integration-xml-5.2.xsd"
 
