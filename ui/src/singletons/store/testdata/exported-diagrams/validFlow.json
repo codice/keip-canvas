@@ -1,64 +1,60 @@
 {
   "nodes": [
     {
-      "id": "81HAL73ElW",
-      "type": "eipNode",
-      "position": { "x": 0, "y": 0 },
-      "targetPosition": "left",
-      "sourcePosition": "right",
-      "data": { "label": "ws-in" },
-      "width": 128,
-      "height": 124,
-      "selected": false,
-      "dragging": false
-    },
-    {
       "id": "Hz22QyhCpj",
       "type": "eipNode",
-      "position": { "x": 203, "y": 18.5 },
+      "position": { "x": 203, "y": 24 },
       "targetPosition": "left",
       "sourcePosition": "right",
       "data": {},
       "width": 99,
       "height": 87,
       "selected": false,
-      "dragging": false
+      "dragging": false,
+      "measured": { "width": 99, "height": 87 }
     },
     {
       "id": "THgI9WvsJh",
       "type": "eipNode",
-      "position": { "x": 377, "y": 5.5 },
+      "position": { "x": 377, "y": 7 },
       "targetPosition": "left",
       "sourcePosition": "right",
       "data": {},
       "width": 109,
       "height": 121,
       "selected": false,
-      "dragging": false
+      "dragging": false,
+      "measured": { "width": 109, "height": 121 }
+    },
+    {
+      "id": "OuC9d1xC5e",
+      "type": "eipNode",
+      "position": { "x": 0, "y": 0 },
+      "data": { "label": "jms-in" },
+      "measured": { "width": 128, "height": 135 },
+      "selected": false,
+      "dragging": false,
+      "targetPosition": "left",
+      "sourcePosition": "right"
     }
   ],
   "edges": [
-    {
-      "source": "81HAL73ElW",
-      "sourceHandle": "output",
-      "target": "Hz22QyhCpj",
-      "targetHandle": "input",
-      "id": "reactflow__edge-81HAL73ElWoutput-Hz22QyhCpjinput"
-    },
     {
       "source": "Hz22QyhCpj",
       "sourceHandle": "output",
       "target": "THgI9WvsJh",
       "targetHandle": "input",
       "id": "reactflow__edge-Hz22QyhCpjoutput-THgI9WvsJhinput"
+    },
+    {
+      "source": "OuC9d1xC5e",
+      "sourceHandle": "output",
+      "target": "Hz22QyhCpj",
+      "targetHandle": "input",
+      "id": "xy-edge__OuC9d1xC5eoutput-Hz22QyhCpjinput"
     }
   ],
   "eipConfigs": {
-    "81HAL73ElW": {
-      "attributes": {},
-      "children": [],
-      "eipId": { "namespace": "web-services", "name": "inbound-gateway" }
-    },
     "Hz22QyhCpj": {
       "attributes": { "ref": "testTransformer" },
       "children": [],
@@ -74,7 +70,13 @@
       "eipId": { "name": "transactional", "namespace": "http" },
       "attributes": { "isolation": "SERIALIZABLE" },
       "children": []
+    },
+    "OuC9d1xC5e": {
+      "attributes": {},
+      "children": [],
+      "eipId": { "namespace": "jms", "name": "message-driven-channel-adapter" }
     }
   },
+  "customEntities": {},
   "version": "1.1"
 }

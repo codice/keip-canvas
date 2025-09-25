@@ -29,11 +29,6 @@ import { AppStore, EipConfig } from "./api"
 import { useAppStore } from "./appStore"
 import { childrenBreadthTraversal, getEipId } from "./storeViews"
 
-const EIP_NAMESPACE_TO_XML_PREFIX: Record<string, string> = {
-  xml: "int-xml",
-  "web-services": "ws",
-}
-
 export const useEipFlow = () =>
   useStoreWithEqualityFn(
     useAppStore,
@@ -71,7 +66,6 @@ const diagramToEipFlow = (state: AppStore): EipFlow => {
   const nodes: EipNode[] = state.nodes.map((node) => {
     const eipId = getEipId(node.id)!
     const eipComponent = lookupEipComponent(eipId)!
-    const namespace = eipId.namespace
 
     const routerKey = state.eipConfigs[node.id].routerKey
     const routerKeyAttrs =
@@ -81,10 +75,7 @@ const diagramToEipFlow = (state: AppStore): EipFlow => {
 
     return {
       id: getNodeId(node.id, nodeLookup),
-      eipId: {
-        ...eipId,
-        namespace: EIP_NAMESPACE_TO_XML_PREFIX[namespace] ?? namespace,
-      },
+      eipId: eipId,
       description: state.eipConfigs[node.id]?.description,
       role: eipComponent.role,
       connectionType: eipComponent.connectionType,

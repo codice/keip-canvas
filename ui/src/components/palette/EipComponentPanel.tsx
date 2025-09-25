@@ -12,7 +12,7 @@ import { EipId } from "../../api/generated/eipFlow"
 import { EIP_SCHEMA } from "../../singletons/eipDefinitions"
 import getIconUrl from "../../singletons/eipIconCatalog"
 import { useNodeCount } from "../../singletons/store/getterHooks"
-import { toTitleCase } from "../../utils/titleTransform"
+import { getNamespaceAlias, toTitleCase } from "../../utils/titleTransform"
 import { DragTypes } from "./dragTypes"
 
 interface Namespace {
@@ -67,7 +67,7 @@ const EipNamespaceCollection = ({
 
   return (
     <AccordionItem
-      title={toTitleCase(namespace.name)}
+      title={toTitleCase(getNamespaceAlias(namespace.name))}
       open={allExpanded || expandedNamespace === namespace.name}
       onHeadingClick={({ isOpen }) => handleExpand(isOpen)}
     >

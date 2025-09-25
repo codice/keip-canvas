@@ -32,7 +32,7 @@ exports[`import flow from an exported JSON file > 'import a deprecated flow part
   "eipIds": [
     {
       "name": "inbound-gateway",
-      "namespace": "web-services",
+      "namespace": "ws",
     },
     {
       "name": "transformer",
@@ -99,48 +99,46 @@ exports[`import flow from an exported JSON file > 'import a deprecated flow part
 }
 `;
 
-exports[`import flow from an exported JSON file > 'import a valid flow success' 1`] = `
+exports[`import flow from an exported JSON file > 'import a flow with deprecated namespa…' 1`] = `
 {
   "children": [
     {
-      "81HAL73ElW": [],
+      "EhSdB7aSPh": [],
     },
     {
-      "Hz22QyhCpj": [],
+      "e5ZObyhckj": [],
     },
     {
-      "THgI9WvsJh": [
-        "mbL_mB1wGOY",
-      ],
+      "PFC0tD2Jjq": [],
     },
   ],
   "edges": [
     {
-      "id": "reactflow__edge-81HAL73ElWoutput-Hz22QyhCpjinput",
-      "source": "81HAL73ElW",
+      "id": "xy-edge__EhSdB7aSPhoutput-e5ZObyhckjinput",
+      "source": "EhSdB7aSPh",
       "sourceHandle": "output",
-      "target": "Hz22QyhCpj",
+      "target": "e5ZObyhckj",
       "targetHandle": "input",
     },
     {
-      "id": "reactflow__edge-Hz22QyhCpjoutput-THgI9WvsJhinput",
-      "source": "Hz22QyhCpj",
+      "id": "xy-edge__PFC0tD2Jjqoutput-EhSdB7aSPhinput",
+      "source": "PFC0tD2Jjq",
       "sourceHandle": "output",
-      "target": "THgI9WvsJh",
+      "target": "EhSdB7aSPh",
       "targetHandle": "input",
     },
   ],
   "eipIds": [
     {
-      "name": "inbound-gateway",
-      "namespace": "web-services",
-    },
-    {
-      "name": "transformer",
-      "namespace": "integration",
+      "name": "xpath-transformer",
+      "namespace": "int-xml",
     },
     {
       "name": "outbound-gateway",
+      "namespace": "ws",
+    },
+    {
+      "name": "inbound-channel-adapter",
       "namespace": "http",
     },
   ],
@@ -151,11 +149,51 @@ exports[`import flow from an exported JSON file > 'import a valid flow success' 
   "nodes": [
     {
       "data": {
-        "label": "ws-in",
+        "label": "transform",
       },
       "dragging": false,
-      "height": 124,
-      "id": "81HAL73ElW",
+      "id": "EhSdB7aSPh",
+      "measured": {
+        "height": 90,
+        "width": 104,
+      },
+      "position": {
+        "x": 203,
+        "y": 22.5,
+      },
+      "selected": false,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "out1",
+      },
+      "dragging": false,
+      "id": "e5ZObyhckj",
+      "measured": {
+        "height": 127,
+        "width": 128,
+      },
+      "position": {
+        "x": 382,
+        "y": 4,
+      },
+      "selected": false,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
+    },
+    {
+      "data": {
+        "label": "in1",
+      },
+      "id": "PFC0tD2Jjq",
+      "measured": {
+        "height": 135,
+        "width": 128,
+      },
       "position": {
         "x": 0,
         "y": 0,
@@ -164,16 +202,73 @@ exports[`import flow from an exported JSON file > 'import a valid flow success' 
       "sourcePosition": "right",
       "targetPosition": "left",
       "type": "eipNode",
-      "width": 128,
     },
+  ],
+}
+`;
+
+exports[`import flow from an exported JSON file > 'import a valid flow success' 1`] = `
+{
+  "children": [
+    {
+      "Hz22QyhCpj": [],
+    },
+    {
+      "THgI9WvsJh": [
+        "mbL_mB1wGOY",
+      ],
+    },
+    {
+      "OuC9d1xC5e": [],
+    },
+  ],
+  "edges": [
+    {
+      "id": "reactflow__edge-Hz22QyhCpjoutput-THgI9WvsJhinput",
+      "source": "Hz22QyhCpj",
+      "sourceHandle": "output",
+      "target": "THgI9WvsJh",
+      "targetHandle": "input",
+    },
+    {
+      "id": "xy-edge__OuC9d1xC5eoutput-Hz22QyhCpjinput",
+      "source": "OuC9d1xC5e",
+      "sourceHandle": "output",
+      "target": "Hz22QyhCpj",
+      "targetHandle": "input",
+    },
+  ],
+  "eipIds": [
+    {
+      "name": "transformer",
+      "namespace": "integration",
+    },
+    {
+      "name": "outbound-gateway",
+      "namespace": "http",
+    },
+    {
+      "name": "message-driven-channel-adapter",
+      "namespace": "jms",
+    },
+  ],
+  "layout": {
+    "density": "comfortable",
+    "orientation": "horizontal",
+  },
+  "nodes": [
     {
       "data": {},
       "dragging": false,
       "height": 87,
       "id": "Hz22QyhCpj",
+      "measured": {
+        "height": 87,
+        "width": 99,
+      },
       "position": {
         "x": 203,
-        "y": 18.5,
+        "y": 24,
       },
       "selected": false,
       "sourcePosition": "right",
@@ -186,15 +281,38 @@ exports[`import flow from an exported JSON file > 'import a valid flow success' 
       "dragging": false,
       "height": 121,
       "id": "THgI9WvsJh",
+      "measured": {
+        "height": 121,
+        "width": 109,
+      },
       "position": {
         "x": 377,
-        "y": 5.5,
+        "y": 7,
       },
       "selected": false,
       "sourcePosition": "right",
       "targetPosition": "left",
       "type": "eipNode",
       "width": 109,
+    },
+    {
+      "data": {
+        "label": "jms-in",
+      },
+      "dragging": false,
+      "id": "OuC9d1xC5e",
+      "measured": {
+        "height": 135,
+        "width": 128,
+      },
+      "position": {
+        "x": 0,
+        "y": 0,
+      },
+      "selected": false,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "type": "eipNode",
     },
   ],
 }

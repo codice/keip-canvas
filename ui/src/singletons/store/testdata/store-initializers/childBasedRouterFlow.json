@@ -127,7 +127,7 @@
       "attributes": {},
       "children": [],
       "eipId": {
-        "namespace": "xml",
+        "namespace": "int-xml",
         "name": "xpath-router"
       },
       "routerKey": {

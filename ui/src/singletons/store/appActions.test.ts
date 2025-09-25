@@ -58,6 +58,7 @@ import {
   getNodesView,
 } from "./storeViews"
 import deprecatedExportedFlow from "./testdata/exported-diagrams/deprecatedFlow.json?raw"
+import deprecatedNamespacesFlow from "./testdata/exported-diagrams/deprecatedNamespaces.json?raw"
 import validExportedFlow from "./testdata/exported-diagrams/validFlow.json?raw"
 
 vi.mock("zustand")
@@ -593,6 +594,10 @@ describe("import flow from an exported JSON file", () => {
     {
       msg: "import a deprecated flow partial success",
       flow: deprecatedExportedFlow,
+    },
+    {
+      msg: "import a flow with deprecated namespaces success",
+      flow: deprecatedNamespacesFlow,
     },
   ])("$msg", ({ flow }) => {
     const initNodes = getNodesView()

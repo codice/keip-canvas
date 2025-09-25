@@ -231,15 +231,16 @@ export const importFlowFromObject = (flow: SerializedFlow) => {
       throw new Error("Failed to import an EIP flow JSON. Malformed input")
     }
 
-    // Maintain backwards compatibility with older exported formats
     if (!flow.eipConfigs && !flow.version) {
       return importDeprecatedFlow(flow)
     }
 
+    const eipConfigs = convertDeprecatedNamespaces(flow.eipConfigs)
+
     return {
       nodes: flow.nodes,
       edges: flow.edges,
-      eipConfigs: flow.eipConfigs,
+      eipConfigs,
       customEntities: flow.customEntities ?? {},
     }
   })
@@ -418,7 +419,7 @@ const isStoreType = (state: unknown): state is AppStore => {
   )
 }
 
-// Maintains compatibility with older exported formats
+// Maintain backwards compatibility with older exported formats
 const importDeprecatedFlow = (flow: SerializedFlow): Partial<AppStore> => {
   const eipConfigs = {} as AppStore["eipConfigs"]
   const nodes = flow.nodes.map((node) => {
@@ -426,7 +427,7 @@ const importDeprecatedFlow = (flow: SerializedFlow): Partial<AppStore> => {
     eipConfigs[node.id] = {
       attributes: {},
       children: [],
-      eipId: oldEipId,
+      eipId: fixDeprecatedEipId(oldEipId),
     }
     return {
       ...node,
@@ -440,6 +441,42 @@ const importDeprecatedFlow = (flow: SerializedFlow): Partial<AppStore> => {
     eipConfigs,
   }
 }
+
+const DEPRECATED_EIP_NAMESPACES: Record<string, string> = {
+  xml: "int-xml",
+  "web-services": "ws",
+}
+
+// Maintain backwards compatibility with older exported namespaces
+const convertDeprecatedNamespaces = (
+  eipConfigs: SerializedFlow["eipConfigs"]
+) =>
+  Object.fromEntries(
+    Object.entries(eipConfigs).map(([id, config]) => {
+      const eipId = config.eipId
+      if (eipId.namespace in DEPRECATED_EIP_NAMESPACES) {
+        const convertedEipId = fixDeprecatedEipId(eipId)
+
+        console.warn(
+          `Imported flow has a deprecated namespace '${eipId.namespace}'. Converting the namespace to '${convertedEipId.namespace}'.`
+        )
+
+        return [
+          id,
+          {
+            ...config,
+            eipId: convertedEipId,
+          },
+        ]
+      }
+      return [id, config]
+    })
+  )
+
+const fixDeprecatedEipId = (eipId: EipId): EipId => ({
+  ...eipId,
+  namespace: DEPRECATED_EIP_NAMESPACES[eipId.namespace] ?? eipId.namespace,
+})
 
 const isWellFormedXML = (content: string) => {
   if (!content) {

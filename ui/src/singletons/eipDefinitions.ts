@@ -60,7 +60,7 @@ const contentBasedRouterTargets: ReadonlyMap<string, RouterTarget> = new Map([
     { name: "header-name", type: "attribute" },
   ],
   ["integration.router", { name: "expression", type: "attribute" }],
-  ["xml.xpath-router", { name: "xpath-expression", type: "child" }],
+  ["int-xml.xpath-router", { name: "xpath-expression", type: "child" }],
 ])
 
 export const lookupContentBasedRouterKeys = (

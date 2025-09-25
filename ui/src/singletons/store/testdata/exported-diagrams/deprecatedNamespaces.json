@@ -1,0 +1,71 @@
+{
+  "nodes": [
+    {
+      "id": "EhSdB7aSPh",
+      "type": "eipNode",
+      "position": { "x": 203, "y": 22.5 },
+      "data": { "label": "transform" },
+      "measured": { "width": 104, "height": 90 },
+      "selected": false,
+      "targetPosition": "left",
+      "sourcePosition": "right",
+      "dragging": false
+    },
+    {
+      "id": "e5ZObyhckj",
+      "type": "eipNode",
+      "position": { "x": 382, "y": 4 },
+      "data": { "label": "out1" },
+      "measured": { "width": 128, "height": 127 },
+      "selected": false,
+      "dragging": false,
+      "targetPosition": "left",
+      "sourcePosition": "right"
+    },
+    {
+      "id": "PFC0tD2Jjq",
+      "type": "eipNode",
+      "position": { "x": 0, "y": 0 },
+      "data": { "label": "in1" },
+      "measured": { "width": 128, "height": 135 },
+      "selected": false,
+      "targetPosition": "left",
+      "sourcePosition": "right"
+    }
+  ],
+  "edges": [
+    {
+      "source": "EhSdB7aSPh",
+      "sourceHandle": "output",
+      "target": "e5ZObyhckj",
+      "targetHandle": "input",
+      "id": "xy-edge__EhSdB7aSPhoutput-e5ZObyhckjinput"
+    },
+    {
+      "source": "PFC0tD2Jjq",
+      "sourceHandle": "output",
+      "target": "EhSdB7aSPh",
+      "targetHandle": "input",
+      "id": "xy-edge__PFC0tD2Jjqoutput-EhSdB7aSPhinput"
+    }
+  ],
+  "eipConfigs": {
+    "EhSdB7aSPh": {
+      "attributes": { "xpath-expression": "/first/second" },
+      "children": [],
+      "eipId": { "namespace": "xml", "name": "xpath-transformer" }
+    },
+    "e5ZObyhckj": {
+      "attributes": { "uri": "test.example" },
+      "children": [],
+      "eipId": { "namespace": "web-services", "name": "outbound-gateway" }
+    },
+    "PFC0tD2Jjq": {
+      "attributes": {},
+      "children": [],
+      "eipId": { "namespace": "http", "name": "inbound-channel-adapter" }
+    }
+  },
+  "customEntities": {},
+  "version": "1.1"
+}
