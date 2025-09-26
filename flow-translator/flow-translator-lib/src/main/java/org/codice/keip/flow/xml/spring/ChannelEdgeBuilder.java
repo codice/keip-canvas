@@ -53,12 +53,15 @@ class ChannelEdgeBuilder {
 
   private final Map<String, EipNode> channelNodes;
 
+  private final Map<String, EipNode> nonChannelNodes;
+
   private final GuavaGraph.Builder graphBuilder;
 
   ChannelEdgeBuilder(Collection<EipNode> nodes) {
     this.nodes = nodes;
     this.channelConnections = new HashMap<>();
     this.channelNodes = new HashMap<>();
+    this.nonChannelNodes = new HashMap<>();
     this.graphBuilder = GuavaGraph.newBuilder();
   }
 
@@ -70,6 +73,7 @@ class ChannelEdgeBuilder {
         continue;
       }
 
+      nonChannelNodes.put(node.id(), node);
       Set<String> channelAttrNames = processChannelAttributes(node);
       processContentBasedRouters(node);
       Map<String, Object> filtered = filterChannelAttributes(node.attributes(), channelAttrNames);
@@ -213,9 +217,17 @@ class ChannelEdgeBuilder {
    *   <li>The channel type is NOT a direct channel (e.g. pub-sub, queue, etc.)
    *   <li>The channel has multiple incoming connections
    *   <li>The channel has multiple outgoing connections
+   *   <li>The channel is a reply-channel for an 'inbound_request_reply' node.
    * </ul>
    */
   private boolean isStandaloneChannelNode(EipNode node, ChannelConnections connections) {
+    if (connections.outgoing().size() == 1) {
+      EipNode target = nonChannelNodes.get(connections.outgoing().getFirst().node());
+      if (target != null && target.connectionType().equals(ConnectionType.INBOUND_REQUEST_REPLY)) {
+        return true;
+      }
+    }
+
     boolean isDirectChannel = node.eipId().equals(DIRECT_CHANNEL) && node.children().isEmpty();
     return !isDirectChannel || connections.incoming.size() > 1 || connections.outgoing.size() > 1;
   }

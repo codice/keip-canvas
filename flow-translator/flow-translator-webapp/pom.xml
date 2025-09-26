@@ -11,7 +11,7 @@
 
     <groupId>org.codice.keip</groupId>
     <artifactId>flow-translator-webapp</artifactId>
-    <version>0.4.1</version>
+    <version>0.4.2</version>
 
     <packaging>jar</packaging>
 
@@ -43,7 +43,7 @@
         <dependency>
             <groupId>org.codice.keip</groupId>
             <artifactId>flow-translator-lib</artifactId>
-            <version>0.4.0</version>
+            <version>0.4.1</version>
         </dependency>
         <dependency>
             <groupId>org.codice.keip.xsd</groupId>

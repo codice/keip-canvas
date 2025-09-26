@@ -208,13 +208,15 @@ class ChannelEdgeBuilderTest extends Specification {
         def graph = new ChannelEdgeBuilder(nodes).buildGraph()
 
         then:
-        graph.traverse().count() == 3
+        graph.traverse().count() == 4
 
         def ec = new EdgeChecker(graph)
+        EipNode chan3 = nodes.getLast() as EipNode
 
-        ec.check(gateway, [t2], [t1])
+        ec.check(gateway, [chan3], [t1])
         ec.check(t1, [gateway], [t2])
-        ec.check(t2, [t1], [gateway])
+        ec.check(t2, [t1], [chan3])
+        ec.check(chan3, [t2], [gateway])
     }
 
     def "test content-based routers with a 'mapping' child"() {
