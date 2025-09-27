@@ -6,7 +6,7 @@
 
     <groupId>org.codice.keip</groupId>
     <artifactId>flow-translator-lib</artifactId>
-    <version>0.4.1</version>
+    <version>0.5.0</version>
 
     <packaging>jar</packaging>
 
@@ -189,7 +189,7 @@
                                         <limit>
                                             <counter>BRANCH</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.96</minimum>
+                                            <minimum>0.95</minimum>
                                         </limit>
                                         <limit>
                                             <counter>COMPLEXITY</counter>

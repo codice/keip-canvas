@@ -21,12 +21,12 @@ public class DefaultXmlElementTransformer implements XmlElementTransformer {
 
     EipId eipId = new EipId(element.prefix(), element.localName());
     Map<String, Object> filteredAttrs = new LinkedHashMap<>(element.attributes());
-    filteredAttrs.remove(ID);
+    String id = removeOrGenerateId(filteredAttrs);
 
     List<EipChild> children = element.children().stream().map(this::convertChild).toList();
 
     return new EipNode(
-        element.attributes().get(ID).toString(),
+        id,
         eipId,
         null,
         null,
@@ -42,18 +42,20 @@ public class DefaultXmlElementTransformer implements XmlElementTransformer {
   }
 
   private void validateElement(XmlElement element, ComponentRegistry registry) {
-    if (!element.attributes().containsKey(ID)) {
-      throw new IllegalArgumentException(
-          String.format(
-              "%s:%s element does not have an 'id' attribute",
-              element.prefix(), element.localName()));
-    }
-
     EipId id = new EipId(element.prefix(), element.localName());
     if (!registry.isRegistered(id)) {
       throw new IllegalArgumentException(
           String.format(
               "%s:%s is not a supported EIP Component", element.prefix(), element.localName()));
     }
+  }
+
+  private String removeOrGenerateId(Map<String, Object> attributes) {
+    Object id = attributes.remove(ID);
+    if (id == null) {
+      return NodeIdGenerator.randomId();
+    }
+
+    return id.toString();
   }
 }

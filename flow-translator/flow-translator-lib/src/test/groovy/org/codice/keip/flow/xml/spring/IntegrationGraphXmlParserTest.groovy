@@ -258,6 +258,43 @@ class IntegrationGraphXmlParserTest extends Specification {
         result.customEntities() == expectedEntities
     }
 
+    def "xml to graph with missing element ids -> random ids generated"() {
+        given:
+        InputStream xml = readTestXml("multi-node-missing-ids.xml")
+
+        when:
+        def result = xmlParser.fromXml(xml)
+
+        then:
+        def graph = result.graph()
+        def nodes = graph.traverse().toList()
+        nodes.size() == 3
+
+        def inAdapter = nodes[0]
+        with(inAdapter) {
+            id().size() == 10
+            eipId() == new EipId("integration", "inbound-channel-adapter")
+            attributes() == ["expression": "'TestMessage'"]
+            children().size() == 1
+        }
+
+        def transformer = nodes[1]
+        with(transformer) {
+            id().size() == 10
+            eipId() == new EipId("integration", "transformer")
+            attributes() == ["expression": "payload + ' processed'"]
+            children().isEmpty()
+        }
+
+        def outAdapter = nodes[2]
+        with(outAdapter) {
+            id().size() == 10
+            eipId() == new EipId("jms", "outbound-channel-adapter")
+            attributes() == ["destination-name": "test-target"]
+            children().isEmpty()
+        }
+    }
+
     def "xsd validation with invalid xml -> failure"(String xmlFilePath) {
         given:
         InputStream xml = readTestXml(xmlFilePath)

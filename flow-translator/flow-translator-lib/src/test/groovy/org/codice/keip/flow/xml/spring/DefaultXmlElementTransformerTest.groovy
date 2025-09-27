@@ -95,7 +95,7 @@ class DefaultXmlElementTransformerTest extends Specification {
         }
     }
 
-    def "transform xml element with no 'id' attribute -> exception thrown"() {
+    def "transform xml element with no 'id' attribute -> random id is generated"() {
         given:
         def element = new XmlElement(
                 new QName("http://example.com", "adapter", "test"),
@@ -103,10 +103,19 @@ class DefaultXmlElementTransformerTest extends Specification {
                 [])
 
         when:
-        transformer.apply(element, registry)
+        def node = transformer.apply(element, registry)
 
         then:
-        thrown(IllegalArgumentException)
+        with(node) {
+            id().size() == 10
+            eipId() == new EipId("test", "adapter")
+            role() == Role.ENDPOINT
+            connectionType() == ConnectionType.SOURCE
+            attributes() == ["key1": "val1"]
+            children().isEmpty()
+            label() == null
+            description() == null
+        }
     }
 
     def "transform unregistered eip node -> exception thrown"() {
