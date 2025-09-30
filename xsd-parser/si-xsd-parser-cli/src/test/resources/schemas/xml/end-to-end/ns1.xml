@@ -23,4 +23,6 @@
         </xsd:complexType>
     </xsd:element>
 
+    <xsd:element name="poller" type="xsd:string"/>
+
 </xsd:schema>

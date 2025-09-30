@@ -30,7 +30,7 @@ class EipComparisonUtils {
     }
 
     static void assertEipComponentsEqual(EipComponent expected, EipComponent actual) {
-        assert expected.getName() == actual.getName()
+        assert expected.getEipId() == actual.getEipId()
         assert expected.getRole() == actual.getRole()
         assert expected.getConnectionType() == actual.getConnectionType()
         assert expected.getDescription() == actual.getDescription()
@@ -40,7 +40,7 @@ class EipComparisonUtils {
                 Comparator.comparing(Attribute::name),
                 { exp, act -> assert exp == act },
                 String.format(
-                        "Comparing EIP Component Attributes (component: %s)", expected.getName()))
+                        "Comparing EIP Component Attributes (component: %s)", expected.getEipId()))
         assertEipChildGroupsEqual(expected.getChildGroup(), actual.getChildGroup())
     }
 
@@ -64,14 +64,14 @@ class EipComparisonUtils {
         assertCollectionsEqualNoOrder(
                 expectedChildren,
                 actualChildren,
-                Comparator.comparing(EipChildElement::getName),
+                Comparator.comparing(e -> e.getEipId().toString()),
                 EipComparisonUtils::assertEipChildElementsEqual,
                 "Comparing Child Groups")
     }
 
 
     static void assertEipChildElementsEqual(EipChildElement expected, EipChildElement actual) {
-        assert expected.getName() == actual.getName()
+        assert expected.getEipId() == actual.getEipId()
         assert expected.getDescription() == actual.getDescription()
         assert expected.occurrence() == actual.occurrence()
         assertCollectionsEqualNoOrder(
@@ -79,7 +79,7 @@ class EipComparisonUtils {
                 actual.getAttributes(),
                 Comparator.comparing(Attribute::name),
                 { exp, act -> assert exp == act },
-                String.format("Comparing child elements (child-name: %s)", expected.getName()))
+                String.format("Comparing child elements (child-name: %s)", expected.getEipId()))
         assertEipChildGroupsEqual(expected.getChildGroup(), actual.getChildGroup())
     }
 }

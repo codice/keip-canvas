@@ -1,18 +1,19 @@
 package org.codice.keip.xsd.model.serdes
 
 import com.google.gson.JsonParser
+import org.codice.keip.schemas.validation.EipSchemaValidator
 import org.codice.keip.xsd.model.eip.Attribute
 import org.codice.keip.xsd.model.eip.AttributeType
 import org.codice.keip.xsd.model.eip.ChildGroup
 import org.codice.keip.xsd.model.eip.ConnectionType
 import org.codice.keip.xsd.model.eip.EipChildElement
 import org.codice.keip.xsd.model.eip.EipComponent
+import org.codice.keip.xsd.model.eip.EipId
 import org.codice.keip.xsd.model.eip.EipSchema
 import org.codice.keip.xsd.model.eip.Indicator
 import org.codice.keip.xsd.model.eip.Occurrence
 import org.codice.keip.xsd.model.eip.Restriction
 import org.codice.keip.xsd.model.eip.Role
-import org.codice.keip.schemas.validation.EipSchemaValidator
 import spock.lang.Specification
 import spock.lang.TempDir
 
@@ -95,14 +96,19 @@ class SchemaSerializerTest extends Specification {
                 .restriction(new Restriction.MultiValuedRestriction(
                         Restriction.RestrictionType.ENUM, List.of("first", "second")))
                 .build()
-        def child = new EipChildElement.Builder("test-child")
+
+        def child = new EipChildElement.Builder(
+                new EipId("test2", "test-child"))
                 .description("test child description").build()
-        def eipComponent = new EipComponent.Builder("test-top",
+
+        def eipComponent = new EipComponent.Builder(
+                new EipId("test1", "test-top"),
                 Role.ENDPOINT, ConnectionType.SOURCE)
                 .description("test top level description")
                 .addAttribute(attr)
                 .childGroup(new ChildGroup(Indicator.SEQUENCE, List.of(child)))
                 .build()
+
         return EipSchema.from(Map.of("test-ns", List.of(eipComponent)))
     }
 

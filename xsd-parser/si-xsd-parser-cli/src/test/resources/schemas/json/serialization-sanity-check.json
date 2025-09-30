@@ -1,7 +1,10 @@
 {
   "test-ns": [
     {
-      "name": "test-top",
+      "eipId": {
+        "namespace": "test1",
+        "name": "test-top"
+      },
       "role": "endpoint",
       "connectionType": "source",
       "description": "test top level description",
@@ -25,7 +28,10 @@
         "indicator": "sequence",
         "children": [
           {
-            "name": "test-child",
+            "eipId": {
+              "namespace": "test2",
+              "name": "test-child"
+            },
             "description": "test child description"
           }
         ]

@@ -3,6 +3,10 @@ package org.codice.keip.xsd;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.xml.transform.TransformerException;
 import org.apache.ws.commons.schema.XmlSchemaCollection;
 import org.codice.keip.xsd.client.XmlSchemaClient;
@@ -18,6 +22,8 @@ public class EipSchemaTranslation {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EipSchemaTranslation.class);
 
+  private final Map<String, String> uriToEipNamespace;
+
   private final XmlSchemaClient xmlSchemaClient;
 
   private final EipSchema eipSchema;
@@ -28,7 +34,18 @@ public class EipSchemaTranslation {
       XsdSourceConfiguration sourceConfiguration, XmlSchemaClient xmlSchemaClient) {
     this.errors = new ArrayList<>();
     this.xmlSchemaClient = xmlSchemaClient;
+    this.uriToEipNamespace = buildUriToNamespaceMap(sourceConfiguration);
     this.eipSchema = translate(sourceConfiguration);
+  }
+
+  private Map<String, String> buildUriToNamespaceMap(XsdSourceConfiguration sourceConfiguration) {
+    return Stream.concat(
+            sourceConfiguration.getSchemas().stream(),
+            sourceConfiguration.getImportedSchemaLocations().stream())
+        .filter(conf -> Objects.nonNull(conf.getAlias()))
+        .collect(
+            Collectors.toUnmodifiableMap(
+                SchemaIdentifier::getNamespace, SchemaIdentifier::getAlias));
   }
 
   public EipSchema getEipSchema() {
@@ -46,7 +63,8 @@ public class EipSchemaTranslation {
       try {
         XmlSchemaCollection schemaCollection = xmlSchemaClient.collect(targetSchema.getLocation());
 
-        var translator = new SchemaTranslator(targetSchema.getExcludedElements());
+        var translator =
+            new SchemaTranslator(targetSchema.getExcludedElements(), uriToEipNamespace);
 
         List<EipComponent> components =
             translator.translate(

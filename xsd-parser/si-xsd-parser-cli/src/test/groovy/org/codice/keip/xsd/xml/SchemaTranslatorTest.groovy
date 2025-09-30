@@ -5,7 +5,7 @@ import com.google.gson.reflect.TypeToken
 import org.apache.ws.commons.schema.XmlSchemaCollection
 import org.codice.keip.xsd.model.eip.ChildGroup
 import org.codice.keip.xsd.model.eip.EipComponent
-import org.codice.keip.xsd.model.eip.EipElement
+import org.codice.keip.xsd.model.eip.EipId
 import org.codice.keip.xsd.model.eip.Indicator
 import org.codice.keip.xsd.model.eip.Occurrence
 import org.codice.keip.xsd.test.EipComparisonUtils
@@ -18,13 +18,16 @@ import static org.codice.keip.xsd.test.TestIOUtils.getXmlSchemaFileReader
 
 class SchemaTranslatorTest extends Specification {
 
-    static final List<EipComponent> EIP_COMPONENTS = importEipComponents(Path.of("translated-eip-components.json"))
+    static final List<EipComponent> EIP_COMPONENTS =
+            importEipComponents(Path.of("translated-eip-components.json"))
 
     static final Set<String> EXCLUDED_COMPONENTS = ["ignored-component"]
 
+    static final Map<String, String> URI_NAMESPACE_MAP = ["http://www.example.com/schema/default": "default"]
+
     static final Path SAMPLE_XML = Path.of("translator", "schema-translator-sample.xml")
 
-    def schemaTranslator = new SchemaTranslator(EXCLUDED_COMPONENTS)
+    def schemaTranslator = new SchemaTranslator(EXCLUDED_COMPONENTS, URI_NAMESPACE_MAP)
 
     def schemaCollection = new XmlSchemaCollection()
 
@@ -40,7 +43,7 @@ class SchemaTranslatorTest extends Specification {
         EipComparisonUtils.assertCollectionsEqualNoOrder(
                 EIP_COMPONENTS,
                 result,
-                Comparator.comparing(EipElement::getName),
+                Comparator.comparing(e -> e.getEipId().toString()),
                 EipComparisonUtils::assertEipComponentsEqual,
                 "Comparing top level components")
     }
@@ -63,7 +66,9 @@ class SchemaTranslatorTest extends Specification {
     def "Exception thrown during component translation skips the component"() {
         given:
         def faultyReducer = Mock(ChildGroupReducer)
-        faultyReducer.reduceGroup(_) >> { throw new RuntimeException("broken reducer") } >> new ChildGroup(Indicator.SEQUENCE, Occurrence.DEFAULT)
+        faultyReducer.reduceGroup(
+                _) >> { throw new RuntimeException("broken reducer") } >> new ChildGroup(
+                Indicator.SEQUENCE, Occurrence.DEFAULT)
         schemaTranslator.setGroupReducer(faultyReducer)
 
         def targetSchema = schemaCollection.read(getXmlSchemaFileReader(SAMPLE_XML))
@@ -73,7 +78,7 @@ class SchemaTranslatorTest extends Specification {
 
         then:
         result.size() == 1
-        result.getFirst().getName() == "sample-filter"
+        result.getFirst().getEipId() == new EipId("default", "sample-filter")
     }
 
     private static List<EipComponent> importEipComponents(Path jsonFilePath)

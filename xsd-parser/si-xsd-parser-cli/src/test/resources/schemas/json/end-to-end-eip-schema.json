@@ -1,7 +1,10 @@
 {
   "ns1": [
     {
-      "name": "adapter",
+      "eipId": {
+        "namespace": "ns1",
+        "name": "adapter"
+      },
       "role": "endpoint",
       "connectionType": "passthru",
       "attributes": [
@@ -14,7 +17,10 @@
         "indicator": "sequence",
         "children": [
           {
-            "name": "header"
+            "eipId": {
+              "namespace": "ns1",
+              "name": "header"
+            }
           }
         ]
       }
@@ -22,7 +28,10 @@
   ],
   "ns2": [
     {
-      "name": "filter",
+      "eipId": {
+        "namespace": "ns2",
+        "name": "filter"
+      },
       "role": "router",
       "connectionType": "tee",
       "attributes": [
@@ -35,7 +44,10 @@
         "indicator": "sequence",
         "children": [
           {
-            "name": "poller"
+            "eipId": {
+              "namespace": "ns1",
+              "name": "poller"
+            }
           }
         ]
       }

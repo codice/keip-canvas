@@ -2,6 +2,7 @@ package org.codice.keip.xsd.xml;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.ws.commons.schema.XmlSchema;
 import org.apache.ws.commons.schema.XmlSchemaCollection;
@@ -20,10 +21,14 @@ public class SchemaTranslator {
 
   private final Set<String> excludedComponentNames;
 
+  private final Map<String, String> uriToEipNamespace;
+
   private ChildGroupReducer groupReducer = new ChildGroupReducer();
 
-  public SchemaTranslator(Set<String> excludedComponentNames) {
+  public SchemaTranslator(
+      Set<String> excludedComponentNames, Map<String, String> uriToEipNamespace) {
     this.excludedComponentNames = excludedComponentNames;
+    this.uriToEipNamespace = uriToEipNamespace;
   }
 
   void setGroupReducer(ChildGroupReducer groupReducer) {
@@ -32,7 +37,7 @@ public class SchemaTranslator {
 
   public List<EipComponent> translate(XmlSchemaCollection schemaCol, XmlSchema targetSchema) {
     var eipComponents = new ArrayList<EipComponent>();
-    var eipVisitor = new EipTranslationVisitor();
+    var eipVisitor = new EipTranslationVisitor(uriToEipNamespace);
     var schemaWalker = new XmlSchemaWalker(schemaCol);
     schemaWalker.addVisitor(eipVisitor);
 
@@ -69,7 +74,7 @@ public class SchemaTranslator {
             throw new IllegalArgumentException(
                 String.format(
                     "Top level child group could not be reduced for component: %s",
-                    component.getName()));
+                    component.getEipId()));
           }
         }
       }

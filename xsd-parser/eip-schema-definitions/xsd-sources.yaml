@@ -61,7 +61,9 @@ schemas:
 importedSchemaLocations:
   - namespace: "http://www.springframework.org/schema/integration"
     location: "https://www.springframework.org/schema/integration/spring-integration-5.2.xsd"
-  - namespace: "http://www.springframework.org/schema/beans"
+  - alias: "beans"
+    namespace: "http://www.springframework.org/schema/beans"
     location: "https://www.springframework.org/schema/beans/spring-beans-4.3.xsd"
-  - namespace: "http://www.springframework.org/schema/tool"
+  - alias: "tools"
+    namespace: "http://www.springframework.org/schema/tool"
     location: "https://www.springframework.org/schema/tool/spring-tool-4.3.xsd"

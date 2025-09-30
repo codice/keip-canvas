@@ -8,6 +8,7 @@ import org.codice.keip.xsd.model.eip.AttributeType
 import org.codice.keip.xsd.model.eip.ChildGroup
 import org.codice.keip.xsd.model.eip.ConnectionType
 import org.codice.keip.xsd.model.eip.EipChildElement
+import org.codice.keip.xsd.model.eip.EipId
 import org.codice.keip.xsd.model.eip.Indicator
 import org.codice.keip.xsd.model.eip.Occurrence
 import org.codice.keip.xsd.model.eip.Role
@@ -18,11 +19,15 @@ import java.nio.file.Path
 
 class EipTranslationVisitorTest extends Specification {
 
+    private static final String EIP_NS = "testNs"
+
+    private static final Map<String, String> NAMESPACE_MAP = ["test-ns": EIP_NS]
+
     static final TEST_XML_NAMESPACE = "test-ns"
 
     def xmlSchemaCollection = new XmlSchemaCollection()
 
-    def visitor = new EipTranslationVisitor()
+    def visitor = new EipTranslationVisitor(NAMESPACE_MAP)
 
     XmlSchemaWalker walker =
             setupWalker(xmlSchemaCollection, Path.of("visitor", "eip-visitor-sample.xml"))
@@ -34,7 +39,7 @@ class EipTranslationVisitorTest extends Specification {
         def reduceGroup = new ChildGroupReducer().reduceGroup(eipComponent.getChildGroup())
 
         then:
-        eipComponent.getName() == "top-level-component"
+        eipComponent.getEipId() == new EipId(EIP_NS, "top-level-component")
         eipComponent.getDescription() == "Top Level EIP Component"
         eipComponent.getRole() == Role.ENDPOINT
         eipComponent.getConnectionType() == ConnectionType.PASSTHRU
@@ -57,6 +62,22 @@ class EipTranslationVisitorTest extends Specification {
         thrown(IllegalStateException)
     }
 
+    def "Visit element with an unknown namespace URI throws exception"() {
+        given:
+        def translationVisitor = new EipTranslationVisitor([:])
+        def collection = new XmlSchemaCollection()
+        XmlSchemaWalker schemaWalker =
+                setupWalker(
+                        translationVisitor,
+                        collection, Path.of("visitor", "eip-visitor-sample.xml"))
+
+        when:
+        schemaWalker.walk(getTopLevelComponent(collection, "top-level-component"))
+
+        then:
+        thrown(IllegalArgumentException)
+    }
+
     def "Top level element test single ChildGroup"() {
         when:
         walker.walk(getTopLevelComponent(xmlSchemaCollection, "top-level-component"))
@@ -75,12 +96,12 @@ class EipTranslationVisitorTest extends Specification {
         def eipComponent = visitor.getEipComponent()
 
         then:
-        eipComponent.getName() == "top-level-component"
+        eipComponent.getEipId() == new EipId(EIP_NS, "top-level-component")
         def group = eipComponent.getChildGroup() as ChildGroup
         group.children().size() == 1
 
         def childElement = group.children().getFirst() as EipChildElement
-        childElement.getName() == "childElement1"
+        childElement.getEipId() == new EipId(EIP_NS, "childElement1")
         childElement.occurrence() == new Occurrence(2, 4)
         childElement.getDescription() == "baseType example docs"
 
@@ -98,18 +119,18 @@ class EipTranslationVisitorTest extends Specification {
         def eipComponent = visitor.getEipComponent()
 
         then:
-        eipComponent.getName() == "alt-top-level-component"
+        eipComponent.getEipId() == new EipId(EIP_NS, "alt-top-level-component")
         def group = eipComponent.getChildGroup() as ChildGroup
         group.occurrence() == new Occurrence(0, Occurrence.UNBOUNDED)
         group.children().size() == 2
 
         def childElement1 = group.children().getFirst() as EipChildElement
-        childElement1.getName() == "altChildElement1"
+        childElement1.getEipId() == new EipId(EIP_NS, "altChildElement1")
         childElement1.occurrence() == Occurrence.DEFAULT
         childElement1.getDescription() == "baseType example docs"
 
         def childElement2 = group.children().getLast() as EipChildElement
-        childElement2.getName() == "altChildElement2"
+        childElement2.getEipId() == new EipId(EIP_NS, "altChildElement2")
         childElement2.occurrence() == Occurrence.DEFAULT
         childElement2.getDescription() == "override base docs"
 
@@ -126,12 +147,12 @@ class EipTranslationVisitorTest extends Specification {
         def eipComponent = visitor.getEipComponent()
 
         then:
-        eipComponent.getName() == "test-circular-refs"
+        eipComponent.getEipId() == new EipId(EIP_NS, "test-circular-refs")
         def recursiveParent = eipComponent.getChildGroup().children().getFirst() as EipChildElement
-        recursiveParent.getName() == "recursive-parent-element"
+        recursiveParent.getEipId() == new EipId(EIP_NS, "recursive-parent-element")
 
         def recursiveChild = recursiveParent.children().getFirst() as EipChildElement
-        recursiveChild.getName() == "recursive-child-element"
+        recursiveChild.getEipId() == new EipId(EIP_NS, "recursive-child-element")
 
         def backRef = recursiveChild.children().getFirst() as EipChildElement
         backRef.is(recursiveParent)
@@ -151,12 +172,12 @@ class EipTranslationVisitorTest extends Specification {
         def eipComponent = visitor.getEipComponent()
 
         then:
-        eipComponent.getName() == "top-level-component"
+        eipComponent.getEipId() == new EipId(EIP_NS, "top-level-component")
         def group = eipComponent.getChildGroup() as ChildGroup
         group.children().size() == 1
 
         def childElement = group.children().getFirst() as EipChildElement
-        childElement.getName() == "childElement1"
+        childElement.getEipId() == new EipId(EIP_NS, "childElement1")
 
         def nestedGroup = childElement.getChildGroup() as ChildGroup
         nestedGroup.indicator() == Indicator.SEQUENCE
@@ -168,13 +189,15 @@ class EipTranslationVisitorTest extends Specification {
         firstGroup.indicator() == Indicator.CHOICE
         firstGroup.occurrence() == new Occurrence(1, 3)
         firstGroup.children().size() == 1
-        (firstGroup.children().getFirst() as EipChildElement).getName() == "nestedChild1"
+        (firstGroup.children().getFirst() as EipChildElement).getEipId() == new EipId(
+                EIP_NS, "nestedChild1")
 
         def secondGroup = nestedGroup.children().getLast() as ChildGroup
         secondGroup.indicator() == Indicator.SEQUENCE
         secondGroup.occurrence() == new Occurrence(0, 1)
         secondGroup.children().size() == 1
-        (secondGroup.children().getFirst() as EipChildElement).getName() == "nestedChild2"
+        (secondGroup.children().getFirst() as EipChildElement).getEipId() == new EipId(
+                EIP_NS, "nestedChild2")
     }
 
     def "Visit component with an ALL group"() {
@@ -183,7 +206,7 @@ class EipTranslationVisitorTest extends Specification {
         def eipComponent = visitor.getEipComponent()
 
         then:
-        eipComponent.getName() == "component-with-all-group"
+        eipComponent.getEipId() == new EipId(EIP_NS, "component-with-all-group")
         def group = eipComponent.getChildGroup() as ChildGroup
         group.indicator() == Indicator.ALL
         group.children().size() == 2
@@ -200,7 +223,7 @@ class EipTranslationVisitorTest extends Specification {
         def eipComponent = visitor.getEipComponent()
 
         then:
-        eipComponent.getName() == elementName
+        eipComponent.getEipId() == new EipId(EIP_NS, elementName)
         eipComponent.getConnectionType() == expectedType
 
         where:
@@ -231,7 +254,7 @@ class EipTranslationVisitorTest extends Specification {
         def eipComponent = visitor.getEipComponent()
 
         then:
-        eipComponent.getName() == elementName
+        eipComponent.getEipId() == new EipId(EIP_NS, elementName)
         eipComponent.getRole() == expectedRole
 
         where:
@@ -260,26 +283,30 @@ class EipTranslationVisitorTest extends Specification {
 
         then:
         def typeRouterChild = typeRouter.getChildGroup().children()[0] as EipChildElement
-        typeRouterChild.getName() == "mapping"
+        typeRouterChild.getEipId() == new EipId(EIP_NS, "mapping")
         typeRouterChild.getAttributes()[0].name() == "type"
 
         def basicRouterChild = basicRouter.getChildGroup().children()[0] as EipChildElement
-        basicRouterChild.getName() == "mapping"
+        basicRouterChild.getEipId() == new EipId(EIP_NS, "mapping")
         basicRouterChild.getAttributes()[0].name() == "value"
 
         def valueRouterChild = valueRouter.getChildGroup().children()[0] as EipChildElement
-        valueRouterChild.getName() == "mapping"
+        valueRouterChild.getEipId() == new EipId(EIP_NS, "mapping")
         valueRouterChild.getAttributes()[0].name() == "value"
     }
 
     private XmlSchemaWalker setupWalker(XmlSchemaCollection schemaCollection, Path xmlFilePath) {
+        return setupWalker(this.visitor, schemaCollection, xmlFilePath)
+    }
+
+    private static XmlSchemaWalker setupWalker(EipTranslationVisitor eipVisitor, XmlSchemaCollection schemaCollection, Path xmlFilePath) {
         schemaCollection.read(TestIOUtils.getXmlSchemaFileReader(xmlFilePath))
-        def walker = new XmlSchemaWalker(xmlSchemaCollection)
-        walker.addVisitor(visitor)
+        def walker = new XmlSchemaWalker(schemaCollection)
+        walker.addVisitor(eipVisitor)
         return walker
     }
 
-    private XmlSchemaElement getTopLevelComponent(XmlSchemaCollection schemaCollection, String name) {
+    private static XmlSchemaElement getTopLevelComponent(XmlSchemaCollection schemaCollection, String name) {
         return schemaCollection.schemaForNamespace(TEST_XML_NAMESPACE).getElementByName(name)
     }
 }

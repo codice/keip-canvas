@@ -18,7 +18,6 @@ import java.nio.file.Path
 class EipSchemaTranslationTest extends Specification {
 
     static final URI ns1Location = URI.create("http://localhost:8080/ns1.xsd")
-    static final URI ns2Location = URI.create("http://localhost:8080/ns2.xsd")
 
     @Shared
             expectedEipMap = importEipSchema(Path.of("end-to-end-eip-schema.json")).toMap()
@@ -32,6 +31,7 @@ class EipSchemaTranslationTest extends Specification {
         schemaCollectionFirst.read(TestIOUtils.getXmlSchemaFileReader(Path.of("end-to-end", "ns1.xml")))
 
         def schemaCollectionSecond = new XmlSchemaCollection()
+        schemaCollectionSecond.read(TestIOUtils.getXmlSchemaFileReader(Path.of("end-to-end", "ns1.xml")))
         schemaCollectionSecond.read(TestIOUtils.getXmlSchemaFileReader(Path.of("end-to-end", "ns2.xml")))
 
         def schemaClient = Mock(XmlSchemaClient)
@@ -44,20 +44,20 @@ class EipSchemaTranslationTest extends Specification {
         then:
         resultMap.size() == 2
         eipTranslation.getErrors().isEmpty()
-        EipComparisonUtils.assertCollectionsEqualNoOrder(resultMap["ns1"], expectedEipMap["ns1"], Comparator.comparing(EipElement::getName), EipComparisonUtils::assertEipComponentsEqual, "Comparing ns1 components")
-        EipComparisonUtils.assertCollectionsEqualNoOrder(resultMap["ns2"], expectedEipMap["ns2"], Comparator.comparing(EipElement::getName), EipComparisonUtils::assertEipComponentsEqual, "Comparing ns2 components")
+        EipComparisonUtils.assertCollectionsEqualNoOrder(resultMap["ns1"], expectedEipMap["ns1"], Comparator.comparing(EipElement::getEipId), EipComparisonUtils::assertEipComponentsEqual, "Comparing ns1 components")
+        EipComparisonUtils.assertCollectionsEqualNoOrder(resultMap["ns2"], expectedEipMap["ns2"], Comparator.comparing(EipElement::getEipId), EipComparisonUtils::assertEipComponentsEqual, "Comparing ns2 components")
     }
 
     def "If translating a schema throws an exception, move on to next one"() {
         given:
-        def schemaCollectionSecond = new XmlSchemaCollection()
-        schemaCollectionSecond.read(TestIOUtils.getXmlSchemaFileReader(Path.of("end-to-end", "ns2.xml")))
+        def schemaCollectionFirst = new XmlSchemaCollection()
+        schemaCollectionFirst.read(TestIOUtils.getXmlSchemaFileReader(Path.of("end-to-end", "ns1.xml")))
 
         def schemaClient = Mock(XmlSchemaClient)
         schemaClient.collect(_ as URI) >> { args ->
             {
-                if (args[0] == ns2Location) {
-                    return schemaCollectionSecond
+                if (args[0] == ns1Location) {
+                    return schemaCollectionFirst
                 }
                 throw new RuntimeException("schema fail")
             }
@@ -70,7 +70,7 @@ class EipSchemaTranslationTest extends Specification {
         then:
         resultMap.size() == 1
         eipTranslation.getErrors().size() == 1
-        EipComparisonUtils.assertCollectionsEqualNoOrder(resultMap["ns2"], expectedEipMap["ns2"], Comparator.comparing(EipElement::getName), EipComparisonUtils::assertEipComponentsEqual, "Comparing ns2 components")
+        EipComparisonUtils.assertCollectionsEqualNoOrder(resultMap["ns1"], expectedEipMap["ns1"], Comparator.comparing(EipElement::getEipId), EipComparisonUtils::assertEipComponentsEqual, "Comparing ns1 components")
     }
 
     private static EipSchema importEipSchema(Path jsonFilePath) throws URISyntaxException, IOException {

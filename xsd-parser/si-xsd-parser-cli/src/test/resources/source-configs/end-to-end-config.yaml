@@ -4,6 +4,7 @@ schemas:
     location: "http://localhost:8080/ns1.xsd"
     excludedElements:
       - skip-element
+      - poller
   - alias: ns2
     namespace: "http://www.example.com/schema/ns2"
     location: "http://localhost:8080/ns2.xsd"

@@ -1,6 +1,9 @@
 [
   {
-    "name": "inbound-channel-adapter",
+    "eipId": {
+      "namespace": "default",
+      "name": "inbound-channel-adapter"
+    },
     "description": "Defines a Polling Channel Adapter",
     "role": "endpoint",
     "connectionType": "source",
@@ -49,7 +52,10 @@
       "indicator": "sequence",
       "children": [
         {
-          "name": "poller",
+          "eipId": {
+            "namespace": "default",
+            "name": "poller"
+          },
           "occurrence": {
             "min": 0,
             "max": 1
@@ -66,7 +72,10 @@
             "indicator": "sequence",
             "children": [
               {
-                "name": "transactional",
+                "eipId": {
+                  "namespace": "default",
+                  "name": "transactional"
+                },
                 "attributes": [
                   {
                     "name": "propagation",
@@ -88,7 +97,10 @@
                 }
               },
               {
-                "name": "advice-chain",
+                "eipId": {
+                  "namespace": "default",
+                  "name": "advice-chain"
+                },
                 "occurrence": {
                   "min": 0,
                   "max": 1
@@ -97,7 +109,10 @@
                   "indicator": "sequence",
                   "children": [
                     {
-                      "name": "ref",
+                      "eipId": {
+                        "namespace": "default",
+                        "name": "ref"
+                      },
                       "occurrence": {
                         "min": 0,
                         "max": -1
@@ -117,7 +132,10 @@
           }
         },
         {
-          "name": "expression",
+          "eipId": {
+            "namespace": "default",
+            "name": "expression"
+          },
           "occurrence": {
             "min": 0,
             "max": 1
@@ -138,7 +156,10 @@
           ]
         },
         {
-          "name": "header",
+          "eipId": {
+            "namespace": "default",
+            "name": "header"
+          },
           "occurrence": {
             "min": 0,
             "max": -1
@@ -161,7 +182,10 @@
     }
   },
   {
-    "name": "sample-filter",
+    "eipId": {
+      "namespace": "default",
+      "name": "sample-filter"
+    },
     "role": "router",
     "connectionType": "tee",
     "attributes": [
@@ -222,7 +246,10 @@
       "indicator": "sequence",
       "children": [
         {
-          "name": "poller",
+          "eipId": {
+            "namespace": "default",
+            "name": "poller"
+          },
           "occurrence": {
             "min": 0,
             "max": 2
@@ -239,7 +266,10 @@
             "indicator": "sequence",
             "children": [
               {
-                "name": "transactional",
+                "eipId": {
+                  "namespace": "default",
+                  "name": "transactional"
+                },
                 "attributes": [
                   {
                     "name": "propagation",
@@ -261,7 +291,10 @@
                 }
               },
               {
-                "name": "advice-chain",
+                "eipId": {
+                  "namespace": "default",
+                  "name": "advice-chain"
+                },
                 "occurrence": {
                   "min": 0,
                   "max": 1
@@ -270,7 +303,10 @@
                   "indicator": "sequence",
                   "children": [
                     {
-                      "name": "ref",
+                      "eipId": {
+                        "namespace": "default",
+                        "name": "ref"
+                      },
                       "occurrence": {
                         "min": 0,
                         "max": -1
@@ -290,7 +326,10 @@
           }
         },
         {
-          "name": "expression",
+          "eipId": {
+            "namespace": "default",
+            "name": "expression"
+          },
           "occurrence": {
             "min": 0,
             "max": 2
@@ -311,7 +350,10 @@
           ]
         },
         {
-          "name": "transactional",
+          "eipId": {
+            "namespace": "default",
+            "name": "transactional"
+          },
           "attributes": [
             {
               "name": "propagation",
@@ -333,7 +375,10 @@
           }
         },
         {
-          "name": "handler-advice-chain",
+          "eipId": {
+            "namespace": "default",
+            "name": "handler-advice-chain"
+          },
           "occurrence": {
             "min": 0,
             "max": 1
@@ -349,7 +394,10 @@
             "indicator": "sequence",
             "children": [
               {
-                "name": "ref",
+                "eipId": {
+                  "namespace": "default",
+                  "name": "ref"
+                },
                 "occurrence": {
                   "min": 0,
                   "max": -1
@@ -363,7 +411,10 @@
                 ]
               },
               {
-                "name": "retry-advice",
+                "eipId": {
+                  "namespace": "default",
+                  "name": "retry-advice"
+                },
                 "occurrence": {
                   "min": 0,
                   "max": -1

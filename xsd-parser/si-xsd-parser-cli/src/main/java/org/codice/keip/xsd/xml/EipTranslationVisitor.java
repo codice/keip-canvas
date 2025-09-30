@@ -27,6 +27,7 @@ import org.codice.keip.xsd.model.eip.ChildGroup;
 import org.codice.keip.xsd.model.eip.ConnectionType;
 import org.codice.keip.xsd.model.eip.EipChildElement;
 import org.codice.keip.xsd.model.eip.EipComponent;
+import org.codice.keip.xsd.model.eip.EipId;
 import org.codice.keip.xsd.model.eip.EipSchema;
 import org.codice.keip.xsd.model.eip.Indicator;
 import org.codice.keip.xsd.model.eip.Occurrence;
@@ -37,8 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A custom {@link XmlSchemaVisitor} that parses an Integration XSD into the {@link
- * EipSchema} model.
+ * A custom {@link XmlSchemaVisitor} that parses an Integration XSD into the {@link EipSchema}
+ * model.
  *
  * <p>TODO: Consider switching to a reference-based schema (rather than inlining children). Could
  * potentially decrease the size of output files and enable us to better handle circular refs.
@@ -55,11 +56,14 @@ public class EipTranslationVisitor implements XmlSchemaVisitor {
 
   private final Map<QName, EipChildElement> visitedBaseTypes;
 
+  private final Map<String, String> uriToEipNamespace;
+
   private EipComponent.Builder eipComponentBuilder;
 
   private ChildCompositeWrapper currElement;
 
-  public EipTranslationVisitor() {
+  public EipTranslationVisitor(Map<String, String> uriToEipNamespace) {
+    this.uriToEipNamespace = uriToEipNamespace;
     this.attributeTranslator = new AttributeTranslator();
     this.annotationTranslator = new AnnotationTranslator();
     this.visitedElements = new HashMap<>();
@@ -88,7 +92,7 @@ public class EipTranslationVisitor implements XmlSchemaVisitor {
       element = retrieveVisitedElement(xmlSchemaElement);
     } else {
       element =
-          new EipChildElement.Builder(xmlSchemaElement.getName())
+          new EipChildElement.Builder(getEipId(xmlSchemaElement))
               .occurrence(getOccurrence(xmlSchemaElement))
               .description(annotationTranslator.getDescription(xmlSchemaElement))
               .build();
@@ -195,7 +199,7 @@ public class EipTranslationVisitor implements XmlSchemaVisitor {
           "The top level element should only be entered once. Was the visitor reset?");
     }
     return new EipComponent.Builder(
-            xmlSchemaElement.getName(), getRole(xmlSchemaElement), ConnectionType.PASSTHRU)
+            getEipId(xmlSchemaElement), getRole(xmlSchemaElement), ConnectionType.PASSTHRU)
         .description(annotationTranslator.getDescription(xmlSchemaElement));
   }
 
@@ -226,7 +230,7 @@ public class EipTranslationVisitor implements XmlSchemaVisitor {
       // Even if SchemaType is the same as a visited element, name/occurrence/description could be
       // different. Create a new child element and copy over the similar properties.
       return new EipChildElement.Builder(element)
-          .name(xmlSchemaElement.getName())
+          .eipId(getEipId(xmlSchemaElement))
           .description(annotationTranslator.getDescription(xmlSchemaElement))
           .occurrence(getOccurrence(xmlSchemaElement))
           .build();
@@ -311,6 +315,17 @@ public class EipTranslationVisitor implements XmlSchemaVisitor {
 
   private Occurrence getOccurrence(XmlSchemaParticle particle) {
     return new Occurrence(particle.getMinOccurs(), particle.getMaxOccurs());
+  }
+
+  private EipId getEipId(XmlSchemaElement element) {
+    QName qname = element.getQName();
+    String namespace = uriToEipNamespace.get(qname.getNamespaceURI());
+    if (namespace == null) {
+      throw new IllegalArgumentException(
+          String.format("Unknown namespace URI: '%s'", qname.getNamespaceURI()));
+    }
+
+    return new EipId(namespace, qname.getLocalPart());
   }
 
   private record ChildCompositeWrapper(ChildComposite wrappedChild, ChildCompositeWrapper parent) {}

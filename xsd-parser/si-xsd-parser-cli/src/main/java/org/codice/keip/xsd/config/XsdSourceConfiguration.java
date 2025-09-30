@@ -25,7 +25,7 @@ public class XsdSourceConfiguration {
     this.schemas = schemas;
   }
 
-  List<SchemaIdentifier> getImportedSchemaLocations() {
+  public List<SchemaIdentifier> getImportedSchemaLocations() {
     if (importedSchemaLocations == null) {
       return Collections.emptyList();
     }

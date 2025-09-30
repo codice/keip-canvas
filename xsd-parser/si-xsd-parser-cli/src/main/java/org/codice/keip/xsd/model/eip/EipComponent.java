@@ -28,8 +28,8 @@ public final class EipComponent extends EipElement {
     private Role role;
     private ConnectionType connectionType;
 
-    public Builder(String name, Role role, ConnectionType connectionType) {
-      this.name = Objects.requireNonNull(name);
+    public Builder(EipId eipId, Role role, ConnectionType connectionType) {
+      this.eipId = Objects.requireNonNull(eipId);
       this.role = Objects.requireNonNull(role);
       this.connectionType = Objects.requireNonNull(connectionType);
     }

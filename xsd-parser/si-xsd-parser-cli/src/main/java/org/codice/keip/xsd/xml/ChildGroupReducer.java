@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import org.codice.keip.xsd.model.eip.ChildComposite;
 import org.codice.keip.xsd.model.eip.ChildGroup;
 import org.codice.keip.xsd.model.eip.EipChildElement;
+import org.codice.keip.xsd.model.eip.EipId;
 import org.codice.keip.xsd.model.eip.Indicator;
 import org.codice.keip.xsd.model.eip.Occurrence;
 
@@ -92,14 +93,14 @@ public class ChildGroupReducer {
 
   /** Remove any duplicate (by name) element siblings in a child group. */
   ChildGroup deDuplicateElements(ChildGroup group) {
-    Set<String> names = new HashSet<>();
+    Set<EipId> names = new HashSet<>();
     List<ChildComposite> deDuplicated =
         group.children().stream()
             .map(
                 child ->
                     switch (child) {
                       case EipChildElement element -> {
-                        if (names.add(element.getName())) {
+                        if (names.add(element.getEipId())) {
                           yield element;
                         }
                         yield null;
@@ -248,7 +249,7 @@ public class ChildGroupReducer {
             .map(
                 child ->
                     switch (child) {
-                      case EipChildElement element -> element.getName();
+                      case EipChildElement element -> eipIdToString(element.getEipId());
                       case ChildGroup ignored -> null;
                     })
             .filter(Objects::nonNull)
@@ -259,5 +260,9 @@ public class ChildGroupReducer {
 
   private boolean allChildrenAreElements(ChildGroup cg) {
     return cg.children().stream().allMatch(c -> c instanceof EipChildElement);
+  }
+
+  private String eipIdToString(EipId id) {
+    return id.namespace() + "_" + id.name();
   }
 }

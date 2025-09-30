@@ -6,20 +6,20 @@ import java.util.Set;
 
 public abstract class EipElement {
 
-  protected final String name;
+  protected final EipId eipId;
   protected final String description;
   protected Set<Attribute> attributes;
   protected ChildComposite childGroup;
 
   protected EipElement(Builder<?> builder) {
-    this.name = builder.name;
+    this.eipId = builder.eipId;
     this.description = builder.description;
     this.attributes = builder.attributes;
     this.childGroup = builder.childGroup;
   }
 
-  public String getName() {
-    return name;
+  public EipId getEipId() {
+    return eipId;
   }
 
   public String getDescription() {
@@ -50,13 +50,13 @@ public abstract class EipElement {
 
   @Override
   public String toString() {
-    return this.name;
+    return this.eipId.toString();
   }
 
   // Effective Java - Hierarchical builder pattern
   protected abstract static class Builder<T extends Builder<T>> {
 
-    protected String name;
+    protected EipId eipId;
     protected String description;
     protected Set<Attribute> attributes;
     protected ChildComposite childGroup;
@@ -64,14 +64,14 @@ public abstract class EipElement {
     public Builder() {}
 
     public Builder(EipElement element) {
-      this.name = element.name;
+      this.eipId = element.eipId;
       this.description = element.description;
       this.attributes = element.attributes;
       this.childGroup = element.childGroup;
     }
 
-    public T name(String name) {
-      this.name = name;
+    public T eipId(EipId eipId) {
+      this.eipId = eipId;
       return self();
     }
 

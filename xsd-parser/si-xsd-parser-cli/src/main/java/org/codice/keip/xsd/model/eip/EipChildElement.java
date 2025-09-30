@@ -41,8 +41,8 @@ public final class EipChildElement extends EipElement implements ChildComposite 
 
     private Occurrence occurrence;
 
-    public Builder(String name) {
-      this.name = Objects.requireNonNull(name);
+    public Builder(EipId eipId) {
+      this.eipId = Objects.requireNonNull(eipId);
     }
 
     public Builder(EipChildElement element) {
