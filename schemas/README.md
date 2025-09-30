@@ -23,8 +23,16 @@ The version of the schemas are stored as part of each schema's URI set with the 
 }
 ```
 
-Whenever the schemas are modified, the version number should be updated according
-to [Semantic Versioning](https://semver.org/) guidelines.
+Whenever the schemas are updated, the version number should be incremented according
+to [Semantic Versioning](https://semver.org/) guidelines. To make packaging and discovery easier, the schemas are
+released as a versioned bundle, so all `$id` URIs must share the same version number and be updated together.
+
+Use the `update-schema-version` target in the model [Makefile](model%2FMakefile) to update the versioned URIs:
+
+```shell
+# Change the contents of 'model/schema_bundle_version.txt'
+make -C model update-schema-version
+```
 
 ### JVM services
 
@@ -43,7 +51,7 @@ The `EipSchemaValidator` can then be used:
 ```java
 import org.codice.keip.schemas.validation.EipSchema;
 import org.codice.keip.schemas.validation.EipSchemaValidator;
-        
+
 EipSchemaValidator validator = EipSchemaValidator.getInstance(EipSchema.FLOW);
 
 // errors will be empty if validation is successful
