@@ -107,7 +107,7 @@ class ChannelEdgeBuilder {
     }
 
     for (var child : node.children()) {
-      if (CHANNEL_ROUTING_CHILDREN.contains(child.name())) {
+      if (CHANNEL_ROUTING_CHILDREN.contains(child.eipId().name())) {
         Object channel = child.attributes().get(CHANNEL);
         if (channel == null) {
           throw new IllegalArgumentException(

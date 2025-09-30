@@ -4,8 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-// TODO: Support children with different namespaces than parent
-public record EipChild(String name, Map<String, Object> attributes, List<EipChild> children) {
+public record EipChild(EipId eipId, Map<String, Object> attributes, List<EipChild> children) {
   @Override
   public Map<String, Object> attributes() {
     if (attributes == null) {

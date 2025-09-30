@@ -11,6 +11,6 @@
            https://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd
 ">
     <jms:inbound-channel-adapter id="test-id" pub-sub-domain="true">
-        <jms:poller fixed-delay="1000"/>
+        <integration:poller fixed-delay="1000"/>
     </jms:inbound-channel-adapter>
 </beans>

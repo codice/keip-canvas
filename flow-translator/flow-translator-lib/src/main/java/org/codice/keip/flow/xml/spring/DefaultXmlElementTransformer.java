@@ -38,7 +38,8 @@ public class DefaultXmlElementTransformer implements XmlElementTransformer {
 
   private EipChild convertChild(XmlElement element) {
     List<EipChild> children = element.children().stream().map(this::convertChild).toList();
-    return new EipChild(element.localName(), element.attributes(), children);
+    EipId id = new EipId(element.prefix(), element.localName());
+    return new EipChild(id, element.attributes(), children);
   }
 
   private void validateElement(XmlElement element, ComponentRegistry registry) {

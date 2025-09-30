@@ -46,12 +46,13 @@ public final class ComponentRegistry {
 
     for (var namespace : jsonMap.entrySet()) {
       for (var component : namespace.getValue()) {
-        String name = component.get("name").textValue();
+        JsonNode eipIdJson = component.get("eipId");
+        EipId eipId =
+            new EipId(eipIdJson.get("namespace").textValue(), eipIdJson.get("name").textValue());
         ConnectionType connectionType =
             ConnectionType.valueOf(component.get("connectionType").textValue().toUpperCase());
         Role role = Role.valueOf(component.get("role").textValue().toUpperCase());
-        regMap.put(
-            new EipId(namespace.getKey(), name), new ComponentProperties(connectionType, role));
+        regMap.put(eipId, new ComponentProperties(connectionType, role));
       }
     }
 

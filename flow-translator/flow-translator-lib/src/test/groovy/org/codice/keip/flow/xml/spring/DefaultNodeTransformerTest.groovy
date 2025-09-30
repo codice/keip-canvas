@@ -487,7 +487,11 @@ class DefaultNodeTransformerTest extends Specification {
             connectionType() >> ConnectionType.SINK
         }
 
-        def childNode = new EipChild("child1", ["childAttr": "testval3"], null)
+        def childNode = new EipChild(
+                new EipId("child-ns", "child1"),
+                ["childAttr": "testval3"],
+                null)
+
         def attrs = ["testkey1": "testval1"]
         EipNode middle = Stub() {
             id() >> "middle"
@@ -517,7 +521,7 @@ class DefaultNodeTransformerTest extends Specification {
         first.children().size() == 1
 
         def aChild = first.children()[0]
-        aChild.prefix() == TEST_NS
+        aChild.prefix() == childNode.eipId().namespace()
         aChild.localName() == "child1"
         aChild.attributes() == childNode.attributes()
         aChild.children().isEmpty()

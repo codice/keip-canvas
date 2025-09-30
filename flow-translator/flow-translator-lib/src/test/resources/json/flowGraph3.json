@@ -26,14 +26,20 @@
       },
       "children": [
         {
-          "name": "mapping",
+          "eipId": {
+            "namespace": "integration",
+            "name": "mapping"
+          },
           "attributes": {
             "channel": "ch-testRouter-httpProd",
             "value": "ok"
           }
         },
         {
-          "name": "mapping",
+          "eipId": {
+            "namespace": "integration",
+            "name": "mapping"
+          },
           "attributes": {
             "channel": "ch-testRouter-jmsProd",
             "value": "failed"

@@ -15,14 +15,15 @@ public final class BaseNodeTransformation {
 
   public static XmlElement toXmlElement(EipNode node) {
     List<XmlElement> children =
-        node.children().stream().map(c -> toXmlElement(c, node.eipId().namespace())).toList();
+        node.children().stream().map(BaseNodeTransformation::toXmlElement).toList();
     return new XmlElement(
         node.eipId().namespace(), node.eipId().name(), node.attributes(), children);
   }
 
-  private static XmlElement toXmlElement(EipChild child, String prefix) {
+  private static XmlElement toXmlElement(EipChild child) {
     List<XmlElement> children =
-        child.children().stream().map(c -> toXmlElement(c, prefix)).toList();
-    return new XmlElement(prefix, child.name(), child.attributes(), children);
+        child.children().stream().map(BaseNodeTransformation::toXmlElement).toList();
+    return new XmlElement(
+        child.eipId().namespace(), child.eipId().name(), child.attributes(), children);
   }
 }

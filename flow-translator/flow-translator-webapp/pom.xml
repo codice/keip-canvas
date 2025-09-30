@@ -11,7 +11,7 @@
 
     <groupId>org.codice.keip</groupId>
     <artifactId>flow-translator-webapp</artifactId>
-    <version>0.5.0</version>
+    <version>0.6.0</version>
 
     <packaging>jar</packaging>
 
@@ -43,12 +43,12 @@
         <dependency>
             <groupId>org.codice.keip</groupId>
             <artifactId>flow-translator-lib</artifactId>
-            <version>0.5.0</version>
+            <version>0.6.0</version>
         </dependency>
         <dependency>
             <groupId>org.codice.keip.xsd</groupId>
             <artifactId>eip-schema-definitions</artifactId>
-            <version>0.2.0</version>
+            <version>0.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

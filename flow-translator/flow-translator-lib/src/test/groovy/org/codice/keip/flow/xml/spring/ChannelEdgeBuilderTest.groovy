@@ -24,6 +24,9 @@ import static org.codice.keip.flow.xml.spring.ComponentIdentifiers.DIRECT_CHANNE
 
 class ChannelEdgeBuilderTest extends Specification {
 
+    private static final MAPPING_ID = new EipId("test", "mapping")
+    private static final RECIPIENT_ID = new EipId("test", "recipient")
+
     def "no channel nodes -> disconnected graph"() {
         given:
         def nodes = [
@@ -230,9 +233,9 @@ class ChannelEdgeBuilderTest extends Specification {
         def sink2 = createNode("sink2", SINK, ["channel": "out2"])
         def sink3 = createNode("sink3", SINK, ["channel": "out3"])
 
-        EipChild mapping1 = new EipChild("mapping", ["value": "one", "channel": "out1"], [])
-        EipChild mapping2 = new EipChild("mapping", ["value": "two", "channel": "out2"], [])
-        EipChild other = new EipChild("other", ["key1": "val1"], [])
+        EipChild mapping1 = new EipChild(MAPPING_ID, ["value": "one", "channel": "out1"], [])
+        EipChild mapping2 = new EipChild(MAPPING_ID, ["value": "two", "channel": "out2"], [])
+        EipChild other = new EipChild(new EipId("alt", "other"), ["key1": "val1"], [])
         router = router.withChildren([mapping1, mapping2, other])
 
         def nodes = [source,
@@ -264,8 +267,8 @@ class ChannelEdgeBuilderTest extends Specification {
         def sink1 = createNode("sink1", SINK, ["channel": "out1"])
         def sink2 = createNode("sink2", SINK, ["channel": "out2"])
 
-        EipChild recipient1 = new EipChild("recipient", ["value": "one", "channel": "out1"], [])
-        EipChild recipient2 = new EipChild("recipient", ["value": "two", "channel": "out2"], [])
+        EipChild recipient1 = new EipChild(RECIPIENT_ID, ["value": "one", "channel": "out1"], [])
+        EipChild recipient2 = new EipChild(RECIPIENT_ID, ["value": "two", "channel": "out2"], [])
         recList = recList.withChildren([recipient1, recipient2])
 
         def nodes = [source,
@@ -298,8 +301,8 @@ class ChannelEdgeBuilderTest extends Specification {
         def sink1 = createNode("sink1", SINK, ["channel": "out1"])
         def sink2 = createNode("sink2", SINK, ["channel": "out2"])
 
-        EipChild mapping1 = new EipChild("mapping", ["value": "one", "channel": "out1"], [])
-        EipChild mapping2 = new EipChild("mapping", ["value": "two"], [])
+        EipChild mapping1 = new EipChild(MAPPING_ID, ["value": "one", "channel": "out1"], [])
+        EipChild mapping2 = new EipChild(MAPPING_ID, ["value": "two"], [])
         router = router.withChildren([mapping1, mapping2])
 
         def nodes = [source,
@@ -345,7 +348,7 @@ class ChannelEdgeBuilderTest extends Specification {
 
         where:
         eipId                                                                         | children
-        DIRECT_CHANNEL                                                                | [new EipChild("queue", [:], [])]
+        DIRECT_CHANNEL                                                                | [new EipChild(new EipId("test", "queue"), [:], [])]
         new EipId(Namespaces.INTEGRATION.eipNamespace(), "publish-subscribe-channel") | []
     }
 

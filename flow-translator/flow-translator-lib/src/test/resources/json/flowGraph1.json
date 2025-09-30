@@ -15,7 +15,10 @@
       },
       "children": [
         {
-          "name": "poller",
+          "eipId": {
+            "namespace": "integration",
+            "name": "poller"
+          },
           "attributes": {
             "fixed-rate": "5000"
           }

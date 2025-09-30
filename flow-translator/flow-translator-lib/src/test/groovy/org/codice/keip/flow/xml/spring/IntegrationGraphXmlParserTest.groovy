@@ -57,28 +57,28 @@ class IntegrationGraphXmlParserTest extends Specification {
         def poller = inAdapter.children() getFirst()
 
         with(poller) {
-            name() == "poller"
+            eipId() == new EipId(Namespaces.INTEGRATION.eipNamespace(), "poller")
             attributes() == ["fixed-rate": "5000"]
             children().size() == 1
         }
 
         def advice = poller.children().getFirst()
         with(advice) {
-            name() == "advice-chain"
+            eipId() == new EipId(Namespaces.INTEGRATION.eipNamespace(), "advice-chain")
             attributes().isEmpty()
             children().size() == 1
         }
 
         def ref = advice.children().getFirst()
         with(ref) {
-            name() == "ref"
+            eipId() == new EipId(Namespaces.INTEGRATION.eipNamespace(), "ref")
             attributes() == ["bean": "adviceRef"]
             children().isEmpty()
         }
 
         def expr = inAdapter.children().getLast()
         with(expr) {
-            name() == "expression"
+            eipId() == new EipId(Namespaces.INTEGRATION.eipNamespace(), "expression")
             attributes() == ["key": "testExp"]
             children().isEmpty()
         }

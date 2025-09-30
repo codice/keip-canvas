@@ -40,11 +40,12 @@ class DefaultXmlElementTransformerTest extends Specification {
 
     def "transform XmlElement with nested children to EipNode -> success"() {
         given:
-        def child111 = new XmlElement("", "child111", ["info": "child111"], [])
-        def child11 = new XmlElement("", "child11", [:], [child111])
-        def child1 = new XmlElement("", "child1", ["info": "child1", "extra": "val"], [child11])
+        def child111 = new XmlElement("test2", "child111", ["info": "child111"], [])
+        def child11 = new XmlElement("test2", "child11", [:], [child111])
+        def child1 = new XmlElement("test", "child1", ["info": "child1", "extra": "val"], [
+                child11])
 
-        def child2 = new XmlElement("", "child2", [:], [])
+        def child2 = new XmlElement("test", "child2", [:], [])
 
         def element = new XmlElement(
                 new QName("http://example.com", "adapter", "test"),
@@ -68,28 +69,28 @@ class DefaultXmlElementTransformerTest extends Specification {
 
         def c1 = node.children()[0]
         with(c1) {
-            c1.name() == "child1"
-            c1.attributes() == ["info": "child1", "extra": "val"]
-            c1.children().size() == 1
+            eipId() == new EipId("test", "child1")
+            attributes() == ["info": "child1", "extra": "val"]
+            children().size() == 1
         }
 
         def c11 = c1.children().getFirst()
         with(c11) {
-            c11.name() == "child11"
-            c11.attributes().isEmpty()
-            c11.children().size() == 1
+            eipId() == new EipId("test2", "child11")
+            attributes().isEmpty()
+            children().size() == 1
         }
 
         def c111 = c11.children().getFirst()
         with(c111) {
-            name() == "child111"
+            eipId() == new EipId("test2", "child111")
             attributes() == ["info": "child111"]
-            c111.children().isEmpty()
+            children().isEmpty()
         }
 
         def c2 = node.children()[1]
         with(c2) {
-            name() == "child2"
+            eipId() == new EipId("test", "child2")
             attributes().isEmpty()
             children().isEmpty()
         }

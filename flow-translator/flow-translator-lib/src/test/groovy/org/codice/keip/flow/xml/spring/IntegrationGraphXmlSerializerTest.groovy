@@ -25,6 +25,8 @@ class IntegrationGraphXmlSerializerTest extends Specification {
 
     private static final List<NamespaceSpec> NAMESPACES = [new NamespaceSpec("jms", "http://www.springframework.org/schema/integration/jms", "https://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd")]
 
+    private static final POLLER_ID = new EipId(Namespaces.INTEGRATION.eipNamespace(), "poller")
+
     EipGraph graph = Stub()
 
     def xmlOutput = new StringWriter()
@@ -48,7 +50,7 @@ class IntegrationGraphXmlSerializerTest extends Specification {
             role() >> Role.ENDPOINT
             connectionType() >> ConnectionType.SOURCE
             attributes() >> ["pub-sub-domain": "true"]
-            children() >> [new EipChild("poller", ["fixed-delay": 1000], null)]
+            children() >> [new EipChild(POLLER_ID, ["fixed-delay": 1000], null)]
         }
 
         graph.traverse() >> { _ -> Stream.of(node) }
@@ -69,7 +71,7 @@ class IntegrationGraphXmlSerializerTest extends Specification {
             role() >> Role.ENDPOINT
             connectionType() >> ConnectionType.SOURCE
             attributes() >> ["expression": "'TestMessage'"]
-            children() >> [new EipChild("poller", ["fixed-rate": 5000], null)]
+            children() >> [new EipChild(POLLER_ID, ["fixed-rate": 5000], null)]
         }
 
         EipNode transformer = Stub {
@@ -193,7 +195,7 @@ class IntegrationGraphXmlSerializerTest extends Specification {
             role() >> Role.ENDPOINT
             connectionType() >> ConnectionType.SOURCE
             attributes() >> ["auto-startup": "false"]
-            children() >> [new EipChild("poller", ["fixed-delay": 1000], null)]
+            children() >> [new EipChild(POLLER_ID, ["fixed-delay": 1000], null)]
         }
 
         graph.traverse() >> { _ -> Stream.of(node) }

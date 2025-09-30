@@ -19,7 +19,8 @@ class FlowModelValidationTest extends Specification {
 
     def "Fully specified Flow object passes schema validation"() {
         given:
-        def child = new EipChild("c1", ["cKey1": "cVal1"], [])
+        def child = new EipChild(new EipId("test-ns", "c1"),
+                ["cKey1": "cVal1"], [])
         def node = new EipNode("n1",
                 new EipId("test-ns", "test-comp"),
                 "test-label",
