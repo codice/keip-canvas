@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/codice/keip-canvas/schemas/v0.3.0/eipNode.schema.json",
+  "$id": "https://github.com/codice/keip-canvas/schemas/v0.4.0/eipNode.schema.json",
   "title": "EipNode",
   "description": "An instance of an 'EipComponent' as a node in the flow diagram",
   "type": "object",
@@ -15,7 +15,7 @@
       "type": "string"
     },
     "eipId": {
-      "$ref": "#/$defs/EipId"
+      "$ref": "eipId.schema.json"
     },
     "label": {
       "type": "string"
@@ -41,22 +41,6 @@
   },
   "additionalProperties": false,
   "$defs": {
-    "EipId": {
-      "description": "A combination of fields uniquely identifying a component in an 'EipComponentDefinition'",
-      "type": "object",
-      "properties": {
-        "namespace": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "namespace",
-        "name"
-      ]
-    },
     "Attributes": {
       "description": "A map of EIP attributes belonging to the node",
       "type": "object",
@@ -68,8 +52,8 @@
       "description": "An instance of an 'EipChildElement'. Can recursively contain more child nodes as well as attributes of its own.",
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string"
+        "eipId": {
+          "$ref": "eipId.schema.json"
         },
         "attributes": {
           "$ref": "#/$defs/Attributes"
@@ -82,7 +66,7 @@
         }
       },
       "required": [
-        "name"
+        "eipId"
       ],
       "additionalProperties": false
     }

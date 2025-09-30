@@ -15,13 +15,19 @@
       },
       "children": [
         {
-          "name": "poller",
+          "eipId": {
+            "namespace": "integration",
+            "name": "poller"
+          },
           "attributes": {
             "fixed-rate": 5000
           },
           "children": [
             {
-              "name": "advice-chain",
+              "eipId": {
+                "namespace": "integration",
+                "name": "advice-chain"
+              },
               "attributes": {
                 "synchronization-factory": "defaultSyncFactory"
               }
@@ -70,7 +76,10 @@
       "connectionType": "passthru",
       "children": [
         {
-          "name": "expression",
+          "eipId": {
+            "namespace": "integration",
+            "name": "expression"
+          },
           "attributes": {
             "key": "prepend",
             "source": "prepexExp"

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/codice/keip-canvas/schemas/v0.3.0/eipComponentDef.schema.json",
+  "$id": "https://github.com/codice/keip-canvas/schemas/v0.4.0/eipComponentDef.schema.json",
   "title": "EipComponentDefinition",
   "description": "Defines the collection of EIP components available for use",
   "type": "object",
@@ -87,8 +87,8 @@
       "description": "The base schema for all EIP Elements (e.g. EipComponent, EipChildElement)",
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string"
+        "eipId": {
+          "$ref": "eipId.schema.json"
         },
         "description": {
           "type": "string"
@@ -104,7 +104,7 @@
         }
       },
       "required": [
-        "name"
+        "eipId"
       ]
     },
     "EipChildGroup": {

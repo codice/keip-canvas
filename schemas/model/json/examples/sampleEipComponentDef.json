@@ -3,7 +3,10 @@
     {
       "role": "endpoint",
       "connectionType": "sink",
-      "name": "outbound-channel-adapter",
+      "eipId": {
+        "namespace": "http",
+        "name": "outbound-channel-adapter"
+      },
       "attributes": [
         {
           "name": "url",
@@ -30,7 +33,10 @@
             "occurrence": {
               "min": 0
             },
-            "name": "poller",
+            "eipId": {
+              "namespace": "integration",
+              "name": "poller"
+            },
             "attributes": [
               {
                 "name": "fixed-rate",
@@ -47,7 +53,10 @@
                     "min": 0,
                     "max": -1
                   },
-                  "name": "transactional",
+                  "eipId": {
+                    "namespace": "integration",
+                    "name": "transactional"
+                  },
                   "description": "Run each poll task in a transaction.",
                   "attributes": [
                     {
@@ -70,7 +79,10 @@
     {
       "role": "endpoint",
       "connectionType": "passthru",
-      "name": "file-to-string-transformer",
+      "eipId": {
+        "namespace": "file",
+        "name": "file-to-string-transformer"
+      },
       "attributes": [
         {
           "name": "input-channel",
