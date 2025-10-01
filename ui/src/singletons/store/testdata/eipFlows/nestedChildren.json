@@ -13,7 +13,7 @@
       },
       "children": [
         {
-          "name": "poller",
+          "eipId": { "namespace": "integration", "name": "poller" },
           "attributes": {
             "fixed-rate": "3000"
           },
@@ -34,15 +34,21 @@
       },
       "children": [
         {
-          "name": "request-handler-advice-chain",
+          "eipId": {
+            "namespace": "integration",
+            "name": "request-handler-advice-chain"
+          },
           "attributes": {},
           "children": [
             {
-              "name": "retry-advice",
+              "eipId": { "namespace": "integration", "name": "retry-advice" },
               "attributes": {},
               "children": [
                 {
-                  "name": "exponential-back-off",
+                  "eipId": {
+                    "namespace": "integration",
+                    "name": "exponential-back-off"
+                  },
                   "attributes": {
                     "maximum": "30000"
                   },

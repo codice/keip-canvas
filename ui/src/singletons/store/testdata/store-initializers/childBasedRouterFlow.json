@@ -77,7 +77,10 @@
       "type": "dynamicEdge",
       "data": {
         "mapping": {
-          "mapperName": "mapping",
+          "mapperId": {
+            "namespace": "integration",
+            "name": "mapping"
+          },
           "matcher": {
             "name": "value",
             "type": "string",
@@ -99,7 +102,10 @@
       "type": "dynamicEdge",
       "data": {
         "mapping": {
-          "mapperName": "mapping",
+          "mapperId": {
+            "namespace": "integration",
+            "name": "mapping"
+          },
           "matcher": {
             "name": "value",
             "type": "string",
@@ -131,7 +137,10 @@
         "name": "xpath-router"
       },
       "routerKey": {
-        "name": "xpath-expression",
+        "eipId": {
+          "namespace": "int-xml",
+          "name": "xpath-expression"
+        },
         "attributes": {
           "expression": "/target/protocol"
         }

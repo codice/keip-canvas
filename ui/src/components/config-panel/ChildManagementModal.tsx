@@ -11,7 +11,6 @@ import {
 import { Close, SettingsEdit } from "@carbon/react/icons"
 import { ReactNode, useState } from "react"
 import { createPortal } from "react-dom"
-import { DEFAULT_NAMESPACE } from "../../api/flow"
 import {
   EipChildElement,
   EipComponent,
@@ -83,13 +82,9 @@ const ChildSelector = ({ parentId, childOptions }: ChildSelectorProps) => (
     id={"dropdown-child-selector"}
     label="Select child..."
     items={[null, ...childOptions]}
-    itemToString={(child) => child?.name ?? ""}
+    itemToString={(child) => child?.eipId.name ?? ""}
     onChange={({ selectedItem }) => {
-      selectedItem &&
-        enableChild(parentId, {
-          namespace: DEFAULT_NAMESPACE,
-          name: selectedItem.name,
-        })
+      selectedItem && enableChild(parentId, selectedItem.eipId)
     }}
     selectedItem={null}
     titleText={"Add a child"}

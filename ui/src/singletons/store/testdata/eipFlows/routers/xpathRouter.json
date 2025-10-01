@@ -26,7 +26,7 @@
       },
       "children": [
         {
-          "name": "xpath-expression",
+          "eipId": { "namespace": "int-xml", "name": "xpath-expression" },
           "attributes": {
             "expression": "/test/xpath",
             "id": "token",
@@ -36,7 +36,7 @@
           "children": []
         },
         {
-          "name": "mapping",
+          "eipId": { "namespace": "int-xml", "name": "mapping" },
           "attributes": {
             "channel": "ch-router-out1",
             "value": "first"
@@ -44,7 +44,7 @@
           "children": []
         },
         {
-          "name": "mapping",
+          "eipId": { "namespace": "int-xml", "name": "mapping" },
           "attributes": {
             "channel": "ch-router-out2",
             "value": "second"
@@ -52,7 +52,7 @@
           "children": []
         },
         {
-          "name": "mapping",
+          "eipId": { "namespace": "int-xml", "name": "mapping" },
           "attributes": {
             "channel": "ch-router-logger",
             "value": "third"

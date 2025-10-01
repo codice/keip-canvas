@@ -117,7 +117,10 @@
       "type": "dynamicEdge",
       "data": {
         "mapping": {
-          "mapperName": "mapping",
+          "mapperId": {
+            "namespace": "integration",
+            "name": "mapping"
+          },
           "matcher": {
             "name": "value",
             "type": "string",
@@ -139,7 +142,10 @@
       "type": "dynamicEdge",
       "data": {
         "mapping": {
-          "mapperName": "mapping",
+          "mapperId": {
+            "namespace": "integration",
+            "name": "mapping"
+          },
           "matcher": {
             "name": "value",
             "type": "string",
@@ -188,7 +194,10 @@
         "name": "router"
       },
       "routerKey": {
-        "name": "expression",
+        "eipId": {
+          "namespace": "integration",
+          "name": "expression"
+        },
         "attributes": {
           "expression": "headers.protocol"
         }

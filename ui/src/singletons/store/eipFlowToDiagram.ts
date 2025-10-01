@@ -4,7 +4,6 @@ import {
   CustomEdge,
   CustomNode,
   CustomNodeType,
-  DEFAULT_NAMESPACE,
   DynamicEdge,
   DynamicEdgeData,
   EipFlowNode,
@@ -189,7 +188,7 @@ const collectEipChildren = (
 
   const id = generateChildId()
   eipConfigs[id] = {
-    eipId: { namespace: DEFAULT_NAMESPACE, name: child.name },
+    eipId: child.eipId,
     attributes: child.attributes ?? {},
     children: childIds ?? [],
   }
@@ -330,7 +329,7 @@ const addAttributeRouterKeyConfig = (
     }, {} as Attributes)
 
   eipConfigs[nodeId].routerKey = {
-    name: routerKeyDef.name,
+    eipId: routerKeyDef.eipId,
     attributes: extractedRoutingAttrs,
   }
 }
@@ -342,12 +341,14 @@ const addChildRouterKeyConfig = (
 ) => {
   const nodeConfig = eipConfigs[nodeId]
   const routingChildId = nodeConfig.children.find(
-    (childId) => eipConfigs[childId]?.eipId.name === routerKeyDef.name
+    (childId) =>
+      eipIdToString(eipConfigs[childId]?.eipId) ===
+      eipIdToString(routerKeyDef.eipId)
   )
 
   if (routingChildId) {
     eipConfigs[nodeId].routerKey = {
-      name: routerKeyDef.name,
+      eipId: routerKeyDef.eipId,
       attributes: eipConfigs[routingChildId].attributes,
     }
     delete eipConfigs[routingChildId]

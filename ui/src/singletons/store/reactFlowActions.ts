@@ -17,6 +17,7 @@ import { EipComponent } from "../../api/generated/eipComponentDef"
 import {
   CHANNEL_ATTR_NAME,
   DYNAMIC_ROUTING_CHILDREN,
+  eipIdToString,
   lookupEipComponent,
 } from "../eipDefinitions"
 import { AppStore } from "./api"
@@ -141,11 +142,11 @@ export const createDynamicRoutingEdge = (
   sourceComponent: EipComponent
 ) => {
   const channelMapper = sourceComponent?.childGroup?.children.find((child) =>
-    DYNAMIC_ROUTING_CHILDREN.has(child.name)
+    DYNAMIC_ROUTING_CHILDREN.has(child.eipId.name)
   )
   if (!channelMapper) {
     throw new Error(
-      `source component (${sourceComponent.name}) does not have a recognized channel mapping child`
+      `source component (${eipIdToString(sourceComponent.eipId)}) does not have a recognized channel mapping child`
     )
   }
 
@@ -154,7 +155,7 @@ export const createDynamicRoutingEdge = (
   )
   if (!matcher) {
     throw new Error(
-      `Channel mapping component (${channelMapper.name}) does not have a recognized value matcher attribute`
+      `Channel mapping component (${eipIdToString(channelMapper.eipId)}) does not have a recognized value matcher attribute`
     )
   }
 
@@ -164,7 +165,7 @@ export const createDynamicRoutingEdge = (
     type: DYNAMIC_EDGE_TYPE,
     data: {
       mapping: {
-        mapperName: channelMapper.name,
+        mapperId: channelMapper.eipId,
         matcher,
       },
     },

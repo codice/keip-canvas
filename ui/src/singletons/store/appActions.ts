@@ -12,7 +12,7 @@ import {
   Layout,
 } from "../../api/flow"
 import { AttributeType } from "../../api/generated/eipComponentDef"
-import { EipId } from "../../api/generated/eipFlow"
+import { Attributes, EipId } from "../../api/generated/eipFlow"
 import { newFlowLayout } from "../../components/layout/layouting"
 import { generateChildId, generateNodeId } from "../../utils/nodeIdGenerator"
 import { describeFollower } from "../followerNodeDefs"
@@ -111,15 +111,15 @@ export const updateDynamicEdgeMapping = (
 
 export const updateContentRouterKey = (
   nodeId: string,
-  keyName: string,
+  keyId: EipId,
   attrName: string,
   value: AttributeType
 ) =>
   useAppStore.setState(
     produce((draft: AppStore) => {
       const config = draft.eipConfigs[nodeId]
-      config.routerKey ??= { name: keyName }
-      config.routerKey.name = keyName
+      config.routerKey ??= { eipId: keyId }
+      config.routerKey.eipId = keyId
 
       const routerKey = config.routerKey
       routerKey.attributes ??= {}
@@ -231,15 +231,28 @@ export const importFlowFromObject = (flow: SerializedFlow) => {
       throw new Error("Failed to import an EIP flow JSON. Malformed input")
     }
 
+    let edges = flow.edges
+    let eipConfigs = flow.eipConfigs
+
     if (!flow.eipConfigs && !flow.version) {
-      return importDeprecatedFlow(flow)
+      console.warn(
+        "Attempting to import a deprecated EIP Flow format. Attribute configurations will not be preserved."
+      )
+      return importDeprecatedEipConfigFlow(flow)
+    } else if (flow.version === "1.1") {
+      console.warn(
+        "Attempting to import a deprecated EIP Flow format. Some features may not work correctly."
+      )
+      const updates = convertDeprecatedRouterKey(eipConfigs, edges)
+      edges = updates.edges
+      eipConfigs = updates.eipConfigs
     }
 
-    const eipConfigs = convertDeprecatedNamespaces(flow.eipConfigs)
+    eipConfigs = convertDeprecatedNamespaces(eipConfigs)
 
     return {
       nodes: flow.nodes,
-      edges: flow.edges,
+      edges,
       eipConfigs,
       customEntities: flow.customEntities ?? {},
     }
@@ -367,7 +380,6 @@ const generateNodes = (
   return descriptors
 }
 
-// TODO: Extract node generators
 export const newEipNode = (position: XYPosition) => {
   const id = generateNodeId()
   const node: EipFlowNode = {
@@ -406,12 +418,8 @@ const isStoreType = (state: unknown): state is AppStore => {
     eipNodeConfigs: Record<string, object>
   }
 
+  // Accept deprecated flows for now
   const hasOldConfigKey = store.eipNodeConfigs !== undefined
-  if (hasOldConfigKey) {
-    console.warn(
-      "Attempting to import a deprecated EIP Flow format. Attribute configurations will not be preserved."
-    )
-  }
 
   return (
     store.nodes !== undefined &&
@@ -421,7 +429,9 @@ const isStoreType = (state: unknown): state is AppStore => {
 }
 
 // Maintain backwards compatibility with older exported formats
-const importDeprecatedFlow = (flow: SerializedFlow): Partial<AppStore> => {
+const importDeprecatedEipConfigFlow = (
+  flow: SerializedFlow
+): Partial<AppStore> => {
   const eipConfigs = {} as AppStore["eipConfigs"]
   const nodes = flow.nodes.map((node) => {
     const { eipId: oldEipId, ...rest } = node.data as { eipId: EipId }
@@ -441,6 +451,69 @@ const importDeprecatedFlow = (flow: SerializedFlow): Partial<AppStore> => {
     edges: flow.edges,
     eipConfigs,
   }
+}
+
+// Maintain backwards compatibility with older exported routerKeys
+const convertDeprecatedRouterKey = (
+  eipConfigs: SerializedFlow["eipConfigs"],
+  edges: SerializedFlow["edges"]
+) => {
+  const updatedConfigs = Object.fromEntries(
+    Object.entries(eipConfigs).map(([id, config]) => {
+      if (config.routerKey && !config.routerKey.eipId) {
+        const oldRouterKey = config.routerKey as unknown as {
+          name: string
+          attributes?: Attributes
+        }
+
+        const { name, attributes } = oldRouterKey
+
+        return [
+          id,
+          {
+            ...config,
+            routerKey: {
+              attributes,
+              eipId: {
+                namespace: fixDeprecatedEipId(config.eipId).namespace,
+                name,
+              },
+            },
+          },
+        ]
+      }
+
+      return [id, config]
+    })
+  )
+
+  const updatedEdges = edges.map((edge) => {
+    if (isDynamicEdge(edge) && edge.data?.mapping) {
+      const oldMapping = edge.data.mapping as Partial<ChannelMapping> & {
+        mapperName: string
+      }
+
+      const { mapperName, ...rest } = oldMapping
+
+      return {
+        ...edge,
+        data: {
+          mapping: {
+            ...rest,
+            mapperId: {
+              namespace: fixDeprecatedEipId(eipConfigs[edge.source].eipId)
+                .namespace,
+              name: mapperName,
+            },
+          } as ChannelMapping,
+        },
+      }
+    }
+
+    return edge
+  })
+
+  return { eipConfigs: updatedConfigs, edges: updatedEdges }
 }
 
 const DEPRECATED_EIP_NAMESPACES: Record<string, string> = {
@@ -470,6 +543,7 @@ const convertDeprecatedNamespaces = (
           },
         ]
       }
+
       return [id, config]
     })
   )

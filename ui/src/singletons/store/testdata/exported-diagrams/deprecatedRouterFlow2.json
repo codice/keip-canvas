@@ -1,0 +1,172 @@
+{
+  "nodes": [
+    {
+      "id": "4YaZRj_d3o",
+      "type": "eipNode",
+      "position": { "x": 0, "y": 215.5 },
+      "data": { "label": "in1" },
+      "measured": { "width": 114, "height": 124 },
+      "selected": false,
+      "dragging": false,
+      "targetPosition": "left",
+      "sourcePosition": "right"
+    },
+    {
+      "id": "3VZG6r-bsg",
+      "type": "eipNode",
+      "position": { "x": 378, "y": 0 },
+      "data": { "label": "out1" },
+      "measured": { "width": 128, "height": 135 },
+      "selected": false,
+      "dragging": false,
+      "targetPosition": "left",
+      "sourcePosition": "right"
+    },
+    {
+      "id": "HtQhVdnX1P",
+      "type": "eipNode",
+      "position": { "x": 378, "y": 210 },
+      "data": { "label": "out2" },
+      "measured": { "width": 128, "height": 135 },
+      "selected": false,
+      "dragging": false,
+      "targetPosition": "left",
+      "sourcePosition": "right"
+    },
+    {
+      "id": "wxdK0B-ltt",
+      "type": "eipNode",
+      "position": { "x": 386.5, "y": 420 },
+      "data": { "label": "logger" },
+      "measured": { "width": 111, "height": 124 },
+      "selected": false,
+      "targetPosition": "left",
+      "sourcePosition": "right"
+    },
+    {
+      "id": "UlgTM64xRq",
+      "type": "eipNode",
+      "position": { "x": 186.13336188045153, "y": 236.60127765059096 },
+      "data": { "label": "router" },
+      "measured": { "width": 114, "height": 74 },
+      "selected": false,
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "4YaZRj_d3o",
+      "sourceHandle": "output",
+      "target": "UlgTM64xRq",
+      "targetHandle": "input",
+      "id": "xy-edge__4YaZRj_d3ooutput-UlgTM64xRqinput"
+    },
+    {
+      "source": "UlgTM64xRq",
+      "sourceHandle": "output",
+      "target": "3VZG6r-bsg",
+      "targetHandle": "input",
+      "type": "dynamicEdge",
+      "data": {
+        "mapping": {
+          "mapperName": "mapping",
+          "matcher": {
+            "name": "value",
+            "type": "string",
+            "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
+            "required": false
+          },
+          "matcherValue": "first"
+        }
+      },
+      "animated": true,
+      "id": "xy-edge__UlgTM64xRqoutput-3VZG6r-bsginput",
+      "selected": false
+    },
+    {
+      "source": "UlgTM64xRq",
+      "sourceHandle": "output",
+      "target": "HtQhVdnX1P",
+      "targetHandle": "input",
+      "type": "dynamicEdge",
+      "data": {
+        "mapping": {
+          "mapperName": "mapping",
+          "matcher": {
+            "name": "value",
+            "type": "string",
+            "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
+            "required": false
+          },
+          "matcherValue": "second"
+        }
+      },
+      "animated": true,
+      "id": "xy-edge__UlgTM64xRqoutput-HtQhVdnX1Pinput",
+      "selected": false
+    },
+    {
+      "source": "UlgTM64xRq",
+      "sourceHandle": "output",
+      "target": "wxdK0B-ltt",
+      "targetHandle": "input",
+      "type": "dynamicEdge",
+      "data": {
+        "mapping": {
+          "mapperName": "mapping",
+          "matcher": {
+            "name": "value",
+            "type": "string",
+            "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
+            "required": false
+          },
+          "matcherValue": "third"
+        }
+      },
+      "animated": true,
+      "id": "xy-edge__UlgTM64xRqoutput-wxdK0B-lttinput",
+      "selected": false
+    }
+  ],
+  "eipConfigs": {
+    "4YaZRj_d3o": {
+      "attributes": { "expression": "'abc'" },
+      "children": [],
+      "eipId": { "namespace": "integration", "name": "inbound-channel-adapter" }
+    },
+    "3VZG6r-bsg": {
+      "attributes": {
+        "pub-sub-domain": "false",
+        "destination-name": "test_queue"
+      },
+      "children": [],
+      "eipId": { "namespace": "jms", "name": "outbound-channel-adapter" }
+    },
+    "HtQhVdnX1P": {
+      "attributes": {},
+      "children": [],
+      "eipId": { "namespace": "http", "name": "outbound-channel-adapter" }
+    },
+    "wxdK0B-ltt": {
+      "attributes": {},
+      "children": [],
+      "eipId": { "namespace": "integration", "name": "logging-channel-adapter" }
+    },
+    "UlgTM64xRq": {
+      "attributes": { "phase": "init" },
+      "children": [],
+      "eipId": { "namespace": "xml", "name": "xpath-router" },
+      "routerKey": {
+        "name": "xpath-expression",
+        "attributes": {
+          "expression": "/test/xpath",
+          "id": "token",
+          "ns-prefix": "testing",
+          "ns-uri": "test.example.com"
+        }
+      }
+    }
+  },
+  "customEntities": {},
+  "version": "1.1"
+}

@@ -26,21 +26,21 @@
       },
       "children": [
         {
-          "name": "recipient",
+          "eipId": { "namespace": "integration", "name": "recipient" },
           "attributes": {
             "channel": "ch-router-out1"
           },
           "children": []
         },
         {
-          "name": "recipient",
+          "eipId": { "namespace": "integration", "name": "recipient" },
           "attributes": {
             "channel": "ch-router-out2"
           },
           "children": []
         },
         {
-          "name": "recipient",
+          "eipId": { "namespace": "integration", "name": "recipient" },
           "attributes": {
             "channel": "ch-router-logger",
             "selector-expression": "headers['log'] == true"

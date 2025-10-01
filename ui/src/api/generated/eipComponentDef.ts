@@ -48,10 +48,17 @@ export interface EipComponentDefinition {
  * The base schema for all EIP Elements (e.g. EipComponent, EipChildElement)
  */
 export interface EipElement {
-  name: string;
+  eipId: EipId;
   description?: string;
   attributes?: Attribute[];
   childGroup?: EipChildGroup;
+}
+/**
+ * A combination of fields uniquely identifying a component in an 'EipComponentDefinition'
+ */
+export interface EipId {
+  namespace: string;
+  name: string;
 }
 /**
  * Defines an EIP attribute

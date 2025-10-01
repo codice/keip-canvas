@@ -172,7 +172,10 @@ describe("onConnect", () => {
     expect(edge.animated).toBe(true)
 
     const data = edge.data as DynamicEdgeData
-    expect(data.mapping.mapperName).toEqual("mapping")
+    expect(data.mapping.mapperId).toEqual({
+      namespace: "integration",
+      name: "mapping",
+    })
     expect(data.mapping.matcher.name).toEqual("value")
   })
 })

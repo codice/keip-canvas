@@ -180,7 +180,7 @@ const buildChildTree = (
 }
 
 const childConfigToNode = (config: EipConfig): EipChildNode => ({
-  name: config.eipId.name,
+  eipId: config.eipId,
   attributes: config.attributes,
 })
 
@@ -208,7 +208,7 @@ const addRouterChannelMapping = (
     })
   } else {
     const child: EipChildNode = {
-      name: mapping.mapperName,
+      eipId: mapping.mapperId,
       attributes: {
         [CHANNEL_ATTR_NAME]: channelId,
       },
@@ -233,7 +233,7 @@ const getRouterKeyAttributes = (eipId: EipId, routerKey: RouterKey) => {
     case "child": {
       return {
         child: {
-          name: routerKey.name,
+          eipId: routerKey.eipId,
           attributes: filterEmptyAttrs(routerKey.attributes ?? {}),
         },
       }

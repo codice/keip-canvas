@@ -246,7 +246,10 @@ exports[`EipFlow to diagram > 'payload-type router' 1`] = `
       "animated": true,
       "data": {
         "mapping": {
-          "mapperName": "mapping",
+          "mapperId": {
+            "name": "mapping",
+            "namespace": "integration",
+          },
           "matcher": {
             "description": "The type of the payload that this mapping will match, e.g. 'java.lang.String' or 'java.lang.Integer' ",
             "name": "type",
@@ -265,7 +268,10 @@ exports[`EipFlow to diagram > 'payload-type router' 1`] = `
       "animated": true,
       "data": {
         "mapping": {
-          "mapperName": "mapping",
+          "mapperId": {
+            "name": "mapping",
+            "namespace": "integration",
+          },
           "matcher": {
             "description": "The type of the payload that this mapping will match, e.g. 'java.lang.String' or 'java.lang.Integer' ",
             "name": "type",
@@ -284,7 +290,10 @@ exports[`EipFlow to diagram > 'payload-type router' 1`] = `
       "animated": true,
       "data": {
         "mapping": {
-          "mapperName": "mapping",
+          "mapperId": {
+            "name": "mapping",
+            "namespace": "integration",
+          },
           "matcher": {
             "description": "The type of the payload that this mapping will match, e.g. 'java.lang.String' or 'java.lang.Integer' ",
             "name": "type",
@@ -463,7 +472,10 @@ exports[`EipFlow to diagram > 'recipient-list router' 1`] = `
       "animated": true,
       "data": {
         "mapping": {
-          "mapperName": "recipient",
+          "mapperId": {
+            "name": "recipient",
+            "namespace": "integration",
+          },
           "matcher": {
             "description": "An expression to be evaluated to determine if this recipient should be included in the recipient list for a given input Message. The evaluation result of the expression must be a boolean. If this attribute is not defined, the channel will always be among the list of recipients.",
             "name": "selector-expression",
@@ -481,7 +493,10 @@ exports[`EipFlow to diagram > 'recipient-list router' 1`] = `
       "animated": true,
       "data": {
         "mapping": {
-          "mapperName": "recipient",
+          "mapperId": {
+            "name": "recipient",
+            "namespace": "integration",
+          },
           "matcher": {
             "description": "An expression to be evaluated to determine if this recipient should be included in the recipient list for a given input Message. The evaluation result of the expression must be a boolean. If this attribute is not defined, the channel will always be among the list of recipients.",
             "name": "selector-expression",
@@ -500,7 +515,10 @@ exports[`EipFlow to diagram > 'recipient-list router' 1`] = `
       "animated": true,
       "data": {
         "mapping": {
-          "mapperName": "recipient",
+          "mapperId": {
+            "name": "recipient",
+            "namespace": "integration",
+          },
           "matcher": {
             "description": "An expression to be evaluated to determine if this recipient should be included in the recipient list for a given input Message. The evaluation result of the expression must be a boolean. If this attribute is not defined, the channel will always be among the list of recipients.",
             "name": "selector-expression",
@@ -770,7 +788,10 @@ exports[`EipFlow to diagram > 'simple router' 1`] = `
       "animated": true,
       "data": {
         "mapping": {
-          "mapperName": "mapping",
+          "mapperId": {
+            "name": "mapping",
+            "namespace": "integration",
+          },
           "matcher": {
             "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
             "name": "value",
@@ -789,7 +810,10 @@ exports[`EipFlow to diagram > 'simple router' 1`] = `
       "animated": true,
       "data": {
         "mapping": {
-          "mapperName": "mapping",
+          "mapperId": {
+            "name": "mapping",
+            "namespace": "integration",
+          },
           "matcher": {
             "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
             "name": "value",
@@ -809,7 +833,10 @@ exports[`EipFlow to diagram > 'simple router' 1`] = `
       "data": {
         "mapping": {
           "isDefaultMapping": true,
-          "mapperName": "mapping",
+          "mapperId": {
+            "name": "mapping",
+            "namespace": "integration",
+          },
           "matcher": {
             "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
             "name": "value",
@@ -870,7 +897,10 @@ exports[`EipFlow to diagram > 'simple router' 1`] = `
         "attributes": {
           "expression": "payload",
         },
-        "name": "expression",
+        "eipId": {
+          "name": "expression",
+          "namespace": "integration",
+        },
       },
     },
     "n2": {
@@ -984,7 +1014,10 @@ exports[`EipFlow to diagram > 'xpath router' 1`] = `
       "animated": true,
       "data": {
         "mapping": {
-          "mapperName": "mapping",
+          "mapperId": {
+            "name": "mapping",
+            "namespace": "int-xml",
+          },
           "matcher": {
             "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
             "name": "value",
@@ -1003,7 +1036,10 @@ exports[`EipFlow to diagram > 'xpath router' 1`] = `
       "animated": true,
       "data": {
         "mapping": {
-          "mapperName": "mapping",
+          "mapperId": {
+            "name": "mapping",
+            "namespace": "int-xml",
+          },
           "matcher": {
             "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
             "name": "value",
@@ -1022,7 +1058,10 @@ exports[`EipFlow to diagram > 'xpath router' 1`] = `
       "animated": true,
       "data": {
         "mapping": {
-          "mapperName": "mapping",
+          "mapperId": {
+            "name": "mapping",
+            "namespace": "int-xml",
+          },
           "matcher": {
             "description": "A value of the evaluation token that will be mapped to a channel reference (e.g., mapping value='foo' channel='myChannel')",
             "name": "value",
@@ -1047,7 +1086,7 @@ exports[`EipFlow to diagram > 'xpath router' 1`] = `
       "children": [],
       "eipId": {
         "name": "mapping",
-        "namespace": "integration",
+        "namespace": "int-xml",
       },
     },
     "c2": {
@@ -1058,7 +1097,7 @@ exports[`EipFlow to diagram > 'xpath router' 1`] = `
       "children": [],
       "eipId": {
         "name": "mapping",
-        "namespace": "integration",
+        "namespace": "int-xml",
       },
     },
     "c3": {
@@ -1069,7 +1108,7 @@ exports[`EipFlow to diagram > 'xpath router' 1`] = `
       "children": [],
       "eipId": {
         "name": "mapping",
-        "namespace": "integration",
+        "namespace": "int-xml",
       },
     },
     "n0": {
@@ -1098,7 +1137,10 @@ exports[`EipFlow to diagram > 'xpath router' 1`] = `
           "ns-prefix": "testing",
           "ns-uri": "test.example.com",
         },
-        "name": "xpath-expression",
+        "eipId": {
+          "name": "xpath-expression",
+          "namespace": "int-xml",
+        },
       },
     },
     "n2": {

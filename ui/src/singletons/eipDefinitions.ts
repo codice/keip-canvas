@@ -1,22 +1,22 @@
-import { RouterKeyDef } from "../api/flow"
+import { DEFAULT_NAMESPACE, RouterKeyDef } from "../api/flow"
 import {
   EipComponent,
   EipComponentDefinition,
 } from "../api/generated/eipComponentDef"
 import { EipId } from "../api/generated/eipFlow"
-import eipDefintion from "../json/springIntegrationEipComponents.json"
+import eipDefinition from "../json/springIntegrationEipComponents.json"
 
 // TODO: Validate that the parsed JSON matches the schema type
 export const EIP_SCHEMA: Readonly<EipComponentDefinition> =
-  eipDefintion as EipComponentDefinition
+  eipDefinition as EipComponentDefinition
 
 export const eipIdToString = (eipId: EipId) =>
   `${eipId.namespace}.${eipId.name}`
 
 const getFlatMap = (schema: EipComponentDefinition) => {
   const map = new Map<string, EipComponent>()
-  for (const [namespace, componentList] of Object.entries(schema)) {
-    componentList.forEach((c) => map.set(`${namespace}.${c.name}`, c))
+  for (const [_, componentList] of Object.entries(schema)) {
+    componentList.forEach((c) => map.set(eipIdToString(c.eipId), c))
   }
   return map
 }
@@ -84,11 +84,15 @@ export const lookupContentBasedRouterKeys = (
           `The router "${eipId.name}" does not have an attribute with the name "${target.name}"`
         )
       }
-      return { name: attrKey.name, type: target.type, attributesDef: [attrKey] }
+      return {
+        eipId: { namespace: DEFAULT_NAMESPACE, name: attrKey.name },
+        type: target.type,
+        attributesDef: [attrKey],
+      }
     }
     case "child": {
       const childKey = eipComponent?.childGroup?.children.find(
-        (child) => child.name === target.name
+        (child) => child.eipId.name === target.name
       )
       if (!childKey) {
         throw new Error(
@@ -96,7 +100,7 @@ export const lookupContentBasedRouterKeys = (
         )
       }
       return {
-        name: childKey.name,
+        eipId: childKey.eipId,
         type: target.type,
         attributesDef: childKey.attributes ?? [],
       }

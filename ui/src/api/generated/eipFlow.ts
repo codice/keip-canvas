@@ -68,7 +68,7 @@ export interface Attributes {
  * An instance of an 'EipChildElement'. Can recursively contain more child nodes as well as attributes of its own.
  */
 export interface EipChildNode {
-  name: string;
+  eipId: EipId;
   attributes?: Attributes;
   children?: EipChildNode[];
 }

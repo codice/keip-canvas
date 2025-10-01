@@ -27,7 +27,7 @@
       },
       "children": [
         {
-          "name": "mapping",
+          "eipId": { "namespace": "integration", "name": "mapping" },
           "attributes": {
             "channel": "ch-testRouter-out1",
             "value": "first"
@@ -35,7 +35,7 @@
           "children": []
         },
         {
-          "name": "mapping",
+          "eipId": { "namespace": "integration", "name": "mapping" },
           "attributes": {
             "channel": "ch-testRouter-out2",
             "value": "second"

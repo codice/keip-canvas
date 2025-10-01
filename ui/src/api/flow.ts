@@ -1,6 +1,6 @@
 import { BuiltInEdge, Edge, Node } from "@xyflow/react"
 import { Attribute } from "./generated/eipComponentDef"
-import { Attributes } from "./generated/eipFlow"
+import { Attributes, EipId } from "./generated/eipFlow"
 
 export interface Layout {
   orientation: "horizontal" | "vertical"
@@ -40,7 +40,7 @@ export const isFollowerNode = (node?: Node): node is FollowerNode =>
 export type CustomNode = EipFlowNode | FollowerNode
 
 export interface ChannelMapping {
-  mapperName: string
+  mapperId: EipId
   matcher: Attribute
   matcherValue?: string
   isDefaultMapping?: boolean
@@ -65,13 +65,13 @@ export const isDynamicEdge = (edge?: Edge): edge is DynamicEdge =>
   edge?.type === DYNAMIC_EDGE_TYPE
 
 export interface RouterKeyDef {
-  name: string
+  eipId: EipId
   type: "attribute" | "child"
   attributesDef: Attribute[]
 }
 
 export interface RouterKey {
-  name: string
+  eipId: EipId
   attributes?: Attributes
 }
 

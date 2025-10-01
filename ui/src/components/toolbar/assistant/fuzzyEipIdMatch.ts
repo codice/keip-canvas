@@ -30,7 +30,7 @@ export const fuzzyEipMatch = (id: EipId): EipId => {
       EIP_SCHEMA[targetId.namespace]
     )
     if (match) {
-      return { namespace: targetId.namespace, name: match.name }
+      return { namespace: targetId.namespace, name: match.eipId.name }
     }
   }
 
@@ -46,7 +46,7 @@ export const fuzzyEipMatch = (id: EipId): EipId => {
       EIP_SCHEMA[intNamespaceId.namespace]
     )
     if (match) {
-      return { namespace: intNamespaceId.namespace, name: match.name }
+      return { namespace: intNamespaceId.namespace, name: match.eipId.name }
     }
   }
 
@@ -61,7 +61,7 @@ const searchByToken = (
   toSearch: EipComponent[]
 ): EipComponent | null => {
   for (const token of tokens) {
-    const match = toSearch.find((c) => c.name.includes(token))
+    const match = toSearch.find((c) => c.eipId.name.includes(token))
     if (match) {
       return match
     }

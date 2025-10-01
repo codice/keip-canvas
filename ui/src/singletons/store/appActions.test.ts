@@ -19,6 +19,7 @@ import {
   useGetEnabledChildren,
   useGetNodeDescription,
   useGetSelectedChildNode,
+  useSerializedFlow,
 } from "./getterHooks"
 import { renderAndUnwrapHook, resetMockStore } from "./storeTestingUtils"
 import customEntitiesFlow from "./testdata/store-initializers/customEntitiesFlow.json"
@@ -57,8 +58,10 @@ import {
   getLayoutView,
   getNodesView,
 } from "./storeViews"
-import deprecatedExportedFlow from "./testdata/exported-diagrams/deprecatedFlow.json?raw"
+import deprecatedConfigFlow from "./testdata/exported-diagrams/deprecatedConfigFlow.json?raw"
 import deprecatedNamespacesFlow from "./testdata/exported-diagrams/deprecatedNamespaces.json?raw"
+import deprecatedRouterFlow1 from "./testdata/exported-diagrams/deprecatedRouterFlow1.json?raw"
+import deprecatedRouterFlow2 from "./testdata/exported-diagrams/deprecatedRouterFlow2.json?raw"
 import validExportedFlow from "./testdata/exported-diagrams/validFlow.json?raw"
 
 vi.mock("zustand")
@@ -314,7 +317,7 @@ describe("mapping a dynamic router edge", () => {
   test("update a dynamic routing edge mapping success", () => {
     const edgeId = "reactflow__edge-LoiC2CFbLPoutput-SV43RVeijQinput"
     const mapping: ChannelMapping = {
-      mapperName: "test-mapping",
+      mapperId: { namespace: "test-ns", name: "test-mapping" },
       matcher: { name: "test-match-attr", type: "string" },
       matcherValue: "abc",
     }
@@ -329,7 +332,7 @@ describe("mapping a dynamic router edge", () => {
   test("update a default edge throws an error", () => {
     const edgeId = "reactflow__edge-9KWCqlIyy7output-LoiC2CFbLPinput"
     const mapping: ChannelMapping = {
-      mapperName: "test-mapping",
+      mapperId: { namespace: "test-ns", name: "test-mapping" },
       matcher: { name: "test-match-attr", type: "string" },
       matcherValue: "abc",
     }
@@ -343,14 +346,14 @@ describe("update content router key", () => {
     const attrName = "expression"
     const attrValue = "bar"
     const routerKey: RouterKey = {
-      name: "test-key",
+      eipId: { namespace: "test-ns", name: "test-key" },
       attributes: { [attrName]: attrValue },
     }
 
     act(() =>
       updateContentRouterKey(
         STANDARD_ROUTER,
-        routerKey.name,
+        routerKey.eipId,
         attrName,
         attrValue
       )
@@ -369,12 +372,12 @@ describe("update content router key", () => {
     const attrName = "expression"
     const attrValue = "bar"
     const routerKey: RouterKey = {
-      name: "test-key",
+      eipId: { namespace: "test-ns", name: "test-key" },
       attributes: { [attrName]: attrValue },
     }
 
     act(() =>
-      updateContentRouterKey(routerId, routerKey.name, attrName, attrValue)
+      updateContentRouterKey(routerId, routerKey.eipId, attrName, attrValue)
     )
 
     const actual = renderAndUnwrapHook(() => useGetContentRouterKey(routerId))
@@ -389,14 +392,14 @@ describe("update content router key", () => {
     const attrName = "foo"
     const attrValue = "bar"
     const routerKey: RouterKey = {
-      name: "test-key",
+      eipId: { namespace: "test-ns", name: "test-key" },
       attributes: { ...initialKey?.attributes, [attrName]: attrValue },
     }
 
     act(() =>
       updateContentRouterKey(
         STANDARD_ROUTER,
-        routerKey.name,
+        routerKey.eipId,
         attrName,
         attrValue
       )
@@ -411,13 +414,23 @@ describe("update content router key", () => {
   // TODO: unskip this test once action is fixed
   test.skip("update non-router node throws error", () => {
     expect(() =>
-      updateContentRouterKey(STANDARD_INBOUND_ADAPTER, "test-key", "foo", "bar")
+      updateContentRouterKey(
+        STANDARD_INBOUND_ADAPTER,
+        { namespace: "test-ns", name: "test-key" },
+        "foo",
+        "bar"
+      )
     ).toThrowError()
   })
 
   test("update non-existent node throws error", () => {
     expect(() =>
-      updateContentRouterKey("fakeid", "test-key", "foo", "bar")
+      updateContentRouterKey(
+        "fakeid",
+        { namespace: "test-ns", name: "test-key" },
+        "foo",
+        "bar"
+      )
     ).toThrowError()
   })
 })
@@ -592,31 +605,26 @@ describe("import flow from an exported JSON file", () => {
       flow: validExportedFlow,
     },
     {
-      msg: "import a deprecated flow partial success",
-      flow: deprecatedExportedFlow,
+      msg: "import a deprecated config flow partial success",
+      flow: deprecatedConfigFlow,
     },
     {
       msg: "import a flow with deprecated namespaces success",
       flow: deprecatedNamespacesFlow,
     },
+    {
+      msg: "import a flow with deprecated attribute router key success",
+      flow: deprecatedRouterFlow1,
+    },
+    {
+      msg: "import a flow with deprecated child router key success",
+      flow: deprecatedRouterFlow2,
+    },
   ])("$msg", ({ flow }) => {
-    const initNodes = getNodesView()
-
     act(() => importFlowFromJson(flow))
 
-    const nodes = getNodesView()
+    const updatedState = renderAndUnwrapHook(() => useSerializedFlow())
 
-    const updatedState = {
-      nodes: nodes,
-      edges: getEdgesView(),
-      children: nodes.map((node) => ({
-        [node.id]: renderAndUnwrapHook(() => useGetEnabledChildren(node.id)),
-      })),
-      eipIds: nodes.map((node) => getEipId(node.id)),
-      layout: getLayoutView(),
-    }
-
-    expect(updatedState.nodes).not.toEqual(initNodes)
     expect(updatedState).toMatchSnapshot()
   })
 

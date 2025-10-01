@@ -1,3 +1,4 @@
+import isDeepEqual from "fast-deep-equal"
 import {
   EipChildElement,
   EipComponent,
@@ -17,8 +18,8 @@ export const findChildDefinition = (
   }
 
   for (const id of childPath.slice(1)) {
-    const name = getEipId(id)?.name
-    child = children?.find((c) => c.name === name) ?? null
+    const eipId = getEipId(id)
+    child = children?.find((c) => isDeepEqual(c.eipId, eipId)) ?? null
     children = child?.childGroup?.children
   }
 

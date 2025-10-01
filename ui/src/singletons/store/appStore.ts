@@ -6,7 +6,7 @@ import debounce from "../../utils/debounce"
 
 import { AppStore } from "./api"
 
-export const EXPORTED_FLOW_VERSION = "1.1"
+export const EXPORTED_FLOW_VERSION = "1.2"
 
 // If app becomes too slow, might need to switch to async persistent storage.
 export const useAppStore = create<AppStore>()(

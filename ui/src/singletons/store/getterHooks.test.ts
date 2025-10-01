@@ -113,7 +113,7 @@ describe("get content router key", () => {
       useGetContentRouterKey(STANDARD_ROUTER)
     )
     const expected: RouterKey = {
-      name: "expression",
+      eipId: { namespace: "integration", name: "expression" },
       attributes: { expression: "headers.protocol" },
     }
     expect(key).toEqual(expected)

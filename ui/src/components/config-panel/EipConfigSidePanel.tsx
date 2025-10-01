@@ -37,7 +37,7 @@ const isDynamicRouterAttribute = (attribute: Attribute, eipId?: EipId) => {
     return false
   }
 
-  return keyDef.type === "attribute" && keyDef.name === attribute.name
+  return keyDef.type === "attribute" && keyDef.eipId.name === attribute.name
 }
 
 const filterConfigurableAttributes = (attrs?: Attribute[], eipId?: EipId) => {

@@ -94,9 +94,17 @@ const RouterKeyConfig = ({ routerNodeId, routerKeyDef }: RouterKeyProps) => {
   const handleUpdates = useMemo(
     () =>
       debounce((attrName: string, value: string) => {
-        updateContentRouterKey(routerNodeId, routerKeyDef.name, attrName, value)
+        updateContentRouterKey(
+          routerNodeId,
+          {
+            namespace: routerKeyDef.eipId.namespace,
+            name: routerKeyDef.eipId.name,
+          },
+          attrName,
+          value
+        )
       }, 300),
-    [routerNodeId, routerKeyDef.name]
+    [routerNodeId, routerKeyDef.eipId.name, routerKeyDef.eipId.namespace]
   )
 
   const required = routerKeyDef.attributesDef
@@ -130,7 +138,7 @@ const RouterKeyConfig = ({ routerNodeId, routerKeyDef }: RouterKeyProps) => {
           title="Key"
           helperText={
             routerKeyDef.attributesDef.length !== 1
-              ? routerKeyDef.name
+              ? routerKeyDef.eipId.name
               : "Targeted by the matcher"
           }
         />
@@ -142,7 +150,7 @@ const RouterKeyConfig = ({ routerNodeId, routerKeyDef }: RouterKeyProps) => {
 
 // TODO: Allow mapping multiple values to the same channel
 const EdgeMatcher = ({ edgeId, mapping }: EdgeMatcherProps) => {
-  const { mapperName, matcher, matcherValue } = mapping
+  const { mapperId, matcher, matcherValue } = mapping
 
   const handleUpdates = useMemo(
     () =>
@@ -155,7 +163,7 @@ const EdgeMatcher = ({ edgeId, mapping }: EdgeMatcherProps) => {
   return (
     <Section>
       <Stack gap={6}>
-        <SectionHeading title="Matcher" helperText={mapperName} />
+        <SectionHeading title="Matcher" helperText={mapperId.name} />
         <DescriptionTooltipWrapper
           key={matcher.name}
           id={matcher.name}

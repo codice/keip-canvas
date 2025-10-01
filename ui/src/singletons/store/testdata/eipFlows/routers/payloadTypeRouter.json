@@ -24,7 +24,7 @@
       "attributes": {},
       "children": [
         {
-          "name": "mapping",
+          "eipId": { "namespace": "integration", "name": "mapping" },
           "attributes": {
             "channel": "ch-router-out1",
             "type": "String"
@@ -32,7 +32,7 @@
           "children": []
         },
         {
-          "name": "mapping",
+          "eipId": { "namespace": "integration", "name": "mapping" },
           "attributes": {
             "channel": "ch-router-out2",
             "type": "Integer"
@@ -40,7 +40,7 @@
           "children": []
         },
         {
-          "name": "mapping",
+          "eipId": { "namespace": "integration", "name": "mapping" },
           "attributes": {
             "channel": "ch-router-logger",
             "type": "Boolean"

@@ -62,7 +62,7 @@ const EipNamespaceCollection = ({
   allExpanded,
 }: EipBlockCollectionProps) => {
   const eipItems = namespace.components.map((c) => (
-    <EipItem key={c.name} eipId={{ namespace: namespace.name, name: c.name }} />
+    <EipItem key={c.eipId.name} eipId={c.eipId} />
   ))
 
   return (
@@ -82,10 +82,12 @@ const namespacesToDisplay = (
 ): Namespace[] => {
   const withFilteredComponents = entries.map(([namespace, components]) => {
     const filtered = searchTerm
-      ? components.filter((c) => c.name.toLowerCase().includes(searchTerm))
+      ? components.filter((c) =>
+          c.eipId.name.toLowerCase().includes(searchTerm)
+        )
       : components
 
-    filtered.sort((a, b) => a.name.localeCompare(b.name))
+    filtered.sort((a, b) => a.eipId.name.localeCompare(b.eipId.name))
     return { name: namespace, components: filtered }
   })
 

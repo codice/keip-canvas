@@ -73,5 +73,5 @@
   "customEntities": {
     "customTransform": "<bean class=\"com.example.custom.xml.Transformer\" />"
   },
-  "version": "1.1"
+  "version": "1.2"
 }

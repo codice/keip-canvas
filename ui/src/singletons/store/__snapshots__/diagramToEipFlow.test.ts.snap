@@ -43,21 +43,30 @@ exports[`diagram includes a router with child based matcher to EipFlow success 1
           "attributes": {
             "expression": "/target/protocol",
           },
-          "name": "xpath-expression",
+          "eipId": {
+            "name": "xpath-expression",
+            "namespace": "int-xml",
+          },
         },
         {
           "attributes": {
             "channel": "ch-cGUxaVOQ7L-1su4DIeR80",
             "value": "jms",
           },
-          "name": "mapping",
+          "eipId": {
+            "name": "mapping",
+            "namespace": "integration",
+          },
         },
         {
           "attributes": {
             "channel": "ch-cGUxaVOQ7L-RJlDxzUi2a",
             "value": "kafka",
           },
-          "name": "mapping",
+          "eipId": {
+            "name": "mapping",
+            "namespace": "integration",
+          },
         },
       ],
       "connectionType": "content_based_router",
@@ -176,31 +185,52 @@ exports[`diagram with deep child nesting 1`] = `
               "children": [
                 {
                   "attributes": {},
-                  "name": "ref",
+                  "eipId": {
+                    "name": "ref",
+                    "namespace": "integration",
+                  },
                 },
               ],
-              "name": "advice-chain",
+              "eipId": {
+                "name": "advice-chain",
+                "namespace": "integration",
+              },
             },
           ],
-          "name": "poller",
+          "eipId": {
+            "name": "poller",
+            "namespace": "integration",
+          },
         },
         {
           "attributes": {},
-          "name": "transactional",
+          "eipId": {
+            "name": "transactional",
+            "namespace": "integration",
+          },
         },
         {
           "attributes": {},
           "children": [
             {
               "attributes": {},
-              "name": "retry-advice",
+              "eipId": {
+                "name": "retry-advice",
+                "namespace": "integration",
+              },
             },
             {
               "attributes": {},
-              "name": "ref",
+              "eipId": {
+                "name": "ref",
+                "namespace": "integration",
+              },
             },
           ],
-          "name": "request-handler-advice-chain",
+          "eipId": {
+            "name": "request-handler-advice-chain",
+            "namespace": "integration",
+          },
         },
       ],
       "connectionType": "request_reply",
@@ -323,7 +353,10 @@ exports[`standard diagram to EipFlow success 1`] = `
           "attributes": {
             "fixed-rate": "2000",
           },
-          "name": "poller",
+          "eipId": {
+            "name": "poller",
+            "namespace": "integration",
+          },
         },
       ],
       "connectionType": "source",
@@ -347,7 +380,10 @@ exports[`standard diagram to EipFlow success 1`] = `
             "channel": "ch-test-router-test-filter",
             "value": "file",
           },
-          "name": "mapping",
+          "eipId": {
+            "name": "mapping",
+            "namespace": "integration",
+          },
         },
       ],
       "connectionType": "content_based_router",
@@ -392,7 +428,10 @@ exports[`standard diagram to EipFlow success 1`] = `
       "children": [
         {
           "attributes": {},
-          "name": "transactional",
+          "eipId": {
+            "name": "transactional",
+            "namespace": "file",
+          },
         },
       ],
       "connectionType": "sink",
