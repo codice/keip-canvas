@@ -5,7 +5,7 @@ import { KEIP_ASSISTANT_DOCS_URL } from "../../singletons/externalEndpoints"
 import AssistantChatPanel from "./assistant/AssistantChatPanel"
 import { useLlmServerStatus } from "./assistant/llmStatusHook"
 import XmlPanel from "./xml/XmlPanel"
-import useTranslationServerStatus from "./xml/translatorStatusHook"
+import useTranslationServerStatus from "../endpoints/translation/translatorStatusHook"
 
 interface PanelButtonProps {
   name: string

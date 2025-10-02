@@ -59,7 +59,7 @@ export const useEipFlow = () =>
  * @param state the AppStore's current state object
  * @returns An EipFlow
  */
-const diagramToEipFlow = (state: AppStore): EipFlow => {
+export const diagramToEipFlow = (state: AppStore): EipFlow => {
   const nodeLookup = createNodeLookupMap(state.nodes)
 
   const routerChildMap = new Map<string, EipChildNode[]>()

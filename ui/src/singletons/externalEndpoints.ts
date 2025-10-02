@@ -6,3 +6,5 @@ export const KEIP_ASSISTANT_DOCS_URL = import.meta.env
 
 export const KEIP_ASSISTANT_OLLAMA_URL = import.meta.env
   .VITE_KEIP_ASSISTANT_OLLAMA_URL
+
+export const K8S_CLUSTER_URL = import.meta.env.VITE_KEIP_K8S_CLUSTER_URL

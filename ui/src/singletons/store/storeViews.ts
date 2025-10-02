@@ -1,6 +1,7 @@
 import { CustomEdge, CustomNode, Layout } from "../../api/flow"
-import { EipId } from "../../api/generated/eipFlow"
+import { EipFlow, EipId } from "../../api/generated/eipFlow"
 import { useAppStore } from "./appStore"
+import { diagramToEipFlow } from "./diagramToEipFlow"
 
 interface ChildTraversalItem {
   id: string
@@ -33,6 +34,9 @@ export const getCustomEntityContent = (
   entityId: string
 ): Readonly<string> | undefined =>
   useAppStore.getState().customEntities[entityId]
+
+export const getEipFlow = (): Readonly<EipFlow> =>
+  diagramToEipFlow(useAppStore.getState())
 
 export const childrenBreadthTraversal = function* (
   rootId: string

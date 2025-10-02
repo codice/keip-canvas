@@ -3,26 +3,15 @@ import hljs from "highlight.js/lib/core"
 import xml from "highlight.js/lib/languages/xml"
 import { useEffect, useState } from "react"
 import Editor from "react-simple-code-editor"
-import { EipFlow } from "../../../api/generated/eipFlow"
 import { useEipFlow } from "../../../singletons/store/diagramToEipFlow"
 
 // highlight.js theme
 import "highlight.js/styles/intellij-light.css"
-import { FLOW_TRANSLATOR_BASE_URL } from "../../../singletons/externalEndpoints"
-import fetchWithTimeout from "../../../utils/fetch/fetchWithTimeout"
+import { fetchXmlTranslation } from "../../endpoints/translation/translateFlowToXml"
 
 const UNMOUNT_SIGNAL = "unmount"
 
 hljs.registerLanguage("xml", xml)
-
-interface FlowTranslationResponse {
-  data?: string
-  error?: {
-    message: string
-    type: string
-    details: object[]
-  }
-}
 
 type InlineLoadingProps = React.ComponentProps<typeof InlineLoading>
 
@@ -36,35 +25,6 @@ const getLoadingStatus = (
   return isError
     ? { status: "error", description: "error" }
     : { status: "finished", description: "synced" }
-}
-
-// TODO: Add client-side caching (might make sense to use a data fetching library)
-const fetchXmlTranslation = async (
-  flow: EipFlow,
-  abortCtrl: AbortController
-) => {
-  const queryStr = new URLSearchParams({ prettyPrint: "true" }).toString()
-  const response = await fetchWithTimeout(
-    `${FLOW_TRANSLATOR_BASE_URL}/translation/toSpringXml?` + queryStr,
-    {
-      method: "POST",
-      body: JSON.stringify(flow),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      timeout: 20000,
-      abortCtrl,
-    }
-  )
-
-  const { data, error } = (await response.json()) as FlowTranslationResponse
-
-  if (!response.ok) {
-    console.error("Failed to convert diagram to XML:", error)
-    throw new Error(JSON.stringify(error))
-  }
-
-  return data!
 }
 
 const XmlPanel = () => {
